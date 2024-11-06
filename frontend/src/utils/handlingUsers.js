@@ -47,8 +47,8 @@ const forgotPassword = async (email) => {
   }
 };
 
-// To store the JWT in cookies (already done by the backend automatically)
-document.cookie = `token=${response.data.token}`;
+// // To store the JWT in cookies (already done by the backend automatically)
+// document.cookie = `token=${response.data.token}`;
 
 const resetPassword = async (email, newPassword) => {
   try {

@@ -2,6 +2,14 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import TermsModal from "../components/TermsAndConditions";
 import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
+import {
+  signup,
+  login,
+  verifyOtp,
+  forgotPassword,
+  resetPassword,
+  getProfile,
+} from "../utils/handlingUsers";
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -82,6 +90,19 @@ function Auth() {
       setErrorMessage(""); // Clear error message if all checks pass
       // Proceed with sign-up logic
     }
+    if (!errorMessage) {
+      const email = e.target.email.value;
+      const password = password;
+      signup(email, password);
+    }
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault(); // Prevent default form submission
+    const email = e.target.email.value; // Get email from the form
+    const password = e.target.password.value; // Get password from the form
+
+    login(email, password);
   };
 
   return (

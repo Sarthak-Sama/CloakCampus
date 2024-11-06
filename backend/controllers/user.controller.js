@@ -68,14 +68,14 @@ module.exports.signup = async (req, res, next) => {
     // Validate email domain against the database
     const isValidDomain = await Domain.findOne({ domain: emailDomain });
     if (!isValidDomain) {
-      return res.status(400).json({
+      return res.status(403).json({
         message: "Email domain not allowed. Please use a valid email.",
       });
     }
 
     const isUserAlreadyExists = await userModel.findOne({ email });
     if (isUserAlreadyExists) {
-      return res.status(400).json({
+      return res.status(409).json({
         message: "User already exists",
       });
     }
@@ -122,7 +122,7 @@ module.exports.verifyOtp = async (req, res, next) => {
 
   const user = await userModel.findOne({ email });
   if (!user) {
-    return res.status(400).json({ message: "User not found" });
+    return res.status(404).json({ message: "User not found" });
   }
 
   if (user.otp !== otp) {
@@ -167,7 +167,7 @@ module.exports.login = async (req, res, next) => {
         return next(err);
       }
       if (!user) {
-        return res.status(400).json({ message: info.message });
+        return res.status(401).json({ message: info.message });
       }
       if (!user.isVerified) {
         // Check if the email is verified
@@ -246,7 +246,7 @@ module.exports.forgotPassword = async (req, res, next) => {
 
   const user = await userModel.findOne({ email });
   if (!user) {
-    return res.status(400).json({ message: "User not found" });
+    return res.status(404).json({ message: "User not found" });
   }
 
   // Generate a random verification code
@@ -290,7 +290,7 @@ module.exports.resetPassword = async (req, res, next) => {
   const user = await userModel.findOne({ email });
 
   if (!user) {
-    return res.status(400).json({ message: "User not found" });
+    return res.status(404).json({ message: "User not found" });
   }
 
   // Hash the new password
