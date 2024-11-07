@@ -7,6 +7,10 @@ router.get("/", (req, res) => {
   res.send("server is running");
 });
 
-router.post("/auth/verify", authMiddleware, indexControllers.authVerify);
+router.post(
+  "/auth/verify",
+  authMiddleware.isAuthenticated,
+  indexControllers.authVerify
+);
 
 module.exports = router;
