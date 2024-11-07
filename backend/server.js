@@ -12,7 +12,16 @@ const cookieParser = require("cookie-parser");
 require("./config/passport.config");
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow all origins
+      callback(null, true);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Specify allowed methods
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+  })
+);
 app.use(cookieParser());
 
 app.use(express.json());
