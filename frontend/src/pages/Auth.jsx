@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import TermsModal from "../components/TermsAndConditions";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
-import {
-  signup,
-  login,
-  verifyOtp,
-  forgotPassword,
-  resetPassword,
-  getProfile,
-} from "../utils/handlingUsers";
+import TermsModal from "../components/TermsAndConditions";
+import { signup, login } from "../utils/handlingUsers";
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,7 +14,11 @@ function Auth() {
   const [passwordStrength, setPasswordStrength] = useState("");
   const [confirmPassword, setConfirmPassword] = useState(""); // State for confirm password
   const [termsChecked, setTermsChecked] = useState(false); // State for terms checkbox
-  const [errorMessage, setErrorMessage] = useState(""); // State for error message
+  const [signupErrorMessage, setSignupErrorMessage] = useState(""); // State for signup error message
+  const [loginErrorMessage, setLoginErrorMessage] = useState(""); // State for login error message
+  const [isLoading, setisLoading] = useState(false); // State for loading status
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleResize = () => {
@@ -78,31 +76,61 @@ function Auth() {
   };
 
   // Update the button in the signup form
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault(); // Prevent default form submission
+    setisLoading(true); // Set loading to true
+
+    let isValid = true; // Local variable to track form validity
+
+    // Validate form inputs
     if (passwordStrength === "Very Weak" || passwordStrength === "Weak") {
-      setErrorMessage("Set a stronger password.");
+      setSignupErrorMessage("Set a stronger password.");
+      isValid = false;
     } else if (password !== confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+      setSignupErrorMessage("Passwords do not match.");
+      isValid = false;
     } else if (!termsChecked) {
-      setErrorMessage("You must agree to the terms and conditions.");
+      setSignupErrorMessage("You must agree to the terms and conditions.");
+      isValid = false;
     } else {
-      setErrorMessage(""); // Clear error message if all checks pass
-      // Proceed with sign-up logic
+      setSignupErrorMessage(""); // Clear error message if all validations pass
     }
-    if (!errorMessage) {
+
+    if (isValid) {
+      // Proceed with sign-up only if form is valid
       const email = e.target.email.value;
-      const password = password;
-      signup(email, password);
+      const response = await signup(email, password);
+      setisLoading(false); // Reset loading to false after response
+
+      if (response.success) {
+        // Handle successful signup (e.g., redirect to login page or show success message)
+        navigate(`${location.pathname}/verify-otp`, {
+          state: { email, password },
+        });
+      } else {
+        // Handle error (e.g., display error message)
+        response.errorMessage && setSignupErrorMessage(response.errorMessage); // Display error message from the signup function
+      }
+    } else {
+      setisLoading(false); // Reset loading if validation fails
     }
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault(); // Prevent default form submission
+    setisLoading(true); // Set loading to true
     const email = e.target.email.value; // Get email from the form
     const password = e.target.password.value; // Get password from the form
+    const toRemember = e.target.querySelector('input[type="checkbox"]').checked; // Get the state of the "Remember Me" checkbox
 
-    login(email, password);
+    const response = await login(email, password, toRemember);
+    setisLoading(false); // Reset loading to false after response
+
+    if (response.success) {
+      navigate("/");
+    } else {
+      setLoginErrorMessage(response.errorMessage || "Wrong"); // Use the new state for login error message
+    }
   };
 
   return (
@@ -110,7 +138,7 @@ function Auth() {
       {/* -------- Login Form----- */}
       <motion.div
         id="login-form"
-        className="relative z-9 w-[80] lg:w-[33%] mx-[10vw] my-[12vh] lg:my-[25vh] text-center"
+        className={`relative z-9 w-[80] lg:w-[33%] mx-[10vw] my-[12vh] lg:my-[25vh] text-center`}
         initial={{ x: "0%", opacity: 1 }}
         animate={{ x: isLogin ? "0%" : "10%", opacity: isLogin ? 1 : 0 }}
         exit={{ x: "10%", opacity: 0 }}
@@ -120,13 +148,14 @@ function Auth() {
           Log in to Your Account
         </h2>
         <p className="text-gray-600 mb-8">Welcome Back to CloakCampus!</p>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleLogin} method="POST">
           <div>
             <label className="block text-gray-600 text-sm text-left">
               Email
             </label>
             <input
               type="email"
+              name="email"
               className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your email address"
               required
@@ -139,6 +168,7 @@ function Auth() {
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"} // Toggle between text and password
+                name="password"
                 className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your password"
                 required
@@ -167,15 +197,102 @@ function Auth() {
             </a>
           </div>
           <button className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300">
-            Log in
+            {isLoading ? (
+              <div className="flex items-center justify-center scale-[0.5]">
+                <svg
+                  className="loader-container"
+                  viewBox="0 0 40 40"
+                  height="40"
+                  width="40"
+                >
+                  <circle
+                    className="loader-track"
+                    cx="20"
+                    cy="20"
+                    r="17.5"
+                    pathLength="100"
+                    strokeWidth="5"
+                    fill="none"
+                  />
+                  <circle
+                    className="loader-car"
+                    cx="20"
+                    cy="20"
+                    r="17.5"
+                    pathLength="100"
+                    strokeWidth="5"
+                    fill="none"
+                  />
+                </svg>
+
+                <style jsx>{`
+                  .loader-container {
+                    --uib-size: 40px;
+                    --uib-color: black;
+                    --uib-speed: 2s;
+                    --uib-bg-opacity: 0;
+                    height: var(--uib-size);
+                    width: var(--uib-size);
+                    transform-origin: center;
+                    animation: rotate var(--uib-speed) linear infinite;
+                    overflow: visible;
+                  }
+
+                  .loader-car {
+                    fill: none;
+                    stroke: var(--uib-color);
+                    stroke-dasharray: 1, 200;
+                    stroke-dashoffset: 0;
+                    stroke-linecap: round;
+                    animation: stretch calc(var(--uib-speed) * 0.75) ease-in-out
+                      infinite;
+                    will-change: stroke-dasharray, stroke-dashoffset;
+                    transition: stroke 0.5s ease;
+                  }
+
+                  .loader-track {
+                    fill: none;
+                    stroke: var(--uib-color);
+                    opacity: var(--uib-bg-opacity);
+                    transition: stroke 0.5s ease;
+                  }
+
+                  @keyframes rotate {
+                    100% {
+                      transform: rotate(360deg);
+                    }
+                  }
+
+                  @keyframes stretch {
+                    0% {
+                      stroke-dasharray: 0, 150;
+                      stroke-dashoffset: 0;
+                    }
+                    50% {
+                      stroke-dasharray: 75, 150;
+                      stroke-dashoffset: -25;
+                    }
+                    100% {
+                      stroke-dashoffset: -100;
+                    }
+                  }
+                `}</style>
+              </div>
+            ) : (
+              "Log in"
+            )}
           </button>
         </form>
+        {/* Display error message for login */}
+        {loginErrorMessage && (
+          <div className="text-red-500 text-sm mt-2">{loginErrorMessage}</div>
+        )}
       </motion.div>
 
       {/* ------Signup Form----- */}
       <motion.div
         id="signup-form"
-        className="relative z-9 w-[80] lg:w-[33%] mx-[10vw] my-[8vh] lg:my-[20vh] text-center"
+        className={`relative z-9 w-[80] lg:w-[33%] mx-[10vw] my-[8vh] lg:my-[20vh] text-center`}
         initial={{ x: "0%", opacity: 0 }}
         animate={{ x: !isLogin ? "0%" : "-10%", opacity: !isLogin ? 1 : 0 }}
         exit={{ x: "-10%", opacity: 0 }}
@@ -187,13 +304,14 @@ function Auth() {
         <p className="text-gray-600 mb-8">
           Ready to dive in? Join CloakCampus and start your anonymous journey!
         </p>
-        <form className="space-y-4" onSubmit={handleSignUp}>
+        <form className="space-y-4" onSubmit={handleSignUp} method="POST">
           <div>
             <label className="block text-gray-600 text-sm text-left">
               Email
             </label>
             <input
               type="email"
+              name="email"
               className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your email address"
               required
@@ -206,6 +324,7 @@ function Auth() {
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"} // Toggle between text and password
+                name="password"
                 value={password}
                 onChange={handlePasswordChange}
                 className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -283,11 +402,96 @@ function Auth() {
             </label>
           </div>
           <button className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300">
-            Sign Up
+            {isLoading ? (
+              <div className="flex items-center justify-center scale-[0.5]">
+                <svg
+                  className="loader-container"
+                  viewBox="0 0 40 40"
+                  height="40"
+                  width="40"
+                >
+                  <circle
+                    className="loader-track"
+                    cx="20"
+                    cy="20"
+                    r="17.5"
+                    pathLength="100"
+                    strokeWidth="5"
+                    fill="none"
+                  />
+                  <circle
+                    className="loader-car"
+                    cx="20"
+                    cy="20"
+                    r="17.5"
+                    pathLength="100"
+                    strokeWidth="5"
+                    fill="none"
+                  />
+                </svg>
+
+                <style jsx>{`
+                  .loader-container {
+                    --uib-size: 40px;
+                    --uib-color: black;
+                    --uib-speed: 2s;
+                    --uib-bg-opacity: 0;
+                    height: var(--uib-size);
+                    width: var(--uib-size);
+                    transform-origin: center;
+                    animation: rotate var(--uib-speed) linear infinite;
+                    overflow: visible;
+                  }
+
+                  .loader-car {
+                    fill: none;
+                    stroke: var(--uib-color);
+                    stroke-dasharray: 1, 200;
+                    stroke-dashoffset: 0;
+                    stroke-linecap: round;
+                    animation: stretch calc(var(--uib-speed) * 0.75) ease-in-out
+                      infinite;
+                    will-change: stroke-dasharray, stroke-dashoffset;
+                    transition: stroke 0.5s ease;
+                  }
+
+                  .loader-track {
+                    fill: none;
+                    stroke: var(--uib-color);
+                    opacity: var(--uib-bg-opacity);
+                    transition: stroke 0.5s ease;
+                  }
+
+                  @keyframes rotate {
+                    100% {
+                      transform: rotate(360deg);
+                    }
+                  }
+
+                  @keyframes stretch {
+                    0% {
+                      stroke-dasharray: 0, 150;
+                      stroke-dashoffset: 0;
+                    }
+                    50% {
+                      stroke-dasharray: 75, 150;
+                      stroke-dashoffset: -25;
+                    }
+                    100% {
+                      stroke-dashoffset: -100;
+                    }
+                  }
+                `}</style>
+              </div>
+            ) : (
+              "Sign Up"
+            )}
           </button>
-          {/* Display error message */}
-          {errorMessage && (
-            <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
+          {/* Display error message for signup */}
+          {signupErrorMessage && (
+            <div className="text-red-500 text-sm mt-2">
+              {signupErrorMessage}
+            </div>
           )}
         </form>
       </motion.div>
@@ -334,32 +538,13 @@ function Auth() {
             Sign Up
           </button>
         </div>
-        {/* <div
-          className="bg-[rgb(53,86,220)] w-[full] lg:w-[38rem] lg:h-[100vh] py-10 pr-2 flex flex-col items-center justify-center"
-          style={{
-            clipPath: isWideScreen
-              ? "polygon(0% 0%, 0% 100%, 100% 100%, 85% 0%)"
-              : undefined,
-          }}
-        >
-          <h2 className="font-[800] text-2xl text-white mr-10">
-            Already Have an Account ?
-          </h2>
-          <p className="text-center w-[26rem] text-white mt-6 leading-[1.25rem] mr-10">
-            Welcome back! Log in to spill the latest tea, stir up some drama,
-            and see what secrets are brewing—no one will ever know it’s you!
-          </p>
-          <button
-            onClick={toggleAuthMode}
-            className="text-white hover:text-[rgb(53,86,220)] hover:bg-white uppercase border-[1.5px] border-white px-12 py-4 rounded-full transition-all duration-[0.3s] ease-in-out mt-10 mr-10"
-          >
-            Log In
-          </button>
-        </div> */}
       </motion.div>
 
       {/* Terms and Conditions Modal */}
       {showTerms && <TermsModal toggleTerms={toggleTerms} />}
+
+      <br />
+      <Outlet />
     </div>
   );
 }

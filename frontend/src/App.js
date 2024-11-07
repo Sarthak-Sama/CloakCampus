@@ -2,18 +2,19 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
-import SignupPage from "./pages/SignupPage";
 import ProfilePage from "./pages/ProfilePage";
-import AuthUI from "./pages/Auth";
+import OtpVerification from "./components/OtpVerification";
+import Auth from "./pages/Auth";
 
 function App() {
   return (
     <div>
       <Routes>
-        <Route path="/" Component={HomePage} />
-        <Route path="/auth" Component={AuthUI} />
-        <Route path="/signup" Component={SignupPage} />
-        <Route path="/profile" Component={ProfilePage} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/auth" element={<Auth />}>
+          <Route path="verify-otp" element={<OtpVerification />} />
+        </Route>
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </div>
   );

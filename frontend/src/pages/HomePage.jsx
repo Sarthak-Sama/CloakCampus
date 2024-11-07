@@ -1,7 +1,12 @@
 import React from "react";
+import TopNav from "../components/TopNav";
 
 function HomePage() {
-  return <div>HomePage</div>;
+  return (
+    <div>
+      <TopNav />
+    </div>
+  );
 }
 
 export default HomePage;

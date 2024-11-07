@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 function TopNav() {
-  return (
-    <div>TopNav</div>
-  )
+  return <div className="flex items-center justify-between"></div>;
 }
 
-export default TopNav
+export default TopNav;

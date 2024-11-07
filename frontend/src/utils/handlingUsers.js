@@ -2,45 +2,69 @@ import axios from "axios";
 
 const signup = async (email, password) => {
   try {
-    const response = await axios.post("http://localhost:5000/signup", {
+    await axios.post("https://anonymousforumapp.onrender.com/user/signup", {
       email,
       password,
     });
-    console.log(response.data); // This is the response from the server
+    return { success: true }; // Return success and data on success
   } catch (error) {
-    console.error("There was an error during signup:", error.response.data);
+    return {
+      success: false,
+      errorMessage: error.response?.data.message || "Something went wrong",
+    }; // Return failure and error message
   }
 };
 
-const login = async (email, password) => {
+const login = async (email, password, toRemember) => {
+  console.log("login func running");
   try {
-    const response = await axios.post("http://localhost:5000/login", {
+    await axios.post("https://anonymousforumapp.onrender.com/user/login", {
       email,
       password,
+      toRemember,
     });
-    console.log(response.data); // The response will include a success message and JWT token if login is successful
+    if (toRemember) {
+      console.log("remeber is true");
+    } else {
+      console.log("rem is false");
+    }
+    return { success: true };
   } catch (error) {
-    console.error("Login failed:", error.response.data);
+    console.log(error);
+    return {
+      success: false,
+      errorMessage: error.response?.data.message || "Something went wrong",
+    };
   }
 };
 
 const verifyOtp = async (email, otp) => {
   try {
-    const response = await axios.post("http://localhost:5000/verifyOtp", {
-      email,
-      otp,
-    });
-    console.log(response.data); // The response will indicate whether the OTP verification was successful
+    const response = await axios.post(
+      "https://anonymousforumapp.onrender.com/user/verify-otp",
+      {
+        email,
+        otp,
+      }
+    );
+    return { success: true };
   } catch (error) {
-    console.error("OTP verification failed:", error.response.data);
+    console.log(error);
+    return {
+      success: false,
+      errorMessage: error.response?.data.message || "Something went wrong",
+    };
   }
 };
 
 const forgotPassword = async (email) => {
   try {
-    const response = await axios.post("http://localhost:5000/forgotPassword", {
-      email,
-    });
+    const response = await axios.post(
+      "https://anonymousforumapp.onrender.com/forgotPassword",
+      {
+        email,
+      }
+    );
     console.log(response.data); // The response will indicate that the verification code has been sent
   } catch (error) {
     console.error("Password reset failed:", error.response.data);
@@ -52,10 +76,13 @@ const forgotPassword = async (email) => {
 
 const resetPassword = async (email, newPassword) => {
   try {
-    const response = await axios.post("http://localhost:5000/resetPassword", {
-      email,
-      newPassword,
-    });
+    const response = await axios.post(
+      "https://anonymousforumapp.onrender.com/resetPassword",
+      {
+        email,
+        newPassword,
+      }
+    );
     console.log(response.data); // Success message after password reset
   } catch (error) {
     console.error("Password reset failed:", error.response.data);
@@ -67,11 +94,14 @@ const getProfile = async () => {
   const token = document.cookie.split("=")[1]; // Extract token from cookie
 
   try {
-    const response = await axios.get("http://localhost:5000/profile", {
-      headers: {
-        Authorization: `Bearer ${token}`, // Send the token as a Bearer token in the Authorization header
-      },
-    });
+    const response = await axios.get(
+      "https://anonymousforumapp.onrender.com/profile",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Send the token as a Bearer token in the Authorization header
+        },
+      }
+    );
     console.log(response.data); // The profile data returned from the backend
   } catch (error) {
     console.error("Failed to get profile:", error.response.data);
