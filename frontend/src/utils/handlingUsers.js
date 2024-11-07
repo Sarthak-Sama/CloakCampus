@@ -136,4 +136,12 @@ const getProfile = async () => {
   }
 };
 
-export { signup, login, verifyOtp, forgotPassword, resetPassword, getProfile };
+export {
+  isAuthenticated,
+  signup,
+  login,
+  verifyOtp,
+  forgotPassword,
+  resetPassword,
+  getProfile,
+};
