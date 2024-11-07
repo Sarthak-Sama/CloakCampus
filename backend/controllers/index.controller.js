@@ -1,6 +1,8 @@
 module.exports.authVerify = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    let token = req.headers.authorization
+      ? req.headers.authorization.split(" ")[1]
+      : req.cookies.token;
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const user = await userModel.findById(decoded._id);
@@ -17,7 +19,7 @@ module.exports.authVerify = async (req, res, next) => {
         });
       }
 
-      return res.status(201).json({
+      return res.status(200).json({
         message: "Valid Auth Token",
       });
     }

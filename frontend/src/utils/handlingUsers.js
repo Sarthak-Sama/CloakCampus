@@ -1,36 +1,40 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
+const isAuthenticated = async () => {
+  // Get the token from sessionStorage or cookies
+  const token = sessionStorage.getItem("token") || Cookies.get("token");
+
+  if (!token) return false; // No token, so not authenticated
+
+  try {
+    // Send the token to the backend for verification
+    const response = await axios.post(
+      "https://anonymousforumapp.onrender.com/auth/verify",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Pass the token in Authorization header
+        },
+      }
+    );
+
+    return response.status === 200; // Return true if verified
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    return false; // Token invalid or request failed
+  }
+};
+
+// Signup function
 const signup = async (email, password) => {
   try {
     await axios.post("https://anonymousforumapp.onrender.com/user/signup", {
       email,
       password,
     });
-    return { success: true }; // Return success and data on success
-  } catch (error) {
-    return {
-      success: false,
-      errorMessage: error.response?.data.message || "Something went wrong",
-    }; // Return failure and error message
-  }
-};
-
-const login = async (email, password, toRemember) => {
-  console.log("login func running");
-  try {
-    await axios.post("https://anonymousforumapp.onrender.com/user/login", {
-      email,
-      password,
-      toRemember,
-    });
-    if (toRemember) {
-      console.log("remeber is true");
-    } else {
-      console.log("rem is false");
-    }
     return { success: true };
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       errorMessage: error.response?.data.message || "Something went wrong",
@@ -38,6 +42,29 @@ const login = async (email, password, toRemember) => {
   }
 };
 
+// Login function
+const login = async (email, password, toRemember) => {
+  try {
+    const response = await axios.post(
+      "https://anonymousforumapp.onrender.com/user/login",
+      {
+        email,
+        password,
+        toRemember,
+      }
+    );
+    const token = response.data.token; // assuming the token is in response.data.token
+    sessionStorage.setItem("token", token); // Store the token in session storage
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      errorMessage: error.response?.data.message || "Something went wrong",
+    };
+  }
+};
+
+// OTP Verification function
 const verifyOtp = async (email, otp) => {
   try {
     const response = await axios.post(
@@ -47,9 +74,10 @@ const verifyOtp = async (email, otp) => {
         otp,
       }
     );
+    const token = response.data.token; // assuming the token is in response.data.token
+    sessionStorage.setItem("token", token); // Store the token in session storage
     return { success: true };
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       errorMessage: error.response?.data.message || "Something went wrong",
