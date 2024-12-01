@@ -15,8 +15,8 @@ router.post(
   postController.createPost
 );
 
-router.post("/posts/:postId/comments", postController.createComment);
-router.post("/comments/:commentId/reply", postController.replyComment);
+router.post("/:postId/comment", postController.createComment);
+router.post("/:commentId/reply", postController.replyComment);
 
 router.post("/report/:postId", postController.reportPost);
 
