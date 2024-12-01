@@ -1,15 +1,24 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopNav from "../components/TopNav";
 import { motion } from "framer-motion";
 import SideNav from "../components/SideNav";
 import PostGrid from "../components/PostGrid";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchPosts } from "../redux/actions/postAction";
 
 function HomePage() {
   const [isNotificationTabActive, setIsNotificationTabActive] = useState(false);
+  const dispatch = useDispatch();
+  const postArray = useSelector((state) => state.posts);
+  console.log(postArray);
 
   const toggleNotificationTab = () => {
     setIsNotificationTabActive((prevState) => !prevState);
   };
+
+  useEffect(() => {
+    dispatch(fetchPosts());
+  }, [dispatch]);
 
   return (
     <div className="relative w-full h-[100vh] overflow-hidden">

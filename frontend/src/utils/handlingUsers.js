@@ -33,6 +33,7 @@ const signup = async (email, password) => {
       email,
       password,
     });
+
     return { success: true };
   } catch (error) {
     return {
@@ -55,6 +56,7 @@ const login = async (email, password, toRemember) => {
     );
     const token = response.data.token; // assuming the token is in response.data.token
     sessionStorage.setItem("token", token); // Store the token in session storage
+
     return { success: true };
   } catch (error) {
     return {
@@ -76,6 +78,7 @@ const verifyOtp = async (email, otp) => {
     );
     const token = response.data.token; // assuming the token is in response.data.token
     sessionStorage.setItem("token", token); // Store the token in session storage
+
     return { success: true };
   } catch (error) {
     return {

@@ -1,22 +1,20 @@
 // features/posts/postsSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
+  posts: [],
+};
 
 const postsSlice = createSlice({
-  name: 'posts',
-  initialState: {
-    items: [], // Stores posts
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-  },
+  name: "posts",
+  initialState,
   reducers: {
-    addPost: (state, action) => {
-      state.items.push(action.payload);
+    loadPost: (state, action) => {
+      console.log(action.payload);
+      state.posts.push(action.payload);
     },
-    removePost: (state, action) => {
-      state.items = state.items.filter(post => post.id !== action.payload);
-    },
-    // Add more reducers here as needed
   },
 });
 
-export const { addPost, removePost } = postsSlice.actions;
+export const { loadPost } = postsSlice.actions;
 export default postsSlice.reducer;

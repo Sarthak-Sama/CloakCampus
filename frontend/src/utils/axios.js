@@ -1,12 +1,25 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const instance = axios.create({
-  baseURL: "https://api.themoviedb.org/3/",
+  baseURL: "https://anonymousforumapp.onrender.com/",
   headers: {
     accept: "application/json",
-    Authorization:
-      "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyODk3YzM5OThmZmM2NWU4YTUyNzhlNWI2MGRmZjJiNSIsIm5iZiI6MTcxOTU2NTc4NS4xNzMxNzMsInN1YiI6IjY2N2U3YWZjMWNiNWQ2ZThhNDhkNzRhYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.cKhJjz0ULhHkXsCfJIjwuC4yMx0lrCqwQlE70L10W10",
   },
 });
+
+// Added a request interceptor to dynamically set the Authorization header
+instance.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem("token") || Cookies.get("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export default instance;

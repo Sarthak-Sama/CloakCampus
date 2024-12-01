@@ -1,15 +1,18 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  info: null,
+  user: null,
 };
 
-export const movieSlice = createSlice({
+const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    getUser: (state, action) => {
-      state.info = action.payload;
+    loadUser: (state, action) => {
+      state.user = action.payload; // Store the user data in Redux
     },
   },
 });
+
+export const { loadUser } = userSlice.actions;
+export default userSlice.reducer;

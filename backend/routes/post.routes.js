@@ -1,15 +1,22 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const postController = require("../controllers/post.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const multerConfig = require("../config/multer.config");
 router.use(authMiddleware.isAuthenticated);
 
-
 router.get("/", postController.getPosts);
 
-router.post("/create-post", multerConfig.upload, multerConfig.multerErrorHandler, multerConfig.compressFiles, postController.createPost);
-router.post("/:postId/create-comment",postController.createComment);
+router.post(
+  "/create-post",
+  multerConfig.upload,
+  multerConfig.multerErrorHandler,
+  multerConfig.compressFiles,
+  postController.createPost
+);
+
+router.post("/posts/:postId/comments", postController.createComment);
+router.post("/comments/:commentId/reply", postController.replyComment);
 
 router.post("/report/:postId", postController.reportPost);
 

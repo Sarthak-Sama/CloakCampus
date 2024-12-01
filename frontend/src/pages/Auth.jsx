@@ -4,6 +4,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import TermsModal from "../components/TermsAndConditions";
 import { signup, login } from "../utils/handlingUsers";
+import { useDispatch } from "react-redux";
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -19,6 +20,7 @@ function Auth() {
   const [isLoading, setisLoading] = useState(false); // State for loading status
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const handleResize = () => {
@@ -123,7 +125,7 @@ function Auth() {
     const password = e.target.password.value; // Get password from the form
     const toRemember = e.target.querySelector('input[type="checkbox"]').checked; // Get the state of the "Remember Me" checkbox
 
-    const response = await login(email, password, toRemember);
+    const response = await login(email, password, toRemember, dispatch);
     setisLoading(false); // Reset loading to false after response
 
     if (response.success) {

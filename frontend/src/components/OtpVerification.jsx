@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { verifyOtp, signup } from "../utils/handlingUsers";
+import { useDispatch } from "react-redux";
 
 const OTPVerification = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]); // Stores each digit of OTP
@@ -9,6 +10,7 @@ const OTPVerification = () => {
   const [countdown, setCountdown] = useState(60); // Countdown timer for OTP expiry
   const [isResendDisabled, setIsResendDisabled] = useState(false);
 
+  const dispatch = useDispatch();
   const location = useLocation(); // Get location object
   const navigate = useNavigate(); // Get the navigation object
   const { email, password } = location.state || {}; // Retrieve email and password from state
@@ -36,7 +38,7 @@ const OTPVerification = () => {
       return;
     }
 
-    const response = await verifyOtp(email, otpString);
+    const response = await verifyOtp(email, otpString, dispatch);
     if (response.success) {
       setIsVerified(true);
       navigate("/");

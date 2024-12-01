@@ -142,6 +142,40 @@ module.exports.createComment = async (req, res, next) => {
   }
 };
 
+module.exports.replyComment = async (req, res, next) => {
+  try {
+    const { content } = req.body; // Extract content from the request body
+    const parentCommentId = req.params.commentId; // Get the parent comment ID from the request params
+
+    // Find the parent comment
+    const parentComment = await commentModel.findById(parentCommentId);
+    if (!parentComment) {
+      return res.status(404).json({ message: "Parent comment not found" });
+    }
+
+    // Create the reply comment
+    const reply = await commentModel.create({
+      content,
+      author: req.user._id,
+      authorUsername: req.user.username,
+      postId: parentComment.postId, // Inherit the postId from the parent comment
+      parentComment: parentCommentId, // Link to the parent comment
+    });
+
+    // Add the reply ID to the parent comment's replies array
+    parentComment.replies.push(reply._id);
+    await parentComment.save();
+
+    // Respond with success message and the created reply
+    res.status(200).json({
+      message: "Reply Created",
+      reply,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports.reportPost = async (req, res, next) => {
   try {
     const { category, reason } = req.body; // Extract category and reason from the request body

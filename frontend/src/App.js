@@ -7,6 +7,7 @@ import OtpVerification from "./components/OtpVerification";
 import Auth from "./pages/Auth";
 import PrivateRoute from "./components/RedirectingComponents/PrivateRoute";
 import RedirectRoute from "./components/RedirectingComponents/RedirectRoute";
+import UploadPostPage from "./pages/UploadPostPage";
 
 function App() {
   return (
@@ -18,6 +19,14 @@ function App() {
           element={
             <PrivateRoute>
               <HomePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/upload"
+          element={
+            <PrivateRoute>
+              <UploadPostPage />
             </PrivateRoute>
           }
         />
