@@ -35,7 +35,7 @@ connectDB();
 // Routes
 app.use("/", indexRoutes);
 app.use("/user", userRoutes);
-app.use("/post", postRoutes);
+app.use("/posts", postRoutes);
 app.use("/admin", adminRoutes);
 
 const PORT = process.env.PORT || 3000;
