@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { verifyOtp, signup } from "../utils/handlingUsers";
+import { verifyOtp, signup } from "../redux/actions/authAction";
 import { useDispatch } from "react-redux";
 
 const OTPVerification = () => {
@@ -90,7 +90,7 @@ const OTPVerification = () => {
               maxLength="1"
               value={digit}
               onChange={(e) => handleOtpChange(e, index)}
-              className="w-12 h-12 text-xl text-center border-2 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-12 h-12 text-xl text-center border-2 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#EA516F]"
               autoFocus={index === 0}
             />
           ))}
@@ -105,7 +105,7 @@ const OTPVerification = () => {
         {!isVerified ? (
           <button
             onClick={handleVerifyOtp}
-            className="w-full py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full py-2 bg-[#EA516F] text-white font-semibold rounded-md hover:bg-[#EA516F] focus:outline-none focus:ring-2 focus:ring-[#EA516F]"
           >
             Verify OTP
           </button>
@@ -125,7 +125,7 @@ const OTPVerification = () => {
               className={`py-2 px-4 mt-2 text-sm rounded-md focus:outline-none ${
                 isResendDisabled
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-500 text-white hover:bg-blue-600"
+                  : "bg-[#EA516F] text-white hover:bg-[#EA516F]"
               }`}
             >
               Resend OTP

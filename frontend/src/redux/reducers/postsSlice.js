@@ -1,4 +1,3 @@
-// features/posts/postsSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
@@ -9,12 +8,25 @@ const postsSlice = createSlice({
   name: "posts",
   initialState,
   reducers: {
-    loadPost: (state, action) => {
+    // Renamed loadPost to setPosts for better clarity
+    setPosts: (state, action) => {
+      // Here we replace the posts array with the fetched posts
       console.log(action.payload);
+      state.posts = action.payload.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    },
+
+    addPost: (state, action) => {
       state.posts.push(action.payload);
+
+      // Sort the posts after adding the new one
+      state.posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     },
   },
 });
 
-export const { loadPost } = postsSlice.actions;
+// Export actions
+export const { setPosts, addPost } = postsSlice.actions;
+
 export default postsSlice.reducer;

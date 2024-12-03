@@ -4,11 +4,14 @@ import { useDropzone } from "react-dropzone";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "../utils/cropImage"; // Utility function to crop image
 import { RiArrowLeftLine, RiPencilFill } from "@remixicon/react";
+import { useDispatch } from "react-redux";
+import { createPost } from "../redux/actions/postAction";
 
 function UploadPostPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState(""); // New state for text content
   const [files, setFiles] = useState([]);
+  const [error, setError] = useState("");
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -16,6 +19,7 @@ function UploadPostPage() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: "image/*, video/*",
@@ -60,9 +64,45 @@ function UploadPostPage() {
     setIsCropModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form submitted", { title, files });
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+
+    // Validation: Check if title and content are not empty
+    if (!title.trim()) {
+      setError("Please fill out the title");
+      return;
+    }
+
+    if (!content.trim()) {
+      setError("Please fill out the content");
+      return;
+    }
+
+    // Clear any previous errors
+    setError("");
+
+    // Create a new FormData object to hold all the form data including files
+    const formData = new FormData();
+
+    // Append title and content
+    formData.append("title", title); // Append the title to the form data
+    formData.append("textContent", content); // Append the text content
+
+    // Append each file (image/video) to FormData
+    if (files && files.length > 0) {
+      files.forEach((file) => {
+        if (file.type.startsWith("image/")) {
+          formData.append("image", file); // Append image files
+        } else if (file.type.startsWith("video/")) {
+          formData.append("video", file); // Append video files
+        }
+      });
+    }
+    try {
+      await dispatch(createPost(formData, navigate));
+    } catch (error) {
+      setError("Ooops.. An problem occured while posting.");
+    }
   };
 
   const goBack = () => {
@@ -74,7 +114,7 @@ function UploadPostPage() {
   }, [files]);
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center w-screen min-h-screen bg-gray-100">
       <RiArrowLeftLine
         size={40}
         className="text-zinc-500 hover:text-black absolute left-0 top-0 mt-5 ml-5"
@@ -94,7 +134,7 @@ function UploadPostPage() {
               placeholder="Enter post title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-2 border rounded-md outline-none focus:border-blue-500"
+              className="w-full p-2 border rounded-md outline-none focus:border-[#EA516F]"
               required
             />
           </div>
@@ -106,7 +146,7 @@ function UploadPostPage() {
               placeholder="Spill the tea.."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full h-[10rem] resize-none p-2 border rounded-md outline-none focus:border-blue-500"
+              className="w-full h-[10rem] resize-none p-2 border rounded-md outline-none focus:border-[#EA516F]"
               required
             />
           </div>
@@ -114,12 +154,12 @@ function UploadPostPage() {
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
-            className="w-full mt-4 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition"
+            className="w-full mt-4 bg-[#EA516F] text-white py-2 rounded-md hover:bg-[#EA516F] transition"
           >
             Upload
           </button>
         </div>
-        <div className="w-1/2">
+        <div className="w-1/2 relative">
           {/* File Dropzone */}
           <div
             {...getRootProps()}
@@ -128,7 +168,7 @@ function UploadPostPage() {
             <input {...getInputProps()} />
             <p className="text-gray-500">
               Drag and Drop here or{" "}
-              <span className="text-blue-500 underline">Browse files</span>
+              <span className="text-[#EA516F] underline">Browse files</span>
             </p>
             <p className="text-sm text-gray-400">
               Accepted File Types: .jpg, .png, .mp4 only
@@ -170,6 +210,9 @@ function UploadPostPage() {
               </div>
             </div>
           )}
+          <h3 className="text-[#EA516F] absolute bottom-0 left-1/2 translate-x-[-50%]">
+            {error}
+          </h3>
 
           {/* Crop Modal */}
           {isCropModalOpen && (
@@ -201,7 +244,7 @@ function UploadPostPage() {
                   </button>
                   <button
                     onClick={handleCropSave}
-                    className="bg-blue-500 text-white py-1 px-4 rounded-md"
+                    className="bg-[#EA516F] text-white py-1 px-4 rounded-md"
                   >
                     Save
                   </button>

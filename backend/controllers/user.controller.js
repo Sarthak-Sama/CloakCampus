@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const Domain = require("../models/domain.model");
 const axios = require("axios");
+const blackListModel = require("../models/blacklist.model");
 
 // Function to send OTP email
 const sendOtpEmail = async (email, otp) => {
@@ -207,8 +208,14 @@ module.exports.login = async (req, res, next) => {
 
 module.exports.logout = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-
+    if (req.headers.authorization) {
+      console.log("Headers");
+    }
+    const token = req.headers.authorization
+      ? req.headers.authorization.split(" ")[1]
+      : req.cookies.token;
+    console.log(req.cookies.token);
+    console.log(token);
     if (!token) {
       return res.status(400).json({
         message: "No token provided",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { isAuthenticated } from "../../utils/handlingUsers";
+import { isAuthenticated } from "../../redux/actions/authAction";
 
 function RedirectRoute({ children }) {
   const [authStatus, setAuthStatus] = useState(null);

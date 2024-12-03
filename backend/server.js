@@ -1,5 +1,4 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
 const userRoutes = require("./routes/user.routes");
@@ -38,7 +37,7 @@ app.use("/user", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/admin", adminRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

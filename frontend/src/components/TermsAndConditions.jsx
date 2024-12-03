@@ -175,7 +175,7 @@ const TermsModal = ({ toggleTerms }) => {
 
         <button
           onClick={toggleTerms}
-          className="mt-4 py-2 px-4 bg-blue-600 text-white rounded"
+          className="mt-4 py-2 px-4 bg-[#EA516F] text-white rounded"
         >
           Close
         </button>

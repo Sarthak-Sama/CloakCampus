@@ -3,19 +3,46 @@
 @tailwind utilities;
 
 @font-face {
-    font-family: "shrimp" ;
-    src: url("../public/fonts/SHRIMP.ttf");
+  font-family: "shrimp";
+  src: url("../public/fonts/SHRIMP.ttf");
 }
 @font-face {
-    font-family: "kollektif";
-    src: url("../public/fonts/Kollektif.ttf");
+  font-family: "kollektif";
+  src: url("../public/fonts/Kollektif.ttf");
 }
 @font-face {
-    font-family: "kollektif";
-    src: url("../public/fonts/Kollektif-Bold.ttf");
-    font-weight: 800;
+  font-family: "kollektif";
+  src: url("../public/fonts/Kollektif-Bold.ttf");
+  font-weight: 800;
 }
 
-*{
-    font-family: "kollektif";
+* {
+  font-family: "kollektif";
+  color: #ededed;
+}
+
+.small-border {
+  position: relative;
+  border-radius: 100%;
+}
+
+.small-border::after {
+  content: "";
+  position: absolute;
+  top: 0%;
+  right: 0;
+  width: 0.5px;
+  height: 40%;
+  transform: translateY(-50%);
+  background-color: #ededed95;
+}
+.small-border::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 0.5px;
+  height: 40%;
+  transform: translateY(-50%);
+  background-color: #ededed95;
 }

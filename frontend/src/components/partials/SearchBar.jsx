@@ -10,7 +10,7 @@ function SearchBar() {
   };
 
   return (
-    <div className="flex items-center justify-between w-[40rem] h-[3rem] rounded-full bg-zinc-200 px-6 py-2">
+    <div className="flex items-center justify-between w-[100%] h-[2.25rem] rounded-full bg-zinc-200 px-6 py-2">
       <input
         type="text"
         value={query}

@@ -8,10 +8,11 @@ import Auth from "./pages/Auth";
 import PrivateRoute from "./components/RedirectingComponents/PrivateRoute";
 import RedirectRoute from "./components/RedirectingComponents/RedirectRoute";
 import UploadPostPage from "./pages/UploadPostPage";
+import LoadingPage from "./pages/LoadingPage";
 
 function App() {
   return (
-    <div>
+    <div className="bg-[#161616]">
       <Routes>
         {/* Protected Routes - Redirects to /auth if not logged in */}
         <Route
@@ -51,6 +52,7 @@ function App() {
         >
           <Route path="verify-otp" element={<OtpVerification />} />
         </Route>
+        <Route path="/loading" element={<LoadingPage />} />
       </Routes>
     </div>
   );

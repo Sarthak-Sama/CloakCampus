@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import TermsModal from "../components/TermsAndConditions";
-import { signup, login } from "../utils/handlingUsers";
+import { signup, login } from "../redux/actions/authAction";
 import { useDispatch } from "react-redux";
 
 function Auth() {
@@ -158,7 +158,7 @@ function Auth() {
             <input
               type="email"
               name="email"
-              className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#EA516F]"
               placeholder="Enter your email address"
               required
             />
@@ -171,7 +171,7 @@ function Auth() {
               <input
                 type={showPassword ? "text" : "password"} // Toggle between text and password
                 name="password"
-                className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#EA516F]"
                 placeholder="Enter your password"
                 required
               />
@@ -191,14 +191,14 @@ function Auth() {
           </div>
           <div className="flex items-center justify-between">
             <label className="flex items-center">
-              <input type="checkbox" className="form-checkbox text-blue-500" />
+              <input type="checkbox" className="form-checkbox text-[#EA516F]" />
               <span className="ml-2 text-gray-600 text-sm">Remember Me</span>
             </label>
-            <a href="#" className="text-sm text-blue-500 hover:underline">
+            <a href="#" className="text-sm text-[#EA516F] hover:underline">
               Forgot password?
             </a>
           </div>
-          <button className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300">
+          <button className="w-full py-2 bg-[#EA516F] text-white rounded hover:bg-[#EA516F] transition duration-300">
             {isLoading ? (
               <div className="flex items-center justify-center scale-[0.5]">
                 <svg
@@ -314,7 +314,7 @@ function Auth() {
             <input
               type="email"
               name="email"
-              className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#EA516F]"
               placeholder="Enter your email address"
               required
             />
@@ -329,7 +329,7 @@ function Auth() {
                 name="password"
                 value={password}
                 onChange={handlePasswordChange}
-                className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#EA516F]"
                 placeholder="Enter your password"
                 required
               />
@@ -373,7 +373,7 @@ function Auth() {
               type="password"
               value={confirmPassword}
               onChange={handleConfirmPasswordChange} // Update confirm password state
-              className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 mt-1 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#EA516F]"
               placeholder="Confirm your password"
               required
             />
@@ -388,7 +388,7 @@ function Auth() {
             <label className="flex items-center">
               <input
                 type="checkbox"
-                className="form-checkbox text-blue-500"
+                className="form-checkbox text-[#EA516F]"
                 onChange={(e) => setTermsChecked(e.target.checked)} // Update termsChecked state
               />
               <span className="ml-2 text-gray-600 text-sm">
@@ -396,14 +396,14 @@ function Auth() {
                 <button
                   type="button"
                   onClick={toggleTerms}
-                  className="text-blue-500 hover:underline"
+                  className="text-[#EA516F] hover:underline"
                 >
                   terms and conditions
                 </button>
               </span>
             </label>
           </div>
-          <button className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300">
+          <button className="w-full py-2 bg-[#EA516F] text-white rounded hover:bg-[#EA516F] transition duration-300">
             {isLoading ? (
               <div className="flex items-center justify-center scale-[0.5]">
                 <svg
