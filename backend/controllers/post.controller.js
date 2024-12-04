@@ -1,3 +1,4 @@
+const userModel = require("../models/user.model");
 const postModel = require("../models/post.model");
 const voteModel = require("../models/vote.model");
 const commentModel = require("../models/comment.model");
@@ -50,14 +51,14 @@ module.exports.createPost = async (req, res, next) => {
       media.push({ type: "video", url: videoUpload.secure_url });
       fs.unlinkSync(videoPath); // Remove local video file after upload
     }
+    const user = await userModel.findById(req.user._id).populate("university"); // Populate the university field
 
-    // Create the post with clean media
     const post = await postModel.create({
       title,
       textContent,
       author: req.user._id,
       authorUsername: req.user.username,
-      university: req.user.university.universityName,
+      university: user.university.universityName, // Access the universityName after populating
       media, // Save media information
     });
 
