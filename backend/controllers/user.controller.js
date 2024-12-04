@@ -86,7 +86,7 @@ module.exports.signup = async (req, res, next) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    let username;
     // Fetch a random username from the API
     try {
       // Fetch random usernames from the API once
@@ -97,7 +97,7 @@ module.exports.signup = async (req, res, next) => {
       let index = 0; // Start from the first index
 
       while (true) {
-        const username = usernames[index]; // Get the username at the current index
+        username = usernames[index]; // Get the username at the current index
 
         // Check if the username already exists in the database
         const existingUser = await userModel.findOne({ username });
@@ -137,10 +137,11 @@ module.exports.signup = async (req, res, next) => {
         );
         if (
           profileImageResponse.status === 200 &&
-          profileImageResponse.data?.url
+          profileImageResponse.data?.image_url
         ) {
+          console.log(profileImageResponse.data.image_url);
           const existingUser = await userModel.findOne({
-            profilePictureSrc: profileImageResponse.data.url,
+            profilePictureSrc: profileImageResponse.data.image_url,
           });
           if (!existingUser) {
             break; // Break out of the loop if the response status is 200 and the url is unique
@@ -168,7 +169,7 @@ module.exports.signup = async (req, res, next) => {
       email,
       password: hashedPassword,
       username, // Use the fetched username
-      profilePictureSrc: profileImageResponse,
+      profilePictureSrc: profileImageResponse.data.image_url,
       university, // isValidDomain stores the University name and domain.
       otp, // Store the OTP temporarily
       isVerified: false, // Track if the email is verified
@@ -246,7 +247,7 @@ module.exports.login = async (req, res, next) => {
         // Check if the email is verified
         return res.status(403).json({ message: "Email not verified" });
       }
-
+      let username;
       try {
         // Generate a random username
         const usernamesResponse = await axios.get(
@@ -257,7 +258,7 @@ module.exports.login = async (req, res, next) => {
 
         // Loop to get a unique username
         while (true) {
-          const username = usernames[usernameIndex];
+          username = usernames[usernameIndex];
 
           // Check if the username is unique
           const existingUser = await userModel.findOne({ username });
@@ -295,11 +296,11 @@ module.exports.login = async (req, res, next) => {
               profileImageResponse.data?.url
             ) {
               const existingUser = await userModel.findOne({
-                profilePictureSrc: profileImageResponse.data.url,
+                profilePictureSrc: profileImageResponse.data.image_url,
               });
 
               if (!existingUser) {
-                user.profilePictureSrc = profileImageResponse.data.url; // Update the profile picture
+                user.profilePictureSrc = profileImageResponse.data.image_url; // Update the profile picture
                 break;
               }
             }
