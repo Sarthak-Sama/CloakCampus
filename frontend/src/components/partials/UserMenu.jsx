@@ -30,12 +30,12 @@ function UserMenu() {
           <RiSchoolLine color="#161616" /> Your University
         </Link>
         <hr className="border-zinc-400 border-[.7px] my-3" />
-        <div
+        <Link
           onClick={handleLogout}
           className="flex gap-4 hover:-translate-y-1 transition-all duration-[.3s] ease-in-out text-[#161616]"
         >
           <RiLogoutBoxRLine color="#161616" /> Logout
-        </div>
+        </Link>
         <hr className="border-zinc-400 border-[.7px] my-3" />
       </div>
     </>

@@ -1,5 +1,6 @@
 const userModel = require("../models/user.model");
 const postModel = require("../models/post.model");
+const voteModel = require("../models/vote.model");
 const commentModel = require("../models/comment.model");
 const cloudinary = require("../config/cloudinary.config");
 const reportModel = require("../models/report.model");
@@ -108,10 +109,51 @@ module.exports.deletePost = async (req, res, next) => {
 // Function to get posts by university
 module.exports.getPosts = async (req, res, next) => {
   try {
-    // Fetch posts from the database for the user's university
-    const posts = await postModel.find({ university: req.user.university });
-    // Respond with the retrieved posts
-    res.status(200).json({ posts });
+    // Get pagination parameters from the request query
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 posts per page
+
+    // Calculate the number of posts to skip
+    const skip = (page - 1) * limit;
+
+    // Fetch posts with pagination and filter by university
+    const posts = await postModel
+      .find({ university: req.user.university })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 }); // Sort by latest posts
+
+    // Fetch the user's votes for the loaded posts
+    const postIds = posts.map((post) => post._id); // Get IDs of the posts
+    const userVotes = await voteModel.find({
+      userId: req.user._id,
+      postId: { $in: postIds },
+    });
+
+    // Map votes to their respective posts
+    const voteMap = userVotes.reduce((map, vote) => {
+      map[vote.postId.toString()] = vote.voteType; // "upvote" or "downvote"
+      return map;
+    }, {});
+
+    // Attach the user's vote information to the posts
+    const postsWithUserVote = posts.map((post) => ({
+      ...post.toObject(),
+      userVote: voteMap[post._id.toString()] || null,
+    }));
+
+    // Optionally: Get total count of posts for pagination
+    const totalPosts = await postModel.countDocuments({
+      university: req.user.university,
+    });
+
+    // Send paginated response
+    res.status(200).json({
+      posts: postsWithUserVote,
+      totalPosts, // Total number of posts (for frontend)
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit),
+    });
   } catch (error) {
     next(error); // Pass the error to the next middleware
   }
@@ -212,170 +254,164 @@ module.exports.reportPost = async (req, res, next) => {
 
 module.exports.upvotePost = async (req, res, next) => {
   try {
-    const postId = req.params.postId; // Get the post ID from the request parameters
-    const post = await postModel.findById(postId); // Find the post by ID
+    const { postId } = req.params;
 
-    // Check if the post exists
-    if (!post) {
-      return res.status(404).json({
-        message: "Post not found",
-      });
-    }
-
-    // Check if the user has already downvoted the post
-    if (post.downvotedBy && post.downvotedBy.includes(req.user._id)) {
-      // Remove the user's ID from downvotedBy array
-      post.downvotedBy = post.downvotedBy.filter(
-        (id) => id.toString() !== req.user._id.toString()
-      );
-      post.downvoteCount = (post.downvoteCount || 0) - 1; // Decrement downvote count
-    }
-
-    // Check if the user has already liked the post
-    if (post.upvotedBy && post.upvotedBy.includes(req.user._id)) {
-      return res.status(409).json({
-        message: "You have already liked this post.",
-      });
-    }
-
-    // Initialize likedBy array if it doesn't exist
-    if (!post.upvotedBy) {
-      post.upvotedBy = [];
-    }
-
-    // Add the user's ID to the post's likedBy array and increment likeCount
-    post.upvotedBy.push(req.user._id);
-    post.upvoteCount = (post.upvoteCount || 0) + 1; // Increment like count
-    await post.save(); // Save the updated post
-
-    // Respond with success message and the updated post
-    res.status(200).json({
-      message: "Post upvoted successfully",
-      post,
+    // Check if the user has already upvoted this post
+    const existingVote = await voteModel.findOne({
+      postId,
+      userId: req.user._id,
     });
+
+    if (existingVote) {
+      if (existingVote.voteType === "upvote") {
+        return res
+          .status(409)
+          .json({ message: "You have already upvoted this post." });
+      }
+
+      // Switch downvote to upvote
+      existingVote.voteType = "upvote";
+      await existingVote.save();
+    } else {
+      // Create a new vote
+      await voteModel.create({
+        userId: req.user._id,
+        postId,
+        voteType: "upvote",
+      });
+    }
+
+    // Update the post's upvote and downvote counts
+    const upvoteCount = await voteModel.countDocuments({
+      postId,
+      voteType: "upvote",
+    });
+    const downvoteCount = await voteModel.countDocuments({
+      postId,
+      voteType: "downvote",
+    });
+
+    await postModel.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
+
+    res.status(200).json({ message: "Post upvoted successfully." });
   } catch (error) {
-    next(error); // Pass the error to the next middleware
+    next(error);
   }
 };
 
 module.exports.downvotePost = async (req, res, next) => {
   try {
-    const postId = req.params.postId; // Get the post ID from the request parameters
-    const post = await postModel.findById(postId); // Find the post by ID
+    const { postId } = req.params;
 
-    // Check if the post exists
-    if (!post) {
-      return res.status(404).json({
-        message: "Post not found",
-      });
-    }
-
-    // Check if the user has already upvoted the post
-    if (post.upvotedBy && post.upvotedBy.includes(req.user._id)) {
-      // Remove the user's ID from upvotedBy array
-      post.upvotedBy = post.upvotedBy.filter(
-        (id) => id.toString() !== req.user._id.toString()
-      );
-      post.upvoteCount = (post.upvoteCount || 0) - 1; // Decrement like count
-    }
-
-    // Check if the user has already downvoted the post
-    if (post.downvotedBy && post.downvotedBy.includes(req.user._id)) {
-      return res.status(409).json({
-        message: "You have already downvoted this post.",
-      });
-    }
-
-    // Initialize downvotedBy array if it doesn't exist
-    if (!post.downvotedBy) {
-      post.downvotedBy = []; // Corrected from downvotedby to downvotedBy
-    }
-
-    // Add the user's ID to the post's downvotedBy array and decrement downvoteCount
-    post.downvotedBy.push(req.user._id);
-    post.downvoteCount = (post.downvoteCount || 0) + 1; // Increment downvote count
-    await post.save(); // Save the updated post
-
-    // Respond with success message and the updated post
-    res.status(200).json({
-      message: "Post downvoted successfully",
-      post,
+    // Check if the user has already downvoted this post
+    const existingVote = await voteModel.findOne({
+      postId,
+      userId: req.user._id,
     });
+
+    if (existingVote) {
+      if (existingVote.voteType === "downvote") {
+        return res
+          .status(409)
+          .json({ message: "You have already downvoted this post." });
+      }
+
+      // Switch upvote to downvote
+      existingVote.voteType = "downvote";
+      await existingVote.save();
+    } else {
+      // Create a new vote
+      await voteModel.create({
+        userId: req.user._id,
+        postId,
+        voteType: "downvote",
+      });
+    }
+
+    // Update the post's upvote and downvote counts
+    const upvoteCount = await voteModel.countDocuments({
+      postId,
+      voteType: "upvote",
+    });
+    const downvoteCount = await voteModel.countDocuments({
+      postId,
+      voteType: "downvote",
+    });
+
+    await postModel.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
+
+    res.status(200).json({ message: "Post downvoted successfully." });
   } catch (error) {
-    next(error); // Pass the error to the next middleware
+    next(error);
   }
 };
 
 module.exports.removeUpvote = async (req, res, next) => {
   try {
-    const postId = req.params.postId; // Get the post ID from the request parameters
-    const post = await postModel.findById(postId); // Find the post by ID
+    const { postId } = req.params;
 
-    // Check if the post exists
-    if (!post) {
-      return res.status(404).json({
-        message: "Post not found",
-      });
-    }
-
-    // Check if the user has upvoted the post
-    if (post.upvotedBy && post.upvotedBy.includes(req.user._id)) {
-      // Remove the user's ID from upvotedBy array
-      post.upvotedBy = post.upvotedBy.filter(
-        (id) => id.toString() !== req.user._id.toString()
-      );
-      post.upvoteCount = (post.upvoteCount || 0) - 1; // Decrement upvote count
-    } else {
-      return res.status(409).json({
-        message: "You have not upvoted this post.",
-      });
-    }
-
-    await post.save(); // Save the updated post
-
-    // Respond with success message and the updated post
-    res.status(200).json({
-      message: "Upvote removed successfully",
-      post,
+    // Remove the upvote
+    const deletedVote = await voteModel.findOneAndDelete({
+      postId,
+      userId: req.user._id,
+      voteType: "upvote",
     });
+
+    if (!deletedVote) {
+      return res
+        .status(409)
+        .json({ message: "You have not upvoted this post." });
+    }
+
+    // Update the post's vote counts
+    const upvoteCount = await voteModel.countDocuments({
+      postId,
+      voteType: "upvote",
+    });
+    const downvoteCount = await voteModel.countDocuments({
+      postId,
+      voteType: "downvote",
+    });
+
+    await postModel.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
+
+    res.status(200).json({ message: "Upvote removed successfully." });
   } catch (error) {
-    next(error); // Pass the error to the next middleware
+    next(error);
   }
 };
 
 module.exports.removeDownvote = async (req, res, next) => {
   try {
-    const postId = req.params.postId; // Get the post ID from the request parameters
-    const post = await postModel.findById(postId); // Find the post by ID
+    const { postId } = req.params;
 
-    // Check if the post exists
-    if (!post) {
-      return res.status(404).json({
-        message: "Post not found",
-      });
-    }
-
-    // Check if the user has downvoted the post
-    if (post.downvotedBy && post.downvotedBy.includes(req.user._id)) {
-      // Remove the user's ID from downvotedBy array
-      post.downvotedBy = post.downvotedBy.filter(
-        (id) => id.toString() !== req.user._id.toString()
-      );
-      post.downvoteCount = (post.downvoteCount || 0) - 1; // Decrement downvote count
-    } else {
-      return res.status(409).json({
-        message: "You have not downvoted this post.",
-      });
-    }
-
-    await post.save(); // Save the updated post
-
-    // Respond with success message and the updated post
-    res.status(200).json({
-      message: "Downvote removed successfully",
-      post,
+    // Remove the downvote
+    const deletedVote = await Vote.findOneAndDelete({
+      postId,
+      userId: req.user._id,
+      voteType: "downvote",
     });
+
+    if (!deletedVote) {
+      return res
+        .status(409)
+        .json({ message: "You have not downvoted this post." });
+    }
+
+    // Update the post's vote counts
+    const upvoteCount = await Vote.countDocuments({
+      postId,
+      voteType: "upvote",
+    });
+    const downvoteCount = await Vote.countDocuments({
+      postId,
+      voteType: "downvote",
+    });
+
+    await Post.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
+
+    res.status(200).json({ message: "Downvote removed successfully." });
   } catch (error) {
-    next(error); // Pass the error to the next middleware
+    next(error);
   }
 };

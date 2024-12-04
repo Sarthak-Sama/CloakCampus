@@ -88,16 +88,87 @@ module.exports.signup = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Fetch a random username from the API
-    const response = await axios.get(
-      "https://usernameapiv1.vercel.app/api/random-usernames"
-    );
-    const username = response.data.usernames[0]; // Get the first username from the response
+    try {
+      // Fetch random usernames from the API once
+      const response = await axios.get(
+        "https://usernameapiv1.vercel.app/api/random-usernames"
+      );
+      const usernames = response.data.usernames; // List of random usernames
+      let index = 0; // Start from the first index
+
+      while (true) {
+        const username = usernames[index]; // Get the username at the current index
+
+        // Check if the username already exists in the database
+        const existingUser = await userModel.findOne({ username });
+
+        if (!existingUser) {
+          // If the username is unique, break the loop
+          break;
+        }
+
+        // If username already exists, move to the next index
+        index++;
+
+        // If we've exhausted all the usernames in the list, break the loop
+        if (index >= usernames.length) {
+          throw new Error(
+            "Unable to find a unique username after trying all fetched usernames"
+          );
+        }
+      }
+    } catch (error) {
+      next(error);
+    }
+
+    // Get a random image for profile picture
+    // Generate a random image ID
+    const max = 10000; // Set your max value for image ID
+    const maxRetries = 20; // Set max number of retires
+    let profileImageResponse;
+    let retries = 0;
+
+    // Re-request the image until a valid (200) response is returned
+    while (retries < maxRetries) {
+      try {
+        let imageID = Math.floor(Math.random() * max);
+        profileImageResponse = await axios.get(
+          `https://api.nekosapi.com/v3/images/${imageID}`
+        );
+        if (
+          profileImageResponse.status === 200 &&
+          profileImageResponse.data?.url
+        ) {
+          const existingUser = await userModel.findOne({
+            profilePictureSrc: profileImageResponse.data.url,
+          });
+          if (!existingUser) {
+            break; // Break out of the loop if the response status is 200 and the url is unique
+          }
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          // If the status code is 404, generate a new imageID and try again
+          retries++;
+        } else {
+          // If there's another error, log it and break the loop
+          next(err);
+          break;
+        }
+      }
+    }
+
+    if (!profileImageResponse) {
+      throw new Error("Unable to fetch a unique profile image after retries.");
+    }
+
     const university = isValidDomain.university;
 
     const user = await userModel.create({
       email,
       password: hashedPassword,
       username, // Use the fetched username
+      profilePictureSrc: profileImageResponse,
       university, // isValidDomain stores the University name and domain.
       otp, // Store the OTP temporarily
       isVerified: false, // Track if the email is verified
@@ -174,6 +245,84 @@ module.exports.login = async (req, res, next) => {
       if (!user.isVerified) {
         // Check if the email is verified
         return res.status(403).json({ message: "Email not verified" });
+      }
+
+      try {
+        // Generate a random username
+        const usernamesResponse = await axios.get(
+          "https://usernameapiv1.vercel.app/api/random-usernames"
+        );
+        const usernames = usernamesResponse.data.usernames;
+        let usernameIndex = 0;
+
+        // Loop to get a unique username
+        while (true) {
+          const username = usernames[usernameIndex];
+
+          // Check if the username is unique
+          const existingUser = await userModel.findOne({ username });
+          if (!existingUser) {
+            user.username = username; // Update the username
+            break;
+          }
+
+          usernameIndex++;
+
+          // If we've tried all usernames, throw an error
+          if (usernameIndex >= usernames.length) {
+            throw new Error(
+              "Unable to find a unique username after trying all fetched usernames"
+            );
+          }
+        }
+
+        // Generate a random profile picture
+        const max = 10000;
+        const maxRetries = 20;
+        let profileImageResponse;
+        let retries = 0;
+
+        // Loop to get a unique profile picture
+        while (retries < maxRetries) {
+          try {
+            let imageID = Math.floor(Math.random() * max);
+            profileImageResponse = await axios.get(
+              `https://api.nekosapi.com/v3/images/${imageID}`
+            );
+
+            if (
+              profileImageResponse.status === 200 &&
+              profileImageResponse.data?.url
+            ) {
+              const existingUser = await userModel.findOne({
+                profilePictureSrc: profileImageResponse.data.url,
+              });
+
+              if (!existingUser) {
+                user.profilePictureSrc = profileImageResponse.data.url; // Update the profile picture
+                break;
+              }
+            }
+          } catch (error) {
+            if (error.response && error.response.status === 404) {
+              retries++;
+            } else {
+              next(error);
+              break;
+            }
+          }
+        }
+
+        if (!profileImageResponse) {
+          throw new Error(
+            "Unable to fetch a unique profile image after retries."
+          );
+        }
+
+        // Save the updated user with the new username and profile picture
+        await user.save();
+      } catch (error) {
+        return next(error);
       }
 
       // Create JWT token with expiration

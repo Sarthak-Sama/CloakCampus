@@ -18,6 +18,7 @@ function TopNav({ category, isNotificationTabActive, toggleNotificationTab }) {
   }, [dispatch]);
 
   const { user } = useSelector((state) => state.user);
+  console.log(user?.profilePictureSrc);
   return (
     <div className="h-[12vh] w-[75%] right-0 absolute z-[9999] flex items-center justify-between px-10 bg-[#161616] text-[#EDEDED] shadow-lg shadow-bottom">
       <div>
@@ -29,35 +30,51 @@ function TopNav({ category, isNotificationTabActive, toggleNotificationTab }) {
         <div id="search-div">
           <SearchBar />
         </div>
-        <div id="nav-btns" className="flex items-center gap-2">
-          <div className="bg-yellow-300 w-10 h-10 rounded-full hover:border-[2px] hover:border-black transition-all duration-[0.3s] ease-in-out"></div>
-          <div
-            onMouseEnter={() => {
-              setHoveredOverUser(true);
-            }}
-            onMouseLeave={() => {
-              setHoveredOverUser(false);
-            }}
-            id="profile-name"
-            className="flex items-center gap-1 group"
-          >
-            <div className="text-[1.1rem]">
-              {user ? user.username : "Guest"}
+        {user ? (
+          <div id="nav-btns" className="flex items-center gap-2">
+            <div
+              style={{
+                backgroundImage: `url(${user.profilePictureSrc})`,
+                backgroundSize: "cover",
+                backgroundPosition: "top",
+                backgroundRepeat: "no-repeat",
+              }}
+              className="bg-yellow-300 w-10 h-10 rounded-full transition-all duration-[0.3s] ease-in-out"
+              onMouseEnter={(e) =>
+                (e.target.style.outline = "2.5px solid #EA516F")
+              }
+              onMouseLeave={(e) => (e.target.style.outline = "none")}
+            ></div>
+            <div
+              onMouseEnter={() => {
+                setHoveredOverUser(true);
+              }}
+              onMouseLeave={() => {
+                setHoveredOverUser(false);
+              }}
+              id="profile-name"
+              className="flex items-center gap-1 group"
+            >
+              <div className="text-[1.1rem]">
+                {user ? user.username : "Guest"}
+              </div>
+              <RiArrowDownSLine className="group-hover:translate-y-[20%] transition-all duration-[0.3s] ease-in-out" />
             </div>
-            <RiArrowDownSLine className="group-hover:translate-y-[20%] transition-all duration-[0.3s] ease-in-out" />
-          </div>
 
-          <div
-            className="flex items-center ml-3"
-            onClick={toggleNotificationTab}
-          >
-            {isNotificationTabActive ? (
-              <RiNotificationFill size={25} />
-            ) : (
-              <RiNotificationLine size={25} />
-            )}
+            <div
+              className="flex items-center ml-3"
+              onClick={toggleNotificationTab}
+            >
+              {isNotificationTabActive ? (
+                <RiNotificationFill size={25} />
+              ) : (
+                <RiNotificationLine size={25} />
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          "loading"
+        )}
       </div>
       <motion.div
         id="user-menu"
