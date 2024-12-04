@@ -1,6 +1,8 @@
 import {
   RiMessage2Fill,
   RiMessage2Line,
+  RiMore2Line,
+  RiShareLine,
   RiThumbDownFill,
   RiThumbDownLine,
   RiThumbUpFill,
@@ -50,8 +52,8 @@ function Post({ postdata }) {
 
   return (
     <>
-      <div className="w-[75%] mx-auto rounded-[0.9rem] my-3 p-4 gap-8 bg-zinc-800 text-[#EDEDED]">
-        <div>
+      <div className="w-[75%] mx-auto rounded-[0.9rem] my-3 p-5 gap-8 bg-zinc-800 text-[#EDEDED]">
+        <div className="flex gap-5 pr-6">
           {postdata.media && postdata.media.length > 0 && (
             <div id="thumbnail" className="w-[35%] flex flex-wrap gap-4">
               {postdata.media.map((image) => {
@@ -80,50 +82,71 @@ function Post({ postdata }) {
             </div>
 
             <h3 className="text-xs text-zinc-400">
-              Posted by {postdata.authorUsername}
+              Posted by <b>{postdata.authorUsername}</b>
             </h3>
             <p className="mt-5 ">{postdata.textContent}</p>
           </div>
         </div>
-        <div id="operations" className="flex gap-5 mt-5">
-          <div
-            id="like"
-            className="flex gap-2"
-            onClick={handleLike}
-            onMouseEnter={() => {
-              setLikeBtnActive(true);
-            }}
-            onMouseLeave={() => {
-              setLikeBtnActive(false);
-            }}
-          >
-            {likeBtnActive ? <RiThumbUpFill /> : <RiThumbUpLine />}
-            <span>{postdata.upvoteCount > 0 && postdata.upvoteCount}</span>
+        <div
+          id="operations"
+          className="flex w-[100%] justify-between mt-5 pl-2"
+        >
+          <div className="w-[35%] flex justify-between">
+            <div
+              id="like"
+              className="flex gap-4"
+              onClick={handleLike}
+              onMouseEnter={() => {
+                setLikeBtnActive(true);
+                setDislikeBtnActive(false);
+                setCommentBtnActive(false);
+              }}
+              onMouseLeave={() => {
+                setLikeBtnActive(false);
+              }}
+            >
+              {likeBtnActive ? <RiThumbUpFill /> : <RiThumbUpLine />}
+              <span>{postdata.upvoteCount > 0 && postdata.upvoteCount}</span>
+            </div>
+            <div
+              id="dislike"
+              className="flex gap-2"
+              onClick={handleDisike}
+              onMouseEnter={() => {
+                setDislikeBtnActive(true);
+                setLikeBtnActive(false);
+                setCommentBtnActive(false);
+              }}
+              onMouseLeave={() => {
+                setDislikeBtnActive(false);
+              }}
+            >
+              {dislikeBtnActive ? <RiThumbDownFill /> : <RiThumbDownLine />}
+              <span>
+                {postdata.downvoteCount > 0 && postdata.downvoteCount}
+              </span>
+            </div>
+            <div
+              id="comment"
+              onMouseEnter={() => {
+                setCommentBtnActive(true);
+                setLikeBtnActive(false);
+                setDislikeBtnActive(false);
+              }}
+              onMouseLeave={() => {
+                setCommentBtnActive(false);
+              }}
+            >
+              {commentBtnActive ? <RiMessage2Fill /> : <RiMessage2Line />}
+            </div>
           </div>
-          <div
-            id="dislike"
-            className="flex gap-2"
-            onClick={handleDisike}
-            onMouseEnter={() => {
-              setDislikeBtnActive(true);
-            }}
-            onMouseLeave={() => {
-              setDislikeBtnActive(false);
-            }}
-          >
-            {dislikeBtnActive ? <RiThumbDownFill /> : <RiThumbDownLine />}
-            <span>{postdata.downvoteCount > 0 && postdata.downvoteCount}</span>
-          </div>
-          <div
-            id="comment"
-            onMouseEnter={() => {
-              setCommentBtnActive(true);
-            }}
-            onMouseLeave={() => {
-              setCommentBtnActive(false);
-            }}
-          >
-            {commentBtnActive ? <RiMessage2Fill /> : <RiMessage2Line />}
+          <div className="w-[10%] flex justify-between pr-6 gap-3">
+            <div>
+              <RiShareLine />
+            </div>
+            <div>
+              <RiMore2Line />
+            </div>
           </div>
         </div>
       </div>

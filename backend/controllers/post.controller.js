@@ -57,7 +57,7 @@ module.exports.createPost = async (req, res, next) => {
       textContent,
       author: req.user._id,
       authorUsername: req.user.username,
-      university: req.user.university,
+      university: req.user.university.Name,
       media, // Save media information
     });
 
@@ -117,7 +117,7 @@ module.exports.getPosts = async (req, res, next) => {
 
     // Fetch posts with pagination and filter by university
     const posts = await postModel
-      .find({ university: req.user.university })
+      .find({ university: req.user.university.universityName })
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 }); // Sort by latest posts
@@ -143,7 +143,7 @@ module.exports.getPosts = async (req, res, next) => {
 
     // Optionally: Get total count of posts for pagination
     const totalPosts = await postModel.countDocuments({
-      university: req.user.university,
+      university: req.user.university.universityName,
     });
 
     // Send paginated response

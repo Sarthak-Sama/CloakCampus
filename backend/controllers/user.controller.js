@@ -162,7 +162,7 @@ module.exports.signup = async (req, res, next) => {
       throw new Error("Unable to fetch a unique profile image after retries.");
     }
 
-    const university = isValidDomain.university;
+    const university = isValidDomain;
 
     const user = await userModel.create({
       email,
@@ -382,8 +382,8 @@ module.exports.logout = async (req, res, next) => {
   }
 };
 
-module.exports.getProfile = (req, res, next) => {
-  passport.authenticate("jwt", { session: false }, (err, user) => {
+module.exports.getProfile = async (req, res, next) => {
+  passport.authenticate("jwt", { session: false }, async (err, user) => {
     if (err) {
       return next(err);
     }
@@ -391,10 +391,23 @@ module.exports.getProfile = (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    res.status(200).json({
-      message: "Profile data",
-      user,
-    });
+    try {
+      // Populate the 'university' field using async/await
+      const populatedUser = await userModel
+        .findById(user._id)
+        .populate("university"); // Populate university with the referenced 'Domain' model
+
+      if (!populatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json({
+        message: "Profile data",
+        user: populatedUser,
+      });
+    } catch (error) {
+      return next(error);
+    }
   })(req, res, next);
 };
 

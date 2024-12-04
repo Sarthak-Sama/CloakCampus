@@ -6,7 +6,7 @@ const domainSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  university: {
+  universityName: {
     type: String,
     required: true,
     unique: true,

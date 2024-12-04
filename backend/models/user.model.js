@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   university: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Domain",
     required: true,
   },
   profilePictureSrc: {

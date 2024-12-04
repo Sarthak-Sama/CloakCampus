@@ -6,6 +6,7 @@ router.post("/signup", userController.signup);
 router.post("/verify-otp", userController.verifyOtp);
 router.post("/login", userController.login);
 router.post("/logout", userController.logout);
+
 router.get("/profile", userController.getProfile);
 
 // Routes for password reset functionality
