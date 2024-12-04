@@ -11,7 +11,7 @@ export const fetchUser = () => async (dispatch) => {
       profilePictureSrc: response.data.user.profilePictureSrc,
       username: response.data.user.username,
       email: response.data.user.email,
-      university: response.data.user.university,
+      university: response.data.user.university.universityName,
       createdAt: response.data.user.createdAt,
     };
     console.log(userData);

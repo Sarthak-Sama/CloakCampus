@@ -57,7 +57,7 @@ module.exports.createPost = async (req, res, next) => {
       textContent,
       author: req.user._id,
       authorUsername: req.user.username,
-      university: req.user.university.Name,
+      university: req.user.university.universityName,
       media, // Save media information
     });
 
