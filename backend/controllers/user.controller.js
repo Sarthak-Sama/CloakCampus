@@ -139,7 +139,6 @@ module.exports.signup = async (req, res, next) => {
           profileImageResponse.status === 200 &&
           profileImageResponse.data?.image_url
         ) {
-          console.log(profileImageResponse.data.image_url);
           const existingUser = await userModel.findOne({
             profilePictureSrc: profileImageResponse.data.image_url,
           });

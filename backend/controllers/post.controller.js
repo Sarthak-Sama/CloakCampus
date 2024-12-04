@@ -1,4 +1,3 @@
-const userModel = require("../models/user.model");
 const postModel = require("../models/post.model");
 const voteModel = require("../models/vote.model");
 const commentModel = require("../models/comment.model");
