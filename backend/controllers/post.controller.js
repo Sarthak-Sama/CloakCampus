@@ -1,6 +1,7 @@
 const userModel = require("../models/user.model");
 const postModel = require("../models/post.model");
 const voteModel = require("../models/vote.model");
+const notificationModel = require("../models/notification.model");
 const commentModel = require("../models/comment.model");
 const cloudinary = require("../config/cloudinary.config");
 const reportModel = require("../models/report.model");
@@ -8,10 +9,30 @@ const fs = require("fs");
 const path = require("path");
 // const nsfwDetector = require("../config/nsfwDetector.config");
 
+const createNotification = async (
+  userId,
+  type,
+  postId = null,
+  commentId = null,
+  message
+) => {
+  try {
+    await notificationModel.create({
+      user: userId, // User who will receive the notification
+      type: type, // Type of notification: "like", "comment", or "reply"
+      post: postId, // Post being liked (if applicable)
+      comment: commentId, // Comment being replied to (if applicable)
+      message: message, // The message to display in the notification
+    });
+  } catch (error) {
+    console.error("Error creating notification:", error);
+  }
+};
+
 // Function to create a new post
 module.exports.createPost = async (req, res, next) => {
   try {
-    const { title, textContent } = req.body;
+    const { title, textContent, category } = req.body;
     const media = []; // Array to hold media information
 
     // Check if image exists and handle it
@@ -52,6 +73,7 @@ module.exports.createPost = async (req, res, next) => {
       fs.unlinkSync(videoPath); // Remove local video file after upload
     }
     const user = await userModel.findById(req.user._id).populate("university"); // Populate the university field
+    console.log(user);
 
     const post = await postModel.create({
       title,
@@ -59,6 +81,7 @@ module.exports.createPost = async (req, res, next) => {
       author: req.user._id,
       authorUsername: req.user.username,
       university: user.university.universityName, // Access the universityName after populating
+      category,
       media, // Save media information
     });
 
@@ -116,9 +139,11 @@ module.exports.getPosts = async (req, res, next) => {
     // Calculate the number of posts to skip
     const skip = (page - 1) * limit;
 
+    const user = await userModel.findById(req.user._id).populate("university");
+
     // Fetch posts with pagination and filter by university
     const posts = await postModel
-      .find({ university: req.user.university.universityName })
+      .find({ university: user.university.universityName })
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 }); // Sort by latest posts
@@ -159,6 +184,23 @@ module.exports.getPosts = async (req, res, next) => {
   }
 };
 
+module.exports.getPostById = async (req, res, next) => {
+  try {
+    const postId = req.params.postId;
+    const post = await postModel.findById(postId).populate({
+      path: "comments",
+      options: { sort: { createdAt: -1 } }, // Sort comments by latest
+    });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.status(200).json({ post });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports.createComment = async (req, res, next) => {
   try {
     const { content } = req.body; // Extract content from the request body
@@ -173,6 +215,10 @@ module.exports.createComment = async (req, res, next) => {
     // Add the new comment's ID to the post's comments array
     post.comments.push(comment._id);
     await post.save(); // Save the updated post
+
+    // Notify the post author about the new comment
+    const message = `${req.user.name} commented on your post: "${content}"`;
+    createNotification(post.author, "comment", postId, comment._id, message);
 
     // Respond with success message and the created comment
     res.status(200).json({
@@ -208,11 +254,34 @@ module.exports.replyComment = async (req, res, next) => {
     parentComment.replies.push(reply._id);
     await parentComment.save();
 
+    // Create a notification for the original comment's author
+    const message = `${req.user.name} replied to your comment: ${content}`;
+    createNotification(
+      parentComment.author,
+      "reply",
+      parentComment.post,
+      reply._id,
+      message
+    );
+
     // Respond with success message and the created reply
     res.status(200).json({
       message: "Reply Created",
       reply,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.getCommentReplies = async (req, res, next) => {
+  try {
+    const parentCommentId = req.params.commentId;
+    const replies = await commentModel
+      .find({ parentComment: parentCommentId })
+      .sort({ createdAt: -1 }); // Sort replies by latest
+
+    res.status(200).json({ replies });
   } catch (error) {
     next(error);
   }
@@ -292,6 +361,10 @@ module.exports.upvotePost = async (req, res, next) => {
     });
 
     await postModel.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
+
+    // Create a notification for the post's author
+    const message = `${req.user.username} liked your post`;
+    createNotification(post.author, "like", postId, message);
 
     res.status(200).json({ message: "Post upvoted successfully." });
   } catch (error) {

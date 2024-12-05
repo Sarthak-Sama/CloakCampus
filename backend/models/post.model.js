@@ -44,6 +44,31 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: String,
+    validate: {
+      validator: async function (value) {
+        if (value === "" || value === undefined || value === null) {
+          return true; // Allow empty value (i.e., no category selected)
+        }
+
+        // If category is provided, check if it's valid for the university
+        const domain = await Domain.findOne({
+          universityName: this.university,
+        });
+
+        // If no domain is found or category is not in universityCategories, return false
+        if (!domain || !domain.universityCategories.includes(value)) {
+          throw new Error(
+            `Invalid category for the university ${this.university}`
+          );
+        }
+
+        return true;
+      },
+      message: "Invalid category for the university",
+    },
+  },
   createdAt: {
     type: Date,
     default: Date.now,

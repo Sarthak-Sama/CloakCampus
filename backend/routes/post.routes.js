@@ -6,6 +6,7 @@ const multerConfig = require("../config/multer.config");
 router.use(authMiddleware.isAuthenticated);
 
 router.get("/", postController.getPosts);
+router.get("/:postId", postController.getPostById);
 
 router.post(
   "/create-post",
@@ -17,6 +18,7 @@ router.post(
 
 router.post("/:postId/comment", postController.createComment);
 router.post("/:commentId/reply", postController.replyComment);
+router.get("/:commentId/replies", postController.getCommentReplies);
 
 router.post("/report/:postId", postController.reportPost);
 
