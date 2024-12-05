@@ -393,15 +393,17 @@ module.exports.getProfile = async (req, res, next) => {
 
     try {
       // Populate the 'university' field using async/await
-      const user = await userModel.findById(user._id).populate("university");
+      const userData = await userModel
+        .findById(user._id)
+        .populate("university");
 
-      if (!user) {
+      if (!userData) {
         return res.status(404).json({ message: "User not found" });
       }
 
       res.status(200).json({
         message: "Profile data",
-        user: user,
+        user: userData, // Respond with the populated user data
       });
     } catch (error) {
       return next(error);
