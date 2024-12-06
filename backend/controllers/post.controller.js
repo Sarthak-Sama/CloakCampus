@@ -325,6 +325,12 @@ module.exports.upvotePost = async (req, res, next) => {
   try {
     const { postId } = req.params;
 
+    // Validate post existence
+    const post = await postModel.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
     // Check if the user has already upvoted this post
     const existingVote = await voteModel.findOne({
       postId,
@@ -360,14 +366,27 @@ module.exports.upvotePost = async (req, res, next) => {
       voteType: "downvote",
     });
 
-    await postModel.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
+    const updatedPost = await postModel.findByIdAndUpdate(
+      postId,
+      { upvoteCount, downvoteCount },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      return res.status(404).json({ message: "Failed to update post counts." });
+    }
 
     // Create a notification for the post's author
-    const message = `${req.user.username} liked your post`;
-    createNotification(post.author, "like", postId, message);
+    try {
+      const message = `${req.user.username} liked your post`;
+      createNotification(post.author, "like", postId, message);
+    } catch (err) {
+      console.error("Notification creation failed:", err);
+    }
 
     res.status(200).json({ message: "Post upvoted successfully." });
   } catch (error) {
+    console.error("Error upvoting post:", error);
     next(error);
   }
 };

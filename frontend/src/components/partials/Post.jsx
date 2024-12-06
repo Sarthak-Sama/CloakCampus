@@ -18,12 +18,12 @@ function Post({ postdata }) {
   const [likeCount, setLikeCount] = useState(postdata.upvoteCount);
   const [dislikeCount, setDisLikeCount] = useState(postdata.downvoteCount);
 
-  const handleLike = () => {
+  const handleLike = async () => {
     setLikeCount(likeCount + 1);
     try {
-      const response = axios.patch(`/posts/upvote/${postdata._id}`);
+      const response = await axios.patch(`/posts/upvote/${postdata._id}`);
     } catch (err) {
-      console.log(err);
+      console.log("Error while liking: " + err);
       setLikeCount(likeCount - 1);
     }
   };
