@@ -18,7 +18,6 @@ function TopNav({ category, isNotificationTabActive, toggleNotificationTab }) {
   }, [dispatch]);
 
   const { user } = useSelector((state) => state.user);
-  console.log(user?.profilePictureSrc);
   return (
     <div className="h-[12vh] w-[75%] right-0 absolute z-[9999] flex items-center justify-between px-10 bg-[#161616] text-[#EDEDED] shadow-lg shadow-bottom">
       <div>

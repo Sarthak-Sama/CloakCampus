@@ -19,13 +19,15 @@ function Post({ postdata }) {
   const [dislikeCount, setDisLikeCount] = useState(postdata.downvoteCount);
 
   const handleLike = () => {
-    if (likeBtnActive) {
-      setLikeBtnActive(true);
-      setLikeCount(likeCount + 1);
+    setLikeCount(likeCount + 1);
+    try {
+      const response = axios.patch(`/posts/upvote/${postdata._id}`);
+    } catch (err) {
+      console.log(err);
+      setLikeCount(likeCount - 1);
     }
   };
   const handleDisike = () => {
-    setDislikeBtnActive(true);
     setDisLikeCount(dislikeCount + 1);
   };
 

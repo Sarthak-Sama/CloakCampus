@@ -12,6 +12,7 @@ export const fetchUser = () => async (dispatch) => {
       username: response.data.user.username,
       email: response.data.user.email,
       university: response.data.user.university.universityName,
+      categories: response.data.user.university.universityCategories,
       createdAt: response.data.user.createdAt,
     };
     console.log(userData);

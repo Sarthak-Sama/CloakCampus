@@ -2,8 +2,13 @@ import { RiAddLine } from "@remixicon/react";
 import React from "react";
 import { Link } from "react-router-dom";
 import ToggleButton from "./partials/ToggleButton";
+import { useSelector } from "react-redux";
 
 function SideNav() {
+  const { user } = useSelector((state) => state.user);
+  const categoriesArray = user?.categories;
+  console.log(categoriesArray);
+
   return (
     <div className="w-[25%] h-screen flex flex-col items-center text-center pl-5 pr-12 pt-8 small-border">
       <h1 className="text-left text-4xl font-['shrimp] leading-[2rem] mb-10">
@@ -20,6 +25,16 @@ function SideNav() {
       </Link>
       <Link className="text-lg mt-10">All Discussion</Link>
       <hr className="border-zinc-600 rounded-full w-[80%] mb-6 mt-3" />
+      {user
+        ? categoriesArray.map((cat, index) => (
+            <>
+              <Link key={index} className="text-[1.1rem] my-2">
+                {cat}
+              </Link>
+              <hr className="w-[80%] border-[1px] border-zinc-200" />
+            </>
+          ))
+        : "loading"}
       <div className="flex items-center">
         <span>Color Mode:</span>
         <ToggleButton />

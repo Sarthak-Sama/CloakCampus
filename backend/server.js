@@ -17,7 +17,7 @@ app.use(
       // Allow all origins
       callback(null, true);
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Specify allowed methods
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"], // Specify allowed methods
     credentials: true, // Allow credentials (cookies, authorization headers, etc.)
   })
 );
