@@ -493,7 +493,7 @@ module.exports.removeDownvote = async (req, res, next) => {
     const { postId } = req.params;
 
     // Remove the downvote
-    const deletedVote = await Vote.findOneAndDelete({
+    const deletedVote = await voteModel.findOneAndDelete({
       postId,
       userId: req.user._id,
       voteType: "downvote",
@@ -506,16 +506,16 @@ module.exports.removeDownvote = async (req, res, next) => {
     }
 
     // Update the post's vote counts
-    const upvoteCount = await Vote.countDocuments({
+    const upvoteCount = await voteModel.countDocuments({
       postId,
       voteType: "upvote",
     });
-    const downvoteCount = await Vote.countDocuments({
+    const downvoteCount = await voteModel.countDocuments({
       postId,
       voteType: "downvote",
     });
 
-    await Post.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
+    await postModel.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
 
     res.status(200).json({ message: "Downvote removed successfully." });
   } catch (error) {

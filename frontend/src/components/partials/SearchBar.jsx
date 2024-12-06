@@ -10,7 +10,7 @@ function SearchBar() {
   };
 
   return (
-    <div className="flex items-center justify-between w-[100%] h-[2.25rem] rounded-full bg-zinc-200 px-6 py-2">
+    <div className="flex bg-zinc-700 items-center justify-between w-[100%] h-[2.25rem] rounded-[12px] bg-zinc-200 px-6 py-2">
       <input
         type="text"
         value={query}
@@ -19,7 +19,8 @@ function SearchBar() {
         className="w-full bg-transparent focus:outline-none focus:ring-0"
       />
       <RiSearchLine
-        className={`text-zinc-400 ${query ? "text-zinc-900" : ""}`}
+        color={`#EDEDED`}
+        className={query ? "opacity-100" : "opacity-50"}
       />
     </div>
   );

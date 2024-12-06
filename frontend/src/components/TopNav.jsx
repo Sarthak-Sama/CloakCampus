@@ -13,17 +13,55 @@ import UserMenu from "./partials/UserMenu";
 function TopNav({ category, isNotificationTabActive, toggleNotificationTab }) {
   const dispatch = useDispatch();
   const [hoveredOverUser, setHoveredOverUser] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [sortOption, setSortOption] = useState("latest");
+
   useEffect(() => {
     dispatch(fetchUser());
   }, [dispatch]);
 
   const { user } = useSelector((state) => state.user);
+
+  const handleSort = (sortOption) => {
+    // Implement sorting logic based on sortOption
+    setSortOption(sortOption);
+    setDropdownOpen(false); // Close dropdown after selection
+  };
+
   return (
     <div className="h-[12vh] w-[75%] right-0 absolute z-[9999] flex items-center justify-between px-10 bg-[#161616] text-[#EDEDED] shadow-lg shadow-bottom">
-      <div>
-        <div id="logo-div" className="text-2xl capitalize">
-          {category}
-        </div>
+      <div className="flex gap-2">
+        <div className="text-2xl capitalize">{category}</div>
+        {/* <div className="relative">
+          <button
+            className="bg-gray-800 text-white px-4 py-2 rounded focus:outline-none"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+          >
+            Sort Posts
+          </button>
+          {dropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded shadow-lg z-10">
+              <button
+                className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                onClick={() => handleSort("latest")}
+              >
+                Latest
+              </button>
+              <button
+                className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                onClick={() => handleSort("oldest")}
+              >
+                Oldest
+              </button>
+              <button
+                className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                onClick={() => handleSort("popular")}
+              >
+                Most Popular
+              </button>
+            </div>
+          )}
+        </div> */}
       </div>
       <div className="flex gap-7 items-center">
         <div id="search-div">

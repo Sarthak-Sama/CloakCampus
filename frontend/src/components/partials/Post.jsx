@@ -2,6 +2,7 @@ import {
   RiMessage2Fill,
   RiMessage2Line,
   RiMore2Line,
+  RiSendPlaneFill,
   RiShareLine,
   RiThumbDownFill,
   RiThumbDownLine,
@@ -18,42 +19,84 @@ function Post({ postdata }) {
   const [likeCount, setLikeCount] = useState(postdata.upvoteCount);
   const [dislikeCount, setDisLikeCount] = useState(postdata.downvoteCount);
   const [userVote, setUserVote] = useState(postdata.userVote);
+  const [isLoading, setIsLoading] = useState(false); // Prevent multiple clicks
+  const [commentInputVisible, setCommentInputVisible] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [isHoveredOverSendIcon, setIsHoveredOverSendIcon] = useState(false);
 
-  const handleLike = async () => {
-    if (userVote !== "upvote") {
-      // Optimistically update UI
-      setLikeCount(likeCount + 1);
-      if (userVote === "downvote") setDisLikeCount(dislikeCount - 1);
-      setUserVote("upvote");
-      try {
-        await axios.patch(`/posts/upvote/${postdata._id}`);
-      } catch (err) {
-        console.log("Error while liking: " + err);
-        // Revert optimistic update on error
-        setLikeCount(likeCount - 1);
-        if (userVote === "downvote") setDisLikeCount(dislikeCount + 1);
-        setUserVote(userVote); // Revert vote state
-      }
-    }
-  };
-  const handleDisike = async () => {
-    if (userVote !== "downvote") {
-      // Optimistically update UI
-      setDisLikeCount(dislikeCount + 1);
-      if (userVote === "upvote") setLikeCount(likeCount - 1);
-      setUserVote("downvote");
+  // const handleLike = async () => {
+  //   if (isLoading) return; // Prevent multiple clicks
+  //   setIsLoading(true);
 
-      try {
-        const response = await axios.patch(`/posts/downvote/${postdata._id}`);
-      } catch (err) {
-        console.log("Error while disliking: " + err);
-        // Revert optimistic update on error
-        setDisLikeCount(dislikeCount - 1);
-        if (userVote === "upvote") setLikeCount(likeCount + 1);
-        setUserVote(userVote); // Revert vote state
-      }
-    }
-  };
+  //   if (userVote !== "upvote") {
+  //     // Optimistically update UI
+  //     setLikeCount(likeCount + 1);
+  //     if (userVote === "downvote") setDisLikeCount(dislikeCount - 1);
+  //     setUserVote("upvote");
+
+  //     try {
+  //       await axios.patch(`/posts/upvote/${postdata._id}`);
+  //     } catch (err) {
+  //       console.error("Error while liking:", err);
+
+  //       // Revert optimistic updates on error
+  //       setLikeCount(likeCount - 1);
+  //       if (userVote === "downvote") setDisLikeCount(dislikeCount + 1);
+  //       setUserVote(userVote);
+  //     }
+  //   } else {
+  //     // Handle unvoting a like
+  //     setLikeCount(likeCount - 1);
+  //     setUserVote("");
+  //     try {
+  //       await axios.delete(`/posts/upvote/${postdata._id}`);
+  //     } catch (error) {
+  //       console.error("Error while removing like:", error);
+
+  //       // Revert optimistic updates on error
+  //       setLikeCount(likeCount + 1);
+  //       setUserVote("upvote");
+  //     }
+  //   }
+  //   setIsLoading(false);
+  // };
+
+  // const handleDislike = async () => {
+  //   if (isLoading) return; // Prevent multiple clicks
+  //   setIsLoading(true);
+
+  //   if (userVote !== "downvote") {
+  //     // Optimistically update UI
+  //     setDisLikeCount(dislikeCount + 1);
+  //     if (userVote === "upvote") setLikeCount(likeCount - 1);
+  //     setUserVote("downvote");
+
+  //     try {
+  //       await axios.patch(`/posts/downvote/${postdata._id}`);
+  //     } catch (err) {
+  //       console.error("Error while disliking:", err);
+
+  //       // Revert optimistic updates on error
+  //       setDisLikeCount(dislikeCount - 1);
+  //       if (userVote === "upvote") setLikeCount(likeCount + 1);
+  //       setUserVote(userVote);
+  //     }
+  //   } else {
+  //     // Handle unvoting a dislike
+  //     setDisLikeCount(dislikeCount - 1);
+  //     setUserVote("");
+  //     try {
+  //       await axios.delete(`/posts/downvote/${postdata._id}`);
+  //     } catch (error) {
+  //       console.error("Error while removing dislike:", error);
+
+  //       // Revert optimistic updates on error
+  //       setDisLikeCount(dislikeCount + 1);
+  //       setUserVote("downvote");
+  //     }
+  //   }
+  //   setIsLoading(false);
+  // };
 
   const getTimeAgo = (timestamp) => {
     const now = new Date();
@@ -75,6 +118,136 @@ function Post({ postdata }) {
     return `${seconds} second${seconds > 1 ? "s" : ""} ago`;
   };
   const timeAgo = getTimeAgo(postdata.createdAt);
+
+  const handleVote = async (type) => {
+    if (isLoading) return; // Prevent multiple clicks
+    setIsLoading(true);
+
+    let optimisticUpdate = {};
+    let revertUpdate = {};
+
+    if (type === "upvote") {
+      if (userVote !== "upvote") {
+        // Optimistic update for upvote
+        optimisticUpdate = {
+          likeCount: likeCount + 1,
+          dislikeCount:
+            userVote === "downvote" ? dislikeCount - 1 : dislikeCount,
+          userVote: "upvote",
+        };
+
+        revertUpdate = {
+          likeCount: likeCount,
+          dislikeCount: userVote === "downvote" ? dislikeCount : dislikeCount,
+          userVote: userVote,
+        };
+
+        setLikeCount(optimisticUpdate.likeCount);
+        setDisLikeCount(optimisticUpdate.dislikeCount);
+        setUserVote(optimisticUpdate.userVote);
+
+        try {
+          await axios.patch(`/posts/upvote/${postdata._id}`);
+        } catch (err) {
+          console.error("Error while liking:", err);
+          // Revert changes on error
+          setLikeCount(revertUpdate.likeCount);
+          setDisLikeCount(revertUpdate.dislikeCount);
+          setUserVote(revertUpdate.userVote);
+        }
+      } else {
+        // Handle unvoting
+        optimisticUpdate = {
+          likeCount: likeCount - 1,
+          userVote: "",
+        };
+
+        revertUpdate = {
+          likeCount: likeCount,
+          userVote: "upvote",
+        };
+
+        setLikeCount(optimisticUpdate.likeCount);
+        setUserVote(optimisticUpdate.userVote);
+
+        try {
+          await axios.delete(`/posts/upvote/${postdata._id}`);
+        } catch (err) {
+          console.error("Error while unliking:", err);
+          // Revert changes on error
+          setLikeCount(revertUpdate.likeCount);
+          setUserVote(revertUpdate.userVote);
+        }
+      }
+    } else if (type === "downvote") {
+      if (userVote !== "downvote") {
+        // Optimistic update for downvote
+        optimisticUpdate = {
+          dislikeCount: dislikeCount + 1,
+          likeCount: userVote === "upvote" ? likeCount - 1 : likeCount,
+          userVote: "downvote",
+        };
+
+        revertUpdate = {
+          dislikeCount: dislikeCount,
+          likeCount: userVote === "upvote" ? likeCount : likeCount,
+          userVote: userVote,
+        };
+
+        setDisLikeCount(optimisticUpdate.dislikeCount);
+        setLikeCount(optimisticUpdate.likeCount);
+        setUserVote(optimisticUpdate.userVote);
+
+        try {
+          await axios.patch(`/posts/downvote/${postdata._id}`);
+        } catch (err) {
+          console.error("Error while disliking:", err);
+          // Revert changes on error
+          setDisLikeCount(revertUpdate.dislikeCount);
+          setLikeCount(revertUpdate.likeCount);
+          setUserVote(revertUpdate.userVote);
+        }
+      } else {
+        // Handle unvoting
+        optimisticUpdate = {
+          dislikeCount: dislikeCount - 1,
+          userVote: "",
+        };
+
+        revertUpdate = {
+          dislikeCount: dislikeCount,
+          userVote: "downvote",
+        };
+
+        setDisLikeCount(optimisticUpdate.dislikeCount);
+        setUserVote(optimisticUpdate.userVote);
+
+        try {
+          await axios.delete(`/posts/downvote/${postdata._id}`);
+        } catch (err) {
+          console.error("Error while un-disliking:", err);
+          // Revert changes on error
+          setDisLikeCount(revertUpdate.dislikeCount);
+          setUserVote(revertUpdate.userVote);
+        }
+      }
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    setCommentInputVisible(false);
+    try {
+      axios.post(`/posts/${postdata._id}/comment`, {
+        content: commentText,
+      });
+      setCommentText("");
+    } catch (err) {
+      console.log("Error while commenting.: ");
+    }
+  };
 
   return (
     <>
@@ -121,7 +294,7 @@ function Post({ postdata }) {
             <div
               id="like"
               className="flex gap-4"
-              onClick={handleLike}
+              onClick={() => handleVote("upvote")}
               onMouseEnter={() => {
                 setLikeBtnActive(true);
                 setDislikeBtnActive(false);
@@ -141,7 +314,7 @@ function Post({ postdata }) {
             <div
               id="dislike"
               className="flex gap-2"
-              onClick={handleDisike}
+              onClick={() => handleVote("downvote")}
               onMouseEnter={() => {
                 setDislikeBtnActive(true);
                 setLikeBtnActive(false);
@@ -160,6 +333,7 @@ function Post({ postdata }) {
             </div>
             <div
               id="comment"
+              onClick={() => setCommentInputVisible(!commentInputVisible)}
               onMouseEnter={() => {
                 setCommentBtnActive(true);
                 setLikeBtnActive(false);
@@ -169,7 +343,11 @@ function Post({ postdata }) {
                 setCommentBtnActive(false);
               }}
             >
-              {commentBtnActive ? <RiMessage2Fill /> : <RiMessage2Line />}
+              {commentBtnActive || commentInputVisible ? (
+                <RiMessage2Fill />
+              ) : (
+                <RiMessage2Line />
+              )}
             </div>
           </div>
           <div className="w-[10%] flex justify-between pr-6 gap-3">
@@ -181,6 +359,57 @@ function Post({ postdata }) {
             </div>
           </div>
         </div>
+        {commentInputVisible && (
+          <>
+            <hr className="border-zinc-500 rounded-full w-full mb-4 mt-6" />
+            <div id="comment-input" className="w-full">
+              <form
+                onSubmit={handleCommentSubmit}
+                className="w-full flex gap-5 items-center justify-between px-2"
+              >
+                <textarea
+                  value={commentText}
+                  onChange={(e) => {
+                    const words = e.target.value.trim().split(/\s+/);
+                    const charCount = e.target.value.length;
+                    if (words.length <= 300 && charCount <= 1500) {
+                      setCommentText(e.target.value);
+                    } else if (words.length > 300) {
+                      // Limit to 300 words
+                      const limitedText = e.target.value
+                        .trim()
+                        .split(/\s+/)
+                        .slice(0, 300)
+                        .join(" ");
+                      setCommentText(limitedText);
+                    } else if (charCount > 1500) {
+                      // Limit to 1500 characters
+                      setCommentText(e.target.value.slice(0, 1500));
+                    }
+                  }}
+                  onInput={(e) => {
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }}
+                  placeholder="Write a comment..."
+                  className="w-full bg-transparent focus:outline-none focus:ring-0 resize-none"
+                  rows="1"
+                />
+                <button type="submit">
+                  <RiSendPlaneFill
+                    color={isHoveredOverSendIcon ? "#EA516F" : "#EDEDED"}
+                    onMouseEnter={() => {
+                      setIsHoveredOverSendIcon(true);
+                    }}
+                    onMouseLeave={() => {
+                      setIsHoveredOverSendIcon(false);
+                    }}
+                  />
+                </button>
+              </form>
+            </div>
+          </>
+        )}
       </div>
     </>
   );
