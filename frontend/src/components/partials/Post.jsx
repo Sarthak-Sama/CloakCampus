@@ -17,18 +17,42 @@ function Post({ postdata }) {
   const [commentBtnActive, setCommentBtnActive] = useState(false);
   const [likeCount, setLikeCount] = useState(postdata.upvoteCount);
   const [dislikeCount, setDisLikeCount] = useState(postdata.downvoteCount);
+  const [userVote, setUserVote] = useState(postdata.userVote);
 
   const handleLike = async () => {
-    setLikeCount(likeCount + 1);
-    try {
-      const response = await axios.patch(`/posts/upvote/${postdata._id}`);
-    } catch (err) {
-      console.log("Error while liking: " + err);
-      setLikeCount(likeCount - 1);
+    if (userVote !== "upvote") {
+      // Optimistically update UI
+      setLikeCount(likeCount + 1);
+      if (userVote === "downvote") setDisLikeCount(dislikeCount - 1);
+      setUserVote("upvote");
+      try {
+        await axios.patch(`/posts/upvote/${postdata._id}`);
+      } catch (err) {
+        console.log("Error while liking: " + err);
+        // Revert optimistic update on error
+        setLikeCount(likeCount - 1);
+        if (userVote === "downvote") setDisLikeCount(dislikeCount + 1);
+        setUserVote(userVote); // Revert vote state
+      }
     }
   };
-  const handleDisike = () => {
-    setDisLikeCount(dislikeCount + 1);
+  const handleDisike = async () => {
+    if (userVote !== "downvote") {
+      // Optimistically update UI
+      setDisLikeCount(dislikeCount + 1);
+      if (userVote === "upvote") setLikeCount(likeCount - 1);
+      setUserVote("downvote");
+
+      try {
+        const response = await axios.patch(`/posts/downvote/${postdata._id}`);
+      } catch (err) {
+        console.log("Error while disliking: " + err);
+        // Revert optimistic update on error
+        setDisLikeCount(dislikeCount - 1);
+        if (userVote === "upvote") setLikeCount(likeCount + 1);
+        setUserVote(userVote); // Revert vote state
+      }
+    }
   };
 
   const getTimeAgo = (timestamp) => {
@@ -107,8 +131,12 @@ function Post({ postdata }) {
                 setLikeBtnActive(false);
               }}
             >
-              {likeBtnActive ? <RiThumbUpFill /> : <RiThumbUpLine />}
-              <span>{postdata.upvoteCount > 0 && postdata.upvoteCount}</span>
+              {likeBtnActive || userVote === "upvote" ? (
+                <RiThumbUpFill />
+              ) : (
+                <RiThumbUpLine />
+              )}
+              <span>{likeCount > 0 && likeCount}</span>
             </div>
             <div
               id="dislike"
@@ -123,10 +151,12 @@ function Post({ postdata }) {
                 setDislikeBtnActive(false);
               }}
             >
-              {dislikeBtnActive ? <RiThumbDownFill /> : <RiThumbDownLine />}
-              <span>
-                {postdata.downvoteCount > 0 && postdata.downvoteCount}
-              </span>
+              {dislikeBtnActive || userVote === "downvote" ? (
+                <RiThumbDownFill />
+              ) : (
+                <RiThumbDownLine />
+              )}
+              <span>{dislikeCount > 0 && dislikeCount}</span>
             </div>
             <div
               id="comment"

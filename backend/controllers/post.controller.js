@@ -218,7 +218,10 @@ module.exports.createComment = async (req, res, next) => {
 
     // Notify the post author about the new comment
     const message = `${req.user.name} commented on your post: "${content}"`;
-    createNotification(post.author, "comment", postId, comment._id, message);
+    // Check if the commenter is not the post author
+    if (post.author.toString() !== req.user._id.toString()) {
+      createNotification(post.author, "comment", postId, comment._id, message);
+    }
 
     // Respond with success message and the created comment
     res.status(200).json({
@@ -256,13 +259,16 @@ module.exports.replyComment = async (req, res, next) => {
 
     // Create a notification for the original comment's author
     const message = `${req.user.name} replied to your comment: ${content}`;
-    createNotification(
-      parentComment.author,
-      "reply",
-      parentComment.post,
-      reply._id,
-      message
-    );
+    // Check if the replier is not the parent comment's author
+    if (parentComment.author.toString() !== req.user._id.toString()) {
+      createNotification(
+        parentComment.author,
+        "reply",
+        parentComment.post,
+        reply._id,
+        message
+      );
+    }
 
     // Respond with success message and the created reply
     res.status(200).json({
@@ -376,12 +382,14 @@ module.exports.upvotePost = async (req, res, next) => {
       return res.status(404).json({ message: "Failed to update post counts." });
     }
 
-    // Create a notification for the post's author
-    try {
-      const message = `${req.user.username} liked your post`;
-      createNotification(post.author, "like", postId, message);
-    } catch (err) {
-      console.error("Notification creation failed:", err);
+    // Create a notification for the post's author only if the user is not the author
+    if (post.author.toString() !== req.user._id.toString()) {
+      try {
+        const message = `${req.user.username} liked your post`;
+        createNotification(post.author, "like", postId, message);
+      } catch (err) {
+        console.error("Notification creation failed:", err);
+      }
     }
 
     res.status(200).json({ message: "Post upvoted successfully." });
@@ -431,6 +439,13 @@ module.exports.downvotePost = async (req, res, next) => {
     });
 
     await postModel.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
+
+    // Check if the user is not the author of the post before creating a notification
+    const post = await postModel.findById(postId);
+    if (post.author.toString() !== req.user._id.toString()) {
+      const message = `${req.user.username} disliked your post`;
+      createNotification(post.author, "dislike", postId, message); // Adjust notification type if needed
+    }
 
     res.status(200).json({ message: "Post downvoted successfully." });
   } catch (error) {
