@@ -11,6 +11,7 @@ import {
 } from "@remixicon/react";
 import React, { useState } from "react";
 import axios from "../../utils/axios";
+import { Link } from "react-router-dom";
 
 function Post({ postdata }) {
   const [likeBtnActive, setLikeBtnActive] = useState(false);
@@ -23,80 +24,6 @@ function Post({ postdata }) {
   const [commentInputVisible, setCommentInputVisible] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [isHoveredOverSendIcon, setIsHoveredOverSendIcon] = useState(false);
-
-  // const handleLike = async () => {
-  //   if (isLoading) return; // Prevent multiple clicks
-  //   setIsLoading(true);
-
-  //   if (userVote !== "upvote") {
-  //     // Optimistically update UI
-  //     setLikeCount(likeCount + 1);
-  //     if (userVote === "downvote") setDisLikeCount(dislikeCount - 1);
-  //     setUserVote("upvote");
-
-  //     try {
-  //       await axios.patch(`/posts/upvote/${postdata._id}`);
-  //     } catch (err) {
-  //       console.error("Error while liking:", err);
-
-  //       // Revert optimistic updates on error
-  //       setLikeCount(likeCount - 1);
-  //       if (userVote === "downvote") setDisLikeCount(dislikeCount + 1);
-  //       setUserVote(userVote);
-  //     }
-  //   } else {
-  //     // Handle unvoting a like
-  //     setLikeCount(likeCount - 1);
-  //     setUserVote("");
-  //     try {
-  //       await axios.delete(`/posts/upvote/${postdata._id}`);
-  //     } catch (error) {
-  //       console.error("Error while removing like:", error);
-
-  //       // Revert optimistic updates on error
-  //       setLikeCount(likeCount + 1);
-  //       setUserVote("upvote");
-  //     }
-  //   }
-  //   setIsLoading(false);
-  // };
-
-  // const handleDislike = async () => {
-  //   if (isLoading) return; // Prevent multiple clicks
-  //   setIsLoading(true);
-
-  //   if (userVote !== "downvote") {
-  //     // Optimistically update UI
-  //     setDisLikeCount(dislikeCount + 1);
-  //     if (userVote === "upvote") setLikeCount(likeCount - 1);
-  //     setUserVote("downvote");
-
-  //     try {
-  //       await axios.patch(`/posts/downvote/${postdata._id}`);
-  //     } catch (err) {
-  //       console.error("Error while disliking:", err);
-
-  //       // Revert optimistic updates on error
-  //       setDisLikeCount(dislikeCount - 1);
-  //       if (userVote === "upvote") setLikeCount(likeCount + 1);
-  //       setUserVote(userVote);
-  //     }
-  //   } else {
-  //     // Handle unvoting a dislike
-  //     setDisLikeCount(dislikeCount - 1);
-  //     setUserVote("");
-  //     try {
-  //       await axios.delete(`/posts/downvote/${postdata._id}`);
-  //     } catch (error) {
-  //       console.error("Error while removing dislike:", error);
-
-  //       // Revert optimistic updates on error
-  //       setDisLikeCount(dislikeCount + 1);
-  //       setUserVote("downvote");
-  //     }
-  //   }
-  //   setIsLoading(false);
-  // };
 
   const getTimeAgo = (timestamp) => {
     const now = new Date();
@@ -250,7 +177,7 @@ function Post({ postdata }) {
   };
 
   return (
-    <>
+    <Link to={`/post/${postdata._id}`}>
       <div className="w-[75%] mx-auto rounded-[0.9rem] my-3 p-5 gap-8 bg-zinc-800 text-[#EDEDED]">
         <div className="flex gap-5 pr-6">
           {postdata.media && postdata.media.length > 0 && (
@@ -275,8 +202,8 @@ function Post({ postdata }) {
             </div>
           )}
           <div id="content" className="w-full">
-            <div className="flex items-center justify-between">
-              <h1 className="text-[1.7rem]">{postdata.title}</h1>
+            <div className="flex items-center justify-between gap-5">
+              <h1 className="text-[1.7rem] leading-[2rem]">{postdata.title}</h1>
               <h3 className="text-xs text-zinc-500">{timeAgo}</h3>
             </div>
 
@@ -411,7 +338,7 @@ function Post({ postdata }) {
           </>
         )}
       </div>
-    </>
+    </Link>
   );
 }
 

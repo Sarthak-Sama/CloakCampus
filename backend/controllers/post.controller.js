@@ -37,21 +37,23 @@ module.exports.createPost = async (req, res, next) => {
 
     // Check if image exists and handle it
     if (req.files && req.files.image && req.files.image.length > 0) {
-      const imagePath = req.files.image[0].path;
+      for (const imageFile of req.files.image) {
+        const imagePath = imageFile.path;
 
-      // Check if the image is NSFW using the imported function
-      // const isNSFW = await nsfwDetector.isImageNSFW(imagePath);
-      // if (isNSFW) {
-      //     fs.unlinkSync(imagePath); // Remove the image file
-      //     return res.status(400).json({ message: "NSFW content detected in the image. Upload rejected." });
-      // }
+        // Check if the image is NSFW using the imported function
+        // const isNSFW = await nsfwDetector.isImageNSFW(imagePath);
+        // if (isNSFW) {
+        //     fs.unlinkSync(imagePath); // Remove the image file
+        //     return res.status(400).json({ message: "NSFW content detected in the image. Upload rejected." });
+        // }
 
-      // If the image is safe, upload to Cloudinary
-      const imageUpload = await cloudinary.uploader.upload(imagePath, {
-        resource_type: "image",
-      });
-      media.push({ type: "image", url: imageUpload.secure_url });
-      fs.unlinkSync(imagePath); // Remove local image file after upload
+        // If the image is safe, upload to Cloudinary
+        const imageUpload = await cloudinary.uploader.upload(imagePath, {
+          resource_type: "image",
+        });
+        media.push({ type: "image", url: imageUpload.secure_url });
+        fs.unlinkSync(imagePath); // Remove local image file after upload
+      }
     }
 
     // Handle video (you can similarly integrate a video detection API here)
@@ -73,7 +75,6 @@ module.exports.createPost = async (req, res, next) => {
       fs.unlinkSync(videoPath); // Remove local video file after upload
     }
     const user = await userModel.findById(req.user._id).populate("university"); // Populate the university field
-    console.log(user);
 
     const post = await postModel.create({
       title,

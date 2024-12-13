@@ -13,12 +13,10 @@ require("./config/passport.config");
 const app = express();
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow all origins
-      callback(null, true);
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"], // Specify allowed methods
-    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+    origin: ["http://localhost:3000", "https://your-production-domain.com"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    credentials: true, // Allow cookies
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(cookieParser());

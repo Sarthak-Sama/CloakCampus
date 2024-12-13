@@ -1,15 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
-import { RiArrowLeftLine, RiCloseLine } from "@remixicon/react";
+import Cropper from "react-easy-crop";
+import getCroppedImg from "../utils/cropImage"; // Utility function to crop image
+import { RiArrowLeftLine, RiCloseLine, RiPencilFill } from "@remixicon/react";
 import { useDispatch } from "react-redux";
 import { createPost } from "../redux/actions/postAction";
 
 function UploadPostPage() {
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(""); // New state for text content
   const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [blobUrls, setBlobUrls] = useState([]);
 
   const navigate = useNavigate();
@@ -19,11 +26,6 @@ function UploadPostPage() {
     accept: "image/*, video/*",
     multiple: true,
     onDrop: (acceptedFiles) => {
-      if (files.length + acceptedFiles.length > 5) {
-        setError("Maximum 5 files allowed");
-        return;
-      }
-
       const newBlobUrls = acceptedFiles.map((file) =>
         URL.createObjectURL(file)
       );
@@ -39,6 +41,38 @@ function UploadPostPage() {
       ]);
     },
   });
+
+  const handleCropComplete = (croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleCropSave = async () => {
+    const croppedImage = await getCroppedImg(
+      selectedImage.preview,
+      croppedAreaPixels
+    );
+
+    // Create new blob URL for cropped image
+    const newBlobUrl = URL.createObjectURL(croppedImage);
+    setBlobUrls((prev) => [...prev, newBlobUrl]);
+
+    setFiles((prevFiles) =>
+      prevFiles.map((file) =>
+        file.preview === selectedImage.preview
+          ? { ...file, preview: newBlobUrl }
+          : file
+      )
+    );
+    setIsCropModalOpen(false);
+    setSelectedImage(null);
+  };
+
+  const handleCropClick = (file) => {
+    console.log("Selected file for crop:", file);
+    console.log("File preview URL:", file.preview);
+    setSelectedImage(file);
+    setIsCropModalOpen(true);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,14 +114,6 @@ function UploadPostPage() {
 
   const goBack = () => {
     navigate(-1);
-  };
-
-  const removeFile = (indexToRemove) => {
-    setFiles(files.filter((_, index) => index !== indexToRemove));
-
-    // Remove the corresponding blob URL
-    URL.revokeObjectURL(blobUrls[indexToRemove]);
-    setBlobUrls(blobUrls.filter((_, index) => index !== indexToRemove));
   };
 
   React.useEffect(() => {
@@ -157,9 +183,6 @@ function UploadPostPage() {
             <p className="text-sm text-gray-400">
               Accepted File Types: .jpg, .png, .mp4 only
             </p>
-            <p className="text-sm text-gray-400 mt-2">
-              {files.length}/5 files uploaded
-            </p>
           </div>
 
           {/* File Preview */}
@@ -168,22 +191,22 @@ function UploadPostPage() {
               <h4 className="text-gray-600">Selected Files:</h4>
               <div className="max-h-[30vh] overflow-y-auto">
                 <div className="flex flex-wrap h-full gap-2 mt-2 overflow-x-auto p-2">
-                  {files.map((file, index) => (
+                  {files.map((file) => (
                     <div key={file.path} className="w-28 h-28 relative">
-                      {file?.type?.startsWith("image") ? (
-                        <div className="w-full h-full relative">
+                      {file?.type?.startsWith("image") ? ( // Check if file and type exist
+                        <div
+                          className="w-full h-full relative group"
+                          onClick={() => handleCropClick(file)}
+                        >
                           <img
                             src={file.preview}
                             alt="Preview"
-                            className="object-cover w-full h-full rounded-md"
+                            className="object-cover w-full h-full rounded-md cursor-pointer absolute"
                           />
-                          <div
-                            className="absolute w-5 h-5 translate-x-1/2 -translate-y-1/2 right-1 top-1 rounded-full bg-red-500 flex items-center justify-center cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeFile(index);
-                            }}
-                          >
+                          <div className="w-full h-full flex items-center justify-center bg-[rgba(0,0,0,0.5)] opacity-0 group-hover:opacity-100 absolute rounded-md">
+                            <RiPencilFill color="white" />
+                          </div>
+                          <div className="absolute w-5 h-5 translate-x-1/2 -translate-y-1/2 right-1 top-1 rounded-full bg-red-500 flex items-center justify-center">
                             <RiCloseLine color="#EFEFEF" />
                           </div>
                         </div>
@@ -203,6 +226,45 @@ function UploadPostPage() {
           <h3 className="text-[#EA516F] absolute bottom-0 left-1/2 translate-x-[-50%]">
             {error}
           </h3>
+
+          {/* Crop Modal */}
+          {isCropModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+              <div className="bg-white p-4 rounded-lg shadow-lg w-96">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  Crop Image
+                </h3>
+                <div className="relative w-full h-64 bg-gray-200">
+                  <Cropper
+                    image={selectedImage?.preview || ""}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={4 / 3}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={handleCropComplete}
+                  />
+                </div>
+                <h5 className="hidden lg:block my-2 text-sm text-center text-zinc-400 uppercase font-[900]">
+                  Scroll to Zoom
+                </h5>
+                <div className="mt-4 flex justify-between">
+                  <button
+                    onClick={() => setIsCropModalOpen(false)}
+                    className="bg-gray-400 text-white py-1 px-4 rounded-md"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCropSave}
+                    className="bg-[#EA516F] text-white py-1 px-4 rounded-md"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

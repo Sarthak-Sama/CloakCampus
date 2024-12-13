@@ -9,6 +9,7 @@ import PrivateRoute from "./components/RedirectingComponents/PrivateRoute";
 import RedirectRoute from "./components/RedirectingComponents/RedirectRoute";
 import UploadPostPage from "./pages/UploadPostPage";
 import LoadingPage from "./pages/LoadingPage";
+import PostPage from "./pages/PostPage";
 
 function App() {
   return (
@@ -23,6 +24,13 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+        path="/post/:id"
+        element={
+          <PrivateRoute>
+            <PostPage />
+          </PrivateRoute>
+        } />
         <Route
           path="/upload"
           element={
