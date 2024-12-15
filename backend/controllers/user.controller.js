@@ -237,15 +237,15 @@ module.exports.login = async (req, res, next) => {
     { session: false },
     async (err, user, info) => {
       if (err) {
-        return next(err);
+        return next(err); // Ensure that no further code is executed after the error is handled
       }
       if (!user) {
-        return res.status(401).json({ message: info.message });
+        return res.status(401).json({ message: info.message }); // Return after sending response
       }
       if (!user.isVerified) {
-        // Check if the email is verified
-        return res.status(403).json({ message: "Email not verified" });
+        return res.status(403).json({ message: "Email not verified" }); // Return after sending response
       }
+
       let username;
       try {
         // Generate a random username
@@ -307,8 +307,7 @@ module.exports.login = async (req, res, next) => {
             if (error.response && error.response.status === 404) {
               retries++;
             } else {
-              next(error);
-              break;
+              return next(error); // Return after handling error
             }
           }
         }
@@ -322,7 +321,7 @@ module.exports.login = async (req, res, next) => {
         // Save the updated user with the new username and profile picture
         await user.save();
       } catch (error) {
-        return next(error);
+        return next(error); // Return after handling error
       }
 
       // Create JWT token with expiration
@@ -335,14 +334,14 @@ module.exports.login = async (req, res, next) => {
       if (toRemember) {
         res.cookie("token", token, {
           httpOnly: true, // Prevents JavaScript access
-          // secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-          secure: false,
+          secure: false, // You can enable this in production by setting secure to true
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
           sameSite: "Strict", // Helps prevent CSRF
         });
       }
 
-      res.status(200).json({
+      // Final response after all operations
+      return res.status(200).json({
         message: "User signed in successfully",
         user: {
           _id: user._id,

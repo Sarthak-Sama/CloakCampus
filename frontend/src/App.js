@@ -25,12 +25,14 @@ function App() {
           }
         />
         <Route
-        path="/post/:id"
-        element={
-          <PrivateRoute>
-            <PostPage />
-          </PrivateRoute>
-        } />
+          path="/post/:id"
+          element={
+            <PrivateRoute>
+              <HomePage />{" "}
+              {/* HomePage will conditionally show PostPage or PostGrid */}
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/upload"
           element={

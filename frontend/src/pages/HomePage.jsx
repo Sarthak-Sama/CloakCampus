@@ -5,12 +5,14 @@ import PostGrid from "../components/PostGrid";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchPosts } from "../redux/actions/postAction";
 import NotificationsTab from "../components/features/NotificationsTab";
+import { useParams } from "react-router-dom";
+import PostPage from "./PostPage";
 
 function HomePage() {
   const [isNotificationTabActive, setIsNotificationTabActive] = useState(false);
   const dispatch = useDispatch();
   const postArray = useSelector((state) => state.posts.posts);
-  console.log(postArray);
+  const { id } = useParams(); // Get the post ID from the URL if the route is "/post/:id"
 
   const toggleNotificationTab = () => {
     setIsNotificationTabActive((prevState) => !prevState);
@@ -30,7 +32,10 @@ function HomePage() {
 
       <div className="flex relative z-10">
         <SideNav />
-        {postArray ? (
+        {/* Conditionally render PostPage or PostGrid based on the URL */}
+        {id ? (
+          <PostPage /> // If there's a post ID in the URL, show PostPage
+        ) : postArray ? (
           <PostGrid className="flex-grow" postsArray={postArray} />
         ) : (
           "loading"

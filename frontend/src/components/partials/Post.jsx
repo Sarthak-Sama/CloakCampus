@@ -1,4 +1,6 @@
 import {
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
   RiMessage2Fill,
   RiMessage2Line,
   RiMore2Line,
@@ -24,6 +26,7 @@ function Post({ postdata }) {
   const [commentInputVisible, setCommentInputVisible] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [isHoveredOverSendIcon, setIsHoveredOverSendIcon] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const getTimeAgo = (timestamp) => {
     const now = new Date();
@@ -176,29 +179,74 @@ function Post({ postdata }) {
     }
   };
 
+  const handlePrevImage = (e) => {
+    e.preventDefault(); // Prevent Link navigation
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? postdata.media.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextImage = (e) => {
+    e.preventDefault(); // Prevent Link navigation
+    setCurrentImageIndex((prev) =>
+      prev === postdata.media.length - 1 ? 0 : prev + 1
+    );
+  };
+
   return (
     <Link to={`/post/${postdata._id}`}>
       <div className="w-[75%] mx-auto rounded-[0.9rem] my-3 p-5 gap-8 bg-zinc-800 text-[#EDEDED]">
         <div className="flex gap-5 pr-6">
           {postdata.media && postdata.media.length > 0 && (
-            <div id="thumbnail" className="w-[35%] flex flex-wrap gap-4">
-              {postdata.media.map((image) => {
-                return image.type === "image" ? (
-                  <img
-                    className="max-w-full h-auto rounded-[0.6rem] shadow-md"
-                    key={image._id}
-                    src={image.url}
-                    alt="Post media"
-                  />
-                ) : (
-                  <video
-                    key={image._id}
-                    src={image.url}
-                    controls
-                    className="w-full max-w-lg h-auto rounded-lg shadow-md"
-                  />
-                );
-              })}
+            <div
+              id="thumbnail"
+              className="w-[35%] flex overflow-hidden relative group"
+            >
+              {postdata.media[currentImageIndex].type === "image" ? (
+                <img
+                  className="max-w-full h-auto rounded-[0.6rem] shadow-md"
+                  key={postdata.media[currentImageIndex]._id}
+                  src={postdata.media[currentImageIndex].url}
+                  alt="Post media"
+                />
+              ) : (
+                <video
+                  key={postdata.media[currentImageIndex]._id}
+                  src={postdata.media[currentImageIndex].url}
+                  controls
+                  className="w-full max-w-lg h-auto rounded-lg shadow-md"
+                />
+              )}
+              {postdata.media.length > 1 && (
+                <>
+                  <div
+                    onClick={handlePrevImage}
+                    id="left-arrow"
+                    className="absolute w-4 h-4 bg-[#efefef] opacity-60 group-hover:opacity-100 flex items-center justify-center rounded-full top-1/2 left-3 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+                  >
+                    <RiArrowLeftSLine color="#191919" />
+                  </div>
+                  <div
+                    onClick={handleNextImage}
+                    id="right-arrow"
+                    className="absolute w-4 h-4 bg-[#efefef] opacity-60 group-hover:opacity-100 flex items-center justify-center rounded-full top-1/2 right-3 translate-x-1/2 -translate-y-1/2 cursor-pointer"
+                  >
+                    <RiArrowRightSLine color="#191919" />
+                  </div>
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-1">
+                    {postdata.media.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`rounded-full ${
+                          index === currentImageIndex
+                            ? "bg-white w-2 h-2"
+                            : "bg-gray-400 w-[.35rem] h-[.35rem] "
+                        }`}
+                      ></div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
           <div id="content" className="w-full">
