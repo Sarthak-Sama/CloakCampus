@@ -7,7 +7,6 @@ import {
   RiMessage2Fill,
   RiMessage2Line,
   RiMore2Line,
-  RiReplyLine,
   RiSendPlaneFill,
   RiShareLine,
   RiThumbDownFill,
@@ -33,21 +32,19 @@ function PostPage() {
   const [isHoveredOverSendIcon, setIsHoveredOverSendIcon] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [comments, setComments] = useState([]);
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [replyText, setReplyText] = useState("");
-
-  const getPostFromBackend = async () => {
-    try {
-      const { data } = await axios.get(`/posts/${id}`);
-      setLocalPost(data.post);
-    } catch (error) {
-      navigate("/loading");
-    }
-  };
 
   useEffect(() => {
-    getPostFromBackend();
-  }, [id]);
+    const fetchPost = async () => {
+      try {
+        const { data } = await axios.get(`/posts/${id}`);
+        setLocalPost(data.post);
+      } catch (error) {
+        navigate("/loading");
+      }
+    };
+
+    fetchPost();
+  }, [id, navigate]);
 
   useEffect(() => {
     if (localPost) {
@@ -58,41 +55,139 @@ function PostPage() {
     }
   }, [localPost]);
 
-  console.log(localPost);
+  const updateNestedComments = (comments, parentId, newReply) => {
+    return comments.map((comment) => {
+      if (comment._id === parentId) {
+        return {
+          ...comment,
+          replies: [newReply, ...(comment.replies || [])], // Add new reply at the top
+        };
+      }
+
+      // Recursively update nested replies
+      if (comment.replies && comment.replies.length > 0) {
+        return {
+          ...comment,
+          replies: updateNestedComments(comment.replies, parentId, newReply),
+        };
+      }
+
+      return comment;
+    });
+  };
 
   const handleVote = async (type) => {
-    if (isLoading) return;
+    if (isLoading) return; // Prevent multiple clicks
     setIsLoading(true);
 
     let optimisticUpdate = {};
     let revertUpdate = {};
 
-    if (type === "upvote" && userVote !== "upvote") {
-      optimisticUpdate = {
-        likeCount: likeCount + 1,
-        dislikeCount: userVote === "downvote" ? dislikeCount - 1 : dislikeCount,
-        userVote: "upvote",
-      };
-      revertUpdate = {
-        likeCount: likeCount,
-        dislikeCount: userVote === "downvote" ? dislikeCount : dislikeCount,
-        userVote: userVote,
-      };
+    if (type === "upvote") {
+      if (userVote !== "upvote") {
+        // Optimistic update for upvote
+        optimisticUpdate = {
+          likeCount: likeCount + 1,
+          dislikeCount:
+            userVote === "downvote" ? dislikeCount - 1 : dislikeCount,
+          userVote: "upvote",
+        };
 
-      setLikeCount(optimisticUpdate.likeCount);
-      setDisLikeCount(optimisticUpdate.dislikeCount);
-      setUserVote(optimisticUpdate.userVote);
+        revertUpdate = {
+          likeCount: likeCount,
+          dislikeCount: userVote === "downvote" ? dislikeCount : dislikeCount,
+          userVote: userVote,
+        };
 
-      try {
-        await axios.patch(`/posts/upvote/${id}`);
-      } catch (err) {
-        console.error("Error while liking:", err);
-        setLikeCount(revertUpdate.likeCount);
-        setDisLikeCount(revertUpdate.dislikeCount);
-        setUserVote(revertUpdate.userVote);
+        setLikeCount(optimisticUpdate.likeCount);
+        setDisLikeCount(optimisticUpdate.dislikeCount);
+        setUserVote(optimisticUpdate.userVote);
+
+        try {
+          await axios.patch(`/posts/upvote/${localPost._id}`);
+        } catch (err) {
+          console.error("Error while liking:", err);
+          // Revert changes on error
+          setLikeCount(revertUpdate.likeCount);
+          setDisLikeCount(revertUpdate.dislikeCount);
+          setUserVote(revertUpdate.userVote);
+        }
+      } else {
+        // Handle unvoting
+        optimisticUpdate = {
+          likeCount: likeCount - 1,
+          userVote: "",
+        };
+
+        revertUpdate = {
+          likeCount: likeCount,
+          userVote: "upvote",
+        };
+
+        setLikeCount(optimisticUpdate.likeCount);
+        setUserVote(optimisticUpdate.userVote);
+
+        try {
+          await axios.delete(`/posts/upvote/${localPost._id}`);
+        } catch (err) {
+          console.error("Error while unliking:", err);
+          // Revert changes on error
+          setLikeCount(revertUpdate.likeCount);
+          setUserVote(revertUpdate.userVote);
+        }
       }
     } else if (type === "downvote") {
-      // Handle downvote logic
+      if (userVote !== "downvote") {
+        // Optimistic update for downvote
+        optimisticUpdate = {
+          dislikeCount: dislikeCount + 1,
+          likeCount: userVote === "upvote" ? likeCount - 1 : likeCount,
+          userVote: "downvote",
+        };
+
+        revertUpdate = {
+          dislikeCount: dislikeCount,
+          likeCount: userVote === "upvote" ? likeCount : likeCount,
+          userVote: userVote,
+        };
+
+        setDisLikeCount(optimisticUpdate.dislikeCount);
+        setLikeCount(optimisticUpdate.likeCount);
+        setUserVote(optimisticUpdate.userVote);
+
+        try {
+          await axios.patch(`/posts/downvote/${localPost._id}`);
+        } catch (err) {
+          console.error("Error while disliking:", err);
+          // Revert changes on error
+          setDisLikeCount(revertUpdate.dislikeCount);
+          setLikeCount(revertUpdate.likeCount);
+          setUserVote(revertUpdate.userVote);
+        }
+      } else {
+        // Handle unvoting
+        optimisticUpdate = {
+          dislikeCount: dislikeCount - 1,
+          userVote: "",
+        };
+
+        revertUpdate = {
+          dislikeCount: dislikeCount,
+          userVote: "downvote",
+        };
+
+        setDisLikeCount(optimisticUpdate.dislikeCount);
+        setUserVote(optimisticUpdate.userVote);
+
+        try {
+          await axios.delete(`/posts/downvote/${localPost._id}`);
+        } catch (err) {
+          console.error("Error while un-disliking:", err);
+          // Revert changes on error
+          setDisLikeCount(revertUpdate.dislikeCount);
+          setUserVote(revertUpdate.userVote);
+        }
+      }
     }
 
     setIsLoading(false);
@@ -126,38 +221,13 @@ function PostPage() {
     );
   };
 
-  const handleReplySubmit = async (parentId) => {
-    try {
-      const { data } = await axios.post(`/posts/${parentId}/reply`, {
-        content: replyText,
-      });
-      setReplyText("");
-      setReplyingTo(null);
-      setComments((prevComments) => {
-        // Update the comments state with the new reply
-        return prevComments.map((comment) => {
-          if (comment._id === parentId) {
-            return {
-              ...comment,
-              replies: [data.reply, ...comment.replies],
-            };
-          }
-          return comment;
-        });
-      });
-    } catch (err) {
-      console.log("Error while replying: ", err);
-    }
-  };
-
   const renderComments = (comments) => {
     return comments.map((comment) => (
       <Comment
         key={comment._id}
         comment={comment}
-        setReplyingTo={setReplyingTo}
-        replyingTo={replyingTo}
-        handleReplySubmit={handleReplySubmit}
+        setComments={setComments}
+        updateNestedComments={updateNestedComments}
       />
     ));
   };

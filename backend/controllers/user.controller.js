@@ -246,7 +246,9 @@ module.exports.login = async (req, res, next) => {
         return res.status(403).json({ message: "Email not verified" }); // Return after sending response
       }
 
-      let username;
+      let usernameUpdated = false;
+      let profilePictureUpdated = false;
+
       try {
         // Generate a random username
         const usernamesResponse = await axios.get(
@@ -255,25 +257,16 @@ module.exports.login = async (req, res, next) => {
         const usernames = usernamesResponse.data.usernames;
         let usernameIndex = 0;
 
-        // Loop to get a unique username
-        while (true) {
-          username = usernames[usernameIndex];
-
-          // Check if the username is unique
+        while (usernameIndex < usernames.length) {
+          const username = usernames[usernameIndex];
           const existingUser = await userModel.findOne({ username });
+
           if (!existingUser) {
             user.username = username; // Update the username
+            usernameUpdated = true;
             break;
           }
-
           usernameIndex++;
-
-          // If we've tried all usernames, throw an error
-          if (usernameIndex >= usernames.length) {
-            throw new Error(
-              "Unable to find a unique username after trying all fetched usernames"
-            );
-          }
         }
 
         // Generate a random profile picture
@@ -282,7 +275,6 @@ module.exports.login = async (req, res, next) => {
         let profileImageResponse;
         let retries = 0;
 
-        // Loop to get a unique profile picture
         while (retries < maxRetries) {
           try {
             let imageID = Math.floor(Math.random() * max);
@@ -300,6 +292,7 @@ module.exports.login = async (req, res, next) => {
 
               if (!existingUser) {
                 user.profilePictureSrc = profileImageResponse.data.image_url; // Update the profile picture
+                profilePictureUpdated = true;
                 break;
               }
             }
@@ -312,14 +305,10 @@ module.exports.login = async (req, res, next) => {
           }
         }
 
-        if (!profileImageResponse) {
-          throw new Error(
-            "Unable to fetch a unique profile image after retries."
-          );
+        // Save the user if any updates were made
+        if (usernameUpdated || profilePictureUpdated) {
+          await user.save();
         }
-
-        // Save the updated user with the new username and profile picture
-        await user.save();
       } catch (error) {
         return next(error); // Return after handling error
       }
@@ -345,8 +334,9 @@ module.exports.login = async (req, res, next) => {
         message: "User signed in successfully",
         user: {
           _id: user._id,
-          username: user.username,
+          username: user.username, // Existing or newly set username
           email: user.email,
+          profilePictureSrc: user.profilePictureSrc, // Existing or newly set profile picture
         },
         token,
       });

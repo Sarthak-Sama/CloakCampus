@@ -1,8 +1,68 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RiReplyLine } from "@remixicon/react";
+import axios from "../../utils/axios";
 
-function Comment({ comment, setReplyingTo, replyingTo, handleReplySubmit }) {
+function Comment({ comment, setComments, updateNestedComments }) {
   const [replyText, setReplyText] = useState("");
+  const [isReplying, setIsReplying] = useState(false);
+  const [repliesVisible, setRepliesVisible] = useState(false);
+  const [replies, setReplies] = useState([]);
+  const [repliesFetched, setRepliesFetched] = useState(false);
+
+  useEffect(() => {
+    if (!comment.parentComment) {
+      setRepliesVisible(true);
+    }
+  }, [comment.parentComment]);
+
+  useEffect(() => {
+    const fetchReplies = async () => {
+      if (!repliesFetched && repliesVisible && comment.replies?.length > 0) {
+        try {
+          const response = await axios.get(`posts/${comment._id}/replies`);
+          setReplies(response.data.replies);
+          setRepliesFetched(true);
+          setComments((prevComments) =>
+            updateNestedComments(
+              prevComments,
+              comment._id,
+              response.data.replies
+            )
+          );
+        } catch (error) {
+          console.error("Error fetching replies: ", error);
+        }
+      }
+    };
+
+    fetchReplies();
+  }, [repliesVisible, repliesFetched, comment._id]);
+
+  const handleReplySubmit = async (parentId) => {
+    try {
+      const { data } = await axios.post(`/posts/${parentId}/reply`, {
+        content: replyText,
+      });
+
+      setReplyText("");
+      setIsReplying(false);
+
+      // Pass the new reply to the update function
+      setComments((prevComments) =>
+        updateNestedComments(prevComments, parentId, data.reply)
+      );
+    } catch (err) {
+      console.error("Error while replying: ", err);
+    }
+  };
+
+  const toggleRepliesVisibility = () => {
+    if (!repliesVisible && !repliesFetched) {
+      setRepliesVisible(true); // Fetch replies only on the first click of "Show Replies"
+    } else {
+      setRepliesVisible(!repliesVisible); // Just toggle visibility afterward
+    }
+  };
 
   return (
     <div key={comment._id} className="comment my-4 pb-4">
@@ -26,15 +86,25 @@ function Comment({ comment, setReplyingTo, replyingTo, handleReplySubmit }) {
           {/* Actions */}
           <div className="comment-actions mt-3 flex items-center gap-6 text-xs text-gray-500">
             <button
-              onClick={() => setReplyingTo(comment._id)}
+              onClick={() => setIsReplying(!isReplying)}
               className="hover:text-blue-500 transition-colors duration-200 flex items-center gap-1"
             >
               <RiReplyLine size={18} /> Reply
             </button>
+            <button
+              onClick={toggleRepliesVisibility}
+              className="hover:text-blue-500 transition-colors duration-200 flex items-center gap-1"
+            >
+              {comment.replies && comment.replies.length > 0
+                ? repliesVisible
+                  ? "Hide Replies"
+                  : "Show Replies"
+                : null}
+            </button>
           </div>
 
           {/* Reply Form */}
-          {replyingTo === comment._id && (
+          {isReplying && (
             <div className="reply-input mt-3 p-4 border rounded-lg bg-gray-50">
               <textarea
                 value={replyText}
@@ -53,15 +123,15 @@ function Comment({ comment, setReplyingTo, replyingTo, handleReplySubmit }) {
           )}
 
           {/* Nested comments */}
-          {comment.replies && comment.replies.length > 0 && (
+
+          {repliesVisible && replies.length > 0 && (
             <div className="nested-comments ml-6 mt-4 pl-4">
-              {comment.replies.map((reply) => (
+              {replies.map((reply) => (
                 <Comment
                   key={reply._id}
                   comment={reply}
-                  setReplyingTo={setReplyingTo}
-                  replyingTo={replyingTo}
-                  handleReplySubmit={handleReplySubmit}
+                  setComments={setComments}
+                  updateNestedComments={updateNestedComments}
                 />
               ))}
             </div>

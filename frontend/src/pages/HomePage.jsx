@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 import PostPage from "./PostPage";
 
 function HomePage() {
+  const [category, setCategory] = useState("all discussion");
   const [isNotificationTabActive, setIsNotificationTabActive] = useState(false);
   const dispatch = useDispatch();
   const postArray = useSelector((state) => state.posts.posts);
@@ -25,13 +26,13 @@ function HomePage() {
   return (
     <div className="relative w-screen h-[100vh] overflow-hidden">
       <TopNav
-        category={"all discussion"}
+        category={category}
         isNotificationTabActive={isNotificationTabActive}
         toggleNotificationTab={toggleNotificationTab}
       />
 
       <div className="flex relative z-10">
-        <SideNav />
+        <SideNav setCategory={setCategory} />
         {/* Conditionally render PostPage or PostGrid based on the URL */}
         {id ? (
           <PostPage /> // If there's a post ID in the URL, show PostPage

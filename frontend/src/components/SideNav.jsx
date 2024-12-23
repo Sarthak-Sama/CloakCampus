@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import ToggleButton from "./partials/ToggleButton";
 import { useSelector } from "react-redux";
 
-function SideNav() {
+function SideNav({ setCategory }) {
   const { user } = useSelector((state) => state.user);
   const categoriesArray = user?.categories;
   console.log(categoriesArray);
@@ -23,18 +23,33 @@ function SideNav() {
         <h3 className="uppercase text-lg">Post</h3>
         <RiAddLine className="group-hover:rotate-[90deg] transition-all duration-[0.3s] ease-in-out" />
       </Link>
-      <Link className="text-lg mt-10">All Discussion</Link>
+      <Link
+        onClick={() => {
+          setCategory("all discussion");
+        }}
+        className="text-lg mt-10"
+      >
+        All Discussion
+      </Link>
       <hr className="border-zinc-600 rounded-full w-[80%] mb-6 mt-3" />
-      {user
-        ? categoriesArray.map((cat, index) => (
-            <>
-              <Link key={index} className="text-[1.1rem] my-2">
-                {cat}
-              </Link>
-              <hr className="w-[80%] border-[1px] border-zinc-200" />
-            </>
-          ))
-        : "loading"}
+      <div className="w-full flex flex-col items-center h-[55%]">
+        {user
+          ? categoriesArray.map((cat, index) => (
+              <>
+                <Link
+                  onClick={() => {
+                    setCategory(cat);
+                  }}
+                  key={index}
+                  className="text-[1.1rem] my-2"
+                >
+                  {cat}
+                </Link>
+                <hr className="w-[80%] rounded-full border-zinc-600" />
+              </>
+            ))
+          : "loading"}
+      </div>
       <div className="flex items-center">
         <span>Color Mode:</span>
         <ToggleButton />

@@ -46,3 +46,12 @@
   transform: translateY(-50%);
   background-color: #ededed95;
 }
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: linear-gradient(45deg, #272626, #922c41);
+}

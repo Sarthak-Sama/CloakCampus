@@ -188,15 +188,30 @@ module.exports.getPosts = async (req, res, next) => {
 module.exports.getPostById = async (req, res, next) => {
   try {
     const postId = req.params.postId;
+
+    // Fetch the post and its comments
     const post = await postModel.findById(postId).populate({
       path: "comments",
       options: { sort: { createdAt: -1 } }, // Sort comments by latest
     });
+
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    res.status(200).json({ post });
+    // Check if the user has voted on the post
+    const userVote = await voteModel.findOne({
+      userId: req.user._id,
+      postId: postId,
+    });
+
+    // Add the userVote attribute to the post object
+    const postWithUserVote = {
+      ...post.toObject(),
+      userVote: userVote ? userVote.voteType : null, // Add voteType or null
+    };
+
+    res.status(200).json({ post: postWithUserVote });
   } catch (err) {
     next(err);
   }
