@@ -246,72 +246,72 @@ module.exports.login = async (req, res, next) => {
         return res.status(403).json({ message: "Email not verified" }); // Return after sending response
       }
 
-      let usernameUpdated = false;
-      let profilePictureUpdated = false;
+      // let usernameUpdated = false;
+      // let profilePictureUpdated = false;
 
-      try {
-        // Generate a random username
-        const usernamesResponse = await axios.get(
-          "https://usernameapiv1.vercel.app/api/random-usernames"
-        );
-        const usernames = usernamesResponse.data.usernames;
-        let usernameIndex = 0;
+      // try {
+      //   // Generate a random username
+      //   const usernamesResponse = await axios.get(
+      //     "https://usernameapiv1.vercel.app/api/random-usernames"
+      //   );
+      //   const usernames = usernamesResponse.data.usernames;
+      //   let usernameIndex = 0;
 
-        while (usernameIndex < usernames.length) {
-          const username = usernames[usernameIndex];
-          const existingUser = await userModel.findOne({ username });
+      //   while (usernameIndex < usernames.length) {
+      //     const username = usernames[usernameIndex];
+      //     const existingUser = await userModel.findOne({ username });
 
-          if (!existingUser) {
-            user.username = username; // Update the username
-            usernameUpdated = true;
-            break;
-          }
-          usernameIndex++;
-        }
+      //     if (!existingUser) {
+      //       user.username = username; // Update the username
+      //       usernameUpdated = true;
+      //       break;
+      //     }
+      //     usernameIndex++;
+      //   }
 
-        // Generate a random profile picture
-        const max = 10000;
-        const maxRetries = 20;
-        let profileImageResponse;
-        let retries = 0;
+      //   // Generate a random profile picture
+      //   const max = 10000;
+      //   const maxRetries = 20;
+      //   let profileImageResponse;
+      //   let retries = 0;
 
-        while (retries < maxRetries) {
-          try {
-            let imageID = Math.floor(Math.random() * max);
-            profileImageResponse = await axios.get(
-              `https://api.nekosapi.com/v3/images/${imageID}`
-            );
+      //   while (retries < maxRetries) {
+      //     try {
+      //       let imageID = Math.floor(Math.random() * max);
+      //       profileImageResponse = await axios.get(
+      //         `https://api.nekosapi.com/v3/images/${imageID}`
+      //       );
 
-            if (
-              profileImageResponse.status === 200 &&
-              profileImageResponse.data?.url
-            ) {
-              const existingUser = await userModel.findOne({
-                profilePictureSrc: profileImageResponse.data.image_url,
-              });
+      //       if (
+      //         profileImageResponse.status === 200 &&
+      //         profileImageResponse.data?.url
+      //       ) {
+      //         const existingUser = await userModel.findOne({
+      //           profilePictureSrc: profileImageResponse.data.image_url,
+      //         });
 
-              if (!existingUser) {
-                user.profilePictureSrc = profileImageResponse.data.image_url; // Update the profile picture
-                profilePictureUpdated = true;
-                break;
-              }
-            }
-          } catch (error) {
-            if (error.response && error.response.status === 404) {
-              retries++;
-            } else {
-              return next(error); // Return after handling error
-            }
-          }
-        }
+      //         if (!existingUser) {
+      //           user.profilePictureSrc = profileImageResponse.data.image_url; // Update the profile picture
+      //           profilePictureUpdated = true;
+      //           break;
+      //         }
+      //       }
+      //     } catch (error) {
+      //       if (error.response && error.response.status === 404) {
+      //         retries++;
+      //       } else {
+      //         return next(error); // Return after handling error
+      //       }
+      //     }
+      //   }
 
-        // Save the user if any updates were made
-        if (usernameUpdated || profilePictureUpdated) {
-          await user.save();
-        }
-      } catch (error) {
-        return next(error); // Return after handling error
-      }
+      //   // Save the user if any updates were made
+      //   if (usernameUpdated || profilePictureUpdated) {
+      //     await user.save();
+      //   }
+      // } catch (error) {
+      //   return next(error); // Return after handling error
+      // }
 
       // Create JWT token with expiration
       const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
