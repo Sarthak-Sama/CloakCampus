@@ -15,6 +15,7 @@ import {
   RiThumbUpLine,
 } from "@remixicon/react";
 import Comment from "../components/partials/Comment";
+import { useSelector } from "react-redux";
 
 function PostPage() {
   const { id } = useParams();
@@ -32,6 +33,7 @@ function PostPage() {
   const [isHoveredOverSendIcon, setIsHoveredOverSendIcon] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [comments, setComments] = useState([]);
+  const theme = useSelector((state) => state.theme.theme);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -355,24 +357,6 @@ function PostPage() {
                     )}
                     <span>{dislikeCount > 0 && dislikeCount}</span>
                   </div>
-                  <div
-                    id="comment"
-                    onClick={() => setCommentInputVisible(!commentInputVisible)}
-                    onMouseEnter={() => {
-                      setCommentBtnActive(true);
-                      setLikeBtnActive(false);
-                      setDislikeBtnActive(false);
-                    }}
-                    onMouseLeave={() => {
-                      setCommentBtnActive(false);
-                    }}
-                  >
-                    {commentBtnActive || commentInputVisible ? (
-                      <RiMessage2Fill />
-                    ) : (
-                      <RiMessage2Line />
-                    )}
-                  </div>
                 </div>
                 <div className="w-[10%] flex justify-between pr-6 gap-3">
                   <div>
@@ -393,7 +377,7 @@ function PostPage() {
             <div id="comment-input" className="w-full mt-5">
               <form
                 onSubmit={handleCommentSubmit}
-                className="w-full flex gap-5 items-center justify-between px-2"
+                className="w-full flex gap-5 items-center justify-between px-2 mb-10"
               >
                 <textarea
                   value={commentText}
@@ -423,7 +407,15 @@ function PostPage() {
                 />
                 <button type="submit">
                   <RiSendPlaneFill
-                    color={isHoveredOverSendIcon ? "#EA516F" : "#EDEDED"}
+                    color={
+                      isHoveredOverSendIcon
+                        ? theme === "dark"
+                          ? "#EA516F"
+                          : "#D71B53"
+                        : theme === "dark"
+                        ? "#EDEDED"
+                        : "#4A4A4A"
+                    }
                     onMouseEnter={() => {
                       setIsHoveredOverSendIcon(true);
                     }}

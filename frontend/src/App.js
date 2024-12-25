@@ -10,10 +10,15 @@ import RedirectRoute from "./components/RedirectingComponents/RedirectRoute";
 import UploadPostPage from "./pages/UploadPostPage";
 import LoadingPage from "./pages/LoadingPage";
 import PostPage from "./pages/PostPage";
+import UniversityPage from "./pages/UniversityPage";
+import { useDispatch } from "react-redux";
+import { setTheme } from "./redux/reducers/themeSlice";
 
 function App() {
+  const dispatch = useDispatch();
+  dispatch(setTheme());
   return (
-    <div className="bg-[#161616]">
+    <div className="bg-[#EDEDED] dark:bg-[#161616]">
       <Routes>
         {/* Protected Routes - Redirects to /auth if not logged in */}
         <Route
@@ -47,6 +52,15 @@ function App() {
           element={
             <PrivateRoute>
               <ProfilePage />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/university"
+          element={
+            <PrivateRoute>
+              <UniversityPage />
             </PrivateRoute>
           }
         />

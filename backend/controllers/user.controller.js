@@ -152,7 +152,7 @@ module.exports.signup = async (req, res, next) => {
           retries++;
         } else {
           // If there's another error, log it and break the loop
-          next(err);
+          next(error);
           break;
         }
       }

@@ -81,7 +81,9 @@ function Comment({ comment, setComments, updateNestedComments }) {
           </div>
 
           {/* Comment Body */}
-          <p className="mt-2 text-zinc-200 text-sm">{comment.content}</p>
+          <p className="mt-2 text-zinc-800 dark:text-zinc-200 text-sm">
+            {comment.content}
+          </p>
 
           {/* Actions */}
           <div className="comment-actions mt-3 flex items-center gap-6 text-xs text-gray-500">

@@ -8,6 +8,7 @@ export const fetchUser = () => async (dispatch) => {
     const response = await axios.get("/user/profile");
 
     let userData = {
+      _id: response.data.user._id,
       profilePictureSrc: response.data.user.profilePictureSrc,
       username: response.data.user.username,
       email: response.data.user.email,
@@ -15,7 +16,6 @@ export const fetchUser = () => async (dispatch) => {
       categories: response.data.user.university.universityCategories,
       createdAt: response.data.user.createdAt,
     };
-    console.log(userData);
 
     dispatch(loadUser(userData));
   } catch (error) {

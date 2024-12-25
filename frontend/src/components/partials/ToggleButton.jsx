@@ -1,13 +1,23 @@
 import React from "react";
 import "./ToggleButton.css";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme } from "../../redux/reducers/themeSlice";
 
 const ToggleButton = () => {
+  const dispatch = useDispatch();
+  const { theme } = useSelector((state) => state.theme);
   return (
     <label
       id="theme-toggle-button"
       style={{ scale: "0.5", transform: "translateY(-10%)" }}
     >
-      <input type="checkbox" id="toggle" />
+      <input
+        onClick={() => dispatch(toggleTheme())}
+        type="checkbox"
+        id="toggle"
+        checked={theme === "dark"}
+        readOnly
+      />
       <svg
         viewBox="0 0 69.667 44"
         xmlnsXlink="http://www.w3.org/1999/xlink"

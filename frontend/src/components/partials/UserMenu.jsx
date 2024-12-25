@@ -24,7 +24,7 @@ function UserMenu() {
         </Link>
         <hr className="border-zinc-400 border-[.7px] my-3" />
         <Link
-          to={"/profile"}
+          to={"/university"}
           className="flex gap-4 hover:-translate-y-1 transition-all duration-[.3s] ease-in-out"
         >
           <RiSchoolLine color="#161616" /> Your University

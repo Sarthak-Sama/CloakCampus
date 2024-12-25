@@ -195,12 +195,12 @@ function Post({ postdata }) {
 
   return (
     <Link to={`/post/${postdata._id}`}>
-      <div className="w-[75%] mx-auto rounded-[0.9rem] my-3 p-5 gap-8 bg-zinc-800 text-[#EDEDED]">
-        <div className="flex gap-5 pr-6">
+      <div className="w-[75%] mx-auto rounded-[0.6rem] lg:rounded-[0.9rem] my-3 p-5 gap-8 bg-zinc-300 dark:bg-zinc-800 text-[#161616] dark:text-[#EDEDED]">
+        <div className="lg:flex gap-5 pr-6">
           {postdata.media && postdata.media.length > 0 && (
             <div
               id="thumbnail"
-              className="w-[35%] flex overflow-hidden relative group"
+              className="w-[110%] lg:w-[35%] flex overflow-hidden relative group"
             >
               {postdata.media[currentImageIndex].type === "image" ? (
                 <img
@@ -249,13 +249,15 @@ function Post({ postdata }) {
               )}
             </div>
           )}
-          <div id="content" className="w-full">
+          <div id="content" className="w-full mt-5 lg:mt-0">
             <div className="flex items-center justify-between gap-5">
-              <h1 className="text-[1.7rem] leading-[2rem]">{postdata.title}</h1>
+              <h1 className="text-[1.5rem] leading-[1.5rem] lg:text-[1.7rem] lg:leading-[2rem]">
+                {postdata.title}
+              </h1>
               <h3 className="text-xs text-zinc-500">{timeAgo}</h3>
             </div>
 
-            <h3 className="text-xs text-zinc-400">
+            <h3 className="text-xs text-zinc-400 mt-2">
               Posted by <b>{postdata.authorUsername}</b>
             </h3>
             <p className="mt-5 ">{postdata.textContent}</p>
@@ -263,13 +265,17 @@ function Post({ postdata }) {
         </div>
         <div
           id="operations"
-          className="flex w-[100%] justify-between mt-5 pl-2"
+          className="flex w-[100%] lg:w-[100%] justify-between mt-5 pl-0 lg:pl-2"
         >
-          <div className="w-[35%] flex justify-between">
+          <div className="w-[80%] lg:w-[35%] flex justify-around lg:justify-between">
             <div
               id="like"
               className="flex gap-4"
-              onClick={() => handleVote("upvote")}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent navigation
+                e.stopPropagation(); // Prevent event bubbling to the parent Link
+                handleVote("upvote");
+              }}
               onMouseEnter={() => {
                 setLikeBtnActive(true);
                 setDislikeBtnActive(false);
@@ -289,7 +295,11 @@ function Post({ postdata }) {
             <div
               id="dislike"
               className="flex gap-2"
-              onClick={() => handleVote("downvote")}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent navigation
+                e.stopPropagation(); // Prevent event bubbling to the parent Link
+                handleVote("downvote");
+              }}
               onMouseEnter={() => {
                 setDislikeBtnActive(true);
                 setLikeBtnActive(false);
@@ -308,7 +318,11 @@ function Post({ postdata }) {
             </div>
             <div
               id="comment"
-              onClick={() => setCommentInputVisible(!commentInputVisible)}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent navigation
+                e.stopPropagation(); // Prevent event bubbling to the parent Link
+                setCommentInputVisible(!commentInputVisible);
+              }}
               onMouseEnter={() => {
                 setCommentBtnActive(true);
                 setLikeBtnActive(false);
@@ -325,7 +339,7 @@ function Post({ postdata }) {
               )}
             </div>
           </div>
-          <div className="w-[10%] flex justify-between pr-6 gap-3">
+          <div className="w-[20%] lg:w-[10%] flex justify-around lg:justify-between pr-6 gap-3">
             <div>
               <RiShareLine />
             </div>

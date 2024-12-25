@@ -18,15 +18,18 @@
 
 * {
   font-family: "kollektif";
-  color: #ededed;
 }
 
-.small-border {
+.small-border-dark {
+  position: relative;
+  border-radius: 100%;
+}
+.small-border-light {
   position: relative;
   border-radius: 100%;
 }
 
-.small-border::after {
+.small-border-dark::after {
   content: "";
   position: absolute;
   top: 0%;
@@ -36,7 +39,7 @@
   transform: translateY(-50%);
   background-color: #ededed95;
 }
-.small-border::before {
+.small-border-dark::before {
   content: "";
   position: absolute;
   top: 100%;
@@ -45,6 +48,27 @@
   height: 40%;
   transform: translateY(-50%);
   background-color: #ededed95;
+}
+
+.small-border-light::after {
+  content: "";
+  position: absolute;
+  top: 0%;
+  right: 0;
+  width: 0.5px;
+  height: 40%;
+  transform: translateY(-50%);
+  background-color: #000;
+}
+.small-border-light::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 0.5px;
+  height: 40%;
+  transform: translateY(-50%);
+  background-color: #000;
 }
 
 ::-webkit-scrollbar {
