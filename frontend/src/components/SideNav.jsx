@@ -7,7 +7,6 @@ import { useSelector } from "react-redux";
 function SideNav({ setCategory }) {
   const { user } = useSelector((state) => state.user);
   const categoriesArray = user?.categories;
-  console.log(categoriesArray);
 
   return (
     <div className="w-[25%] text-[#161616] dark:text-[#EDEDED] h-screen flex flex-col items-center text-center pl-5 pr-12 pt-8 small-border-light dark:small-border-dark">

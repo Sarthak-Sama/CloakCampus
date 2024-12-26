@@ -87,9 +87,9 @@ module.exports.signup = async (req, res, next) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
     let username;
+    const defaultUsername = `User${Math.floor(100 + Math.random() * 900)}`; // Default username if retries exceed
     // Fetch a random username from the API
     try {
-      // Fetch random usernames from the API once
       const response = await axios.get(
         "https://usernameapiv1.vercel.app/api/random-usernames"
       );
@@ -103,14 +103,11 @@ module.exports.signup = async (req, res, next) => {
         const existingUser = await userModel.findOne({ username });
 
         if (!existingUser) {
-          // If the username is unique, break the loop
-          break;
+          break; // If the username is unique, break the loop
         }
 
-        // If username already exists, move to the next index
         index++;
 
-        // If we've exhausted all the usernames in the list, break the loop
         if (index >= usernames.length) {
           throw new Error(
             "Unable to find a unique username after trying all fetched usernames"
@@ -118,17 +115,16 @@ module.exports.signup = async (req, res, next) => {
         }
       }
     } catch (error) {
-      next(error);
+      username = defaultUsername; // Use the default username if an error occurs
     }
 
     // Get a random image for profile picture
-    // Generate a random image ID
-    const max = 10000; // Set your max value for image ID
-    const maxRetries = 20; // Set max number of retires
+    const max = 10000;
+    const maxRetries = 20;
     let profileImageResponse;
+    const defaultProfileImage = "./profileIcon.jpg"; // Default image if retries fail
     let retries = 0;
 
-    // Re-request the image until a valid (200) response is returned
     while (retries < maxRetries) {
       try {
         let imageID = Math.floor(Math.random() * max);
@@ -143,33 +139,31 @@ module.exports.signup = async (req, res, next) => {
             profilePictureSrc: profileImageResponse.data.image_url,
           });
           if (!existingUser) {
-            break; // Break out of the loop if the response status is 200 and the url is unique
+            break;
           }
         }
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          // If the status code is 404, generate a new imageID and try again
           retries++;
         } else {
-          // If there's another error, log it and break the loop
           next(error);
           break;
         }
       }
     }
 
-    if (!profileImageResponse) {
-      throw new Error("Unable to fetch a unique profile image after retries.");
-    }
+    const profilePictureSrc = profileImageResponse
+      ? profileImageResponse.data.image_url
+      : defaultProfileImage; // Set default image if none was found
 
     const university = isValidDomain;
 
     const user = await userModel.create({
       email,
       password: hashedPassword,
-      username, // Use the fetched username
-      profilePictureSrc: profileImageResponse.data.image_url,
-      university, // isValidDomain stores the University name and domain.
+      username,
+      profilePictureSrc,
+      university,
       otp, // Store the OTP temporarily
       isVerified: false, // Track if the email is verified
     });

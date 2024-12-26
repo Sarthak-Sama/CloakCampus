@@ -234,6 +234,16 @@ function PostPage() {
     ));
   };
 
+  const copyUrlToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.href}`);
+      alert("Text copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+      alert("Failed to copy text.");
+    }
+  };
+
   return (
     <>
       {localPost ? (
@@ -359,7 +369,7 @@ function PostPage() {
                   </div>
                 </div>
                 <div className="w-[10%] flex justify-between pr-6 gap-3">
-                  <div>
+                  <div onClick={() => copyUrlToClipboard()}>
                     <RiShareLine />
                   </div>
                   <div>

@@ -18,9 +18,14 @@ function Auth() {
   const [signupErrorMessage, setSignupErrorMessage] = useState(""); // State for signup error message
   const [loginErrorMessage, setLoginErrorMessage] = useState(""); // State for login error message
   const [isLoading, setisLoading] = useState(false); // State for loading status
+
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+
+  const [destinedUrl, setDestinedUrl] = useState(
+    location.pathname === "/" || location.pathname === "/auth" ? "" : location
+  ); // State for when the user wants to go to a specific page
 
   useEffect(() => {
     const handleResize = () => {
@@ -105,7 +110,7 @@ function Auth() {
       setisLoading(false); // Reset loading to false after response
 
       if (response.success) {
-        // Handle successful signup (e.g., redirect to login page or show success message)
+        // Handle successful signup
         navigate(`${location.pathname}/verify-otp`, {
           state: { email, password },
         });
@@ -129,7 +134,8 @@ function Auth() {
     setisLoading(false); // Reset loading to false after response
 
     if (response.success) {
-      navigate("/");
+      navigate(destinedUrl ? destinedUrl : "/");
+      console.log(destinedUrl);
     } else {
       setLoginErrorMessage(response.errorMessage || "Wrong"); // Use the new state for login error message
     }

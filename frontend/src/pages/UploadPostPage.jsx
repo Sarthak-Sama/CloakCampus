@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
 import { RiArrowLeftLine, RiCloseLine } from "@remixicon/react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createPost } from "../redux/actions/postAction";
+import { loadUser } from "../redux/reducers/userSlice";
 
 function UploadPostPage() {
   const [title, setTitle] = useState("");
@@ -14,6 +15,13 @@ function UploadPostPage() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const { user } = useSelector((state) => state.user);
+  const categoriesArray = user?.categories;
+  console.log(categoriesArray);
+  useEffect(() => {
+    loadUser();
+  }, [user, dispatch]);
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: "image/*, video/*",
@@ -58,6 +66,9 @@ function UploadPostPage() {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("textContent", content);
+    // Append the selected category
+    const selectedCategory = document.getElementById("category").value;
+    formData.append("category", selectedCategory);
 
     // Handle multiple files
     if (files && files.length > 0) {
@@ -98,41 +109,66 @@ function UploadPostPage() {
   }, [blobUrls]);
 
   return (
-    <div className="flex justify-center items-center w-screen min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center w-screen min-h-screen bg-gray-100 dark:bg-[#191919]">
       <RiArrowLeftLine
         size={40}
-        className="text-zinc-500 hover:text-black absolute left-0 top-0 mt-5 ml-5"
+        className="text-black opacity-50 hover:opacity-100 dark:text-[#EDEDED] absolute left-0 top-0 mt-5 ml-5"
         onClick={goBack}
       />
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[70%] flex gap-5">
+      <div className="bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg w-[70%] flex gap-5">
         <div className="w-1/2">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-[#EDEDED] mb-4">
             Upload Post
           </h2>
 
           {/* Title Input */}
           <div className="mb-4">
-            <label className="block text-gray-600 mb-1">Title</label>
+            <label className="block text-gray-600 dark:text-zinc-300 mb-1">
+              Title
+            </label>
             <input
               type="text"
               placeholder="Enter post title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-2 border rounded-md outline-none focus:border-[#EA516F]"
+              className="w-full p-2 border border-[#161616] rounded-md outline-none focus:border-[#EA516F] text-black dark:text-white dark:bg-[#161616]"
               required
             />
           </div>
           {/* Content Input */}
           <div className="mb-4">
-            <label className="block text-gray-600 mb-1">Content</label>
+            <label className="block text-gray-600 dark:text-zinc-300 mb-1">
+              Content
+            </label>
             <textarea
               type="text"
               placeholder="Spill the tea.."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full h-[10rem] resize-none p-2 border rounded-md outline-none focus:border-[#EA516F]"
+              className="w-full h-[10rem] resize-none p-2 border border-[#161616] rounded-md outline-none focus:border-[#EA516F] text-black dark:text-white dark:bg-[#161616]"
               required
             />
+          </div>
+
+          {/* Category Menu */}
+
+          <div className="mb-4">
+            <label className="inline mr-5 text-gray-600 dark:text-zinc-300 mb-1">
+              Category (Optional):
+            </label>
+            <select
+              className="px-3 py-2 text-sm dark:bg-[#161616] dark:text-[#EDEDED]"
+              name="catgory"
+              id="category"
+            >
+              <option value="">General/All</option>
+              {categoriesArray?.map((cat, index) => (
+                <option key={index} value={cat}>
+                  {cat}
+                </option>
+              ))}
+              {/* <option value={} ></option> */}
+            </select>
           </div>
 
           {/* Submit Button */}
@@ -165,7 +201,9 @@ function UploadPostPage() {
           {/* File Preview */}
           {files.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-gray-600">Selected Files:</h4>
+              <h4 className="text-gray-600 dark:text-zinc-300">
+                Selected Files:
+              </h4>
               <div className="max-h-[30vh] overflow-y-auto">
                 <div className="flex flex-wrap h-full gap-2 mt-2 overflow-x-auto p-2">
                   {files.map((file, index) => (

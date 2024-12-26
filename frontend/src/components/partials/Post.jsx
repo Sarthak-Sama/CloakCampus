@@ -193,6 +193,18 @@ function Post({ postdata }) {
     );
   };
 
+  const copyUrlToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.href}post/${postdata._id}`
+      );
+      alert("Text copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+      alert("Failed to copy text.");
+    }
+  };
+
   return (
     <Link to={`/post/${postdata._id}`}>
       <div className="w-[75%] mx-auto rounded-[0.6rem] lg:rounded-[0.9rem] my-3 p-5 gap-8 bg-zinc-300 dark:bg-zinc-800 text-[#161616] dark:text-[#EDEDED]">
@@ -340,7 +352,12 @@ function Post({ postdata }) {
             </div>
           </div>
           <div className="w-[20%] lg:w-[10%] flex justify-around lg:justify-between pr-6 gap-3">
-            <div>
+            <div
+              onClick={(e) => {
+                e.preventDefault();
+                copyUrlToClipboard();
+              }}
+            >
               <RiShareLine />
             </div>
             <div>
