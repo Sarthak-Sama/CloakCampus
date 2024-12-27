@@ -12,7 +12,7 @@ import UserMenu from "./partials/UserMenu";
 
 function TopNav({
   category,
-  setSearchQuery,
+  searchFunc,
   isNotificationTabActive,
   toggleNotificationTab,
 }) {
@@ -40,7 +40,7 @@ function TopNav({
       </div>
       <div className="flex gap-7 items-center">
         <div id="search-div">
-          <SearchBar setSearchQuery={setSearchQuery} />
+          <SearchBar searchFunc={searchFunc} />
         </div>
         {user ? (
           <div id="nav-btns" className="flex items-center gap-2">

@@ -221,6 +221,7 @@ module.exports.searchPosts = async (req, res, next) => {
   try {
     const { query } = req.query;
     const page = parseInt(req.query.page) || 1;
+    const limit = 20;
     const skip = (page - 1) * limit;
 
     const searchConditions = {
