@@ -135,7 +135,7 @@ module.exports.getPosts = async (req, res, next) => {
   try {
     // Get pagination parameters from the request query
     const page = parseInt(req.query.page) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit) || 10; // Default to 10 posts per page
+    const limit = 20; // Default to 10 posts per page
 
     // Calculate the number of posts to skip
     const skip = (page - 1) * limit;
@@ -214,6 +214,27 @@ module.exports.getPostById = async (req, res, next) => {
     res.status(200).json({ post: postWithUserVote });
   } catch (err) {
     next(err);
+  }
+};
+
+module.exports.searchPosts = async (req, res, next) => {
+  try {
+    const { query } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    const searchConditions = {
+      title: { $regex: query || "", $options: "i" }, // Default query to an empty string if undefined
+    };
+
+    const posts = await postModel
+      .find(searchConditions)
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json(posts);
+  } catch (err) {
+    next(err); // Pass errors to the error-handling middleware
   }
 };
 

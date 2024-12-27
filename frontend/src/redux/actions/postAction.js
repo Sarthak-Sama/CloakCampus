@@ -28,3 +28,8 @@ export const createPost = (formData, navigate) => async (dispatch) => {
     throw new Error("An error occured while posting.");
   }
 };
+
+export const deletePost = (postId) => async (dispatch) => {
+  try {
+  } catch (error) {}
+};

@@ -15,6 +15,7 @@ router.post(
   multerConfig.compressFiles,
   postController.createPost
 );
+router.delete("/delete-post/:postId", postController.deletePost);
 
 router.post("/:postId/comment", postController.createComment);
 router.post("/:commentId/reply", postController.replyComment);

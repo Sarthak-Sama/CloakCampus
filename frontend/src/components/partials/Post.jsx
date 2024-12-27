@@ -269,9 +269,14 @@ function Post({ postdata }) {
               <h3 className="text-xs text-zinc-500">{timeAgo}</h3>
             </div>
 
-            <h3 className="text-xs text-zinc-400 mt-2">
+            <h3 className="text-xs text-zinc-600 dark:text-zinc-400 my-2">
               Posted by <b>{postdata.authorUsername}</b>
             </h3>
+            {postdata.category && (
+              <div className="w-fit px-4 py-[0.25rem] bg-[#ea516f] w-fit text-xs text-white rounded-full">
+                {postdata.category}
+              </div>
+            )}
             <p className="mt-5 ">{postdata.textContent}</p>
           </div>
         </div>

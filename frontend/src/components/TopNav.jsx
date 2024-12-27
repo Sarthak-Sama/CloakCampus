@@ -10,7 +10,12 @@ import {
 } from "@remixicon/react";
 import UserMenu from "./partials/UserMenu";
 
-function TopNav({ category, isNotificationTabActive, toggleNotificationTab }) {
+function TopNav({
+  category,
+  setSearchQuery,
+  isNotificationTabActive,
+  toggleNotificationTab,
+}) {
   const dispatch = useDispatch();
   const [hoveredOverUser, setHoveredOverUser] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -35,7 +40,7 @@ function TopNav({ category, isNotificationTabActive, toggleNotificationTab }) {
       </div>
       <div className="flex gap-7 items-center">
         <div id="search-div">
-          <SearchBar />
+          <SearchBar setSearchQuery={setSearchQuery} />
         </div>
         {user ? (
           <div id="nav-btns" className="flex items-center gap-2">

@@ -247,7 +247,7 @@ function PostPage() {
   return (
     <>
       {localPost ? (
-        <div className="w-[72%] h-[88vh] overflow-auto mt-[12vh] p-10">
+        <div className="w-[72%] h-[88vh] overflow-auto mt-[12vh] p-10 dark:text-white">
           <div id="information" className="flex">
             <div id="images">
               {localPost.media && localPost.media.length > 0 && (
@@ -317,9 +317,14 @@ function PostPage() {
                   </h3>
                 </div>
 
-                <h3 className="text-xs text-zinc-400">
+                <h3 className="text-xs text-zinc-600 dark:text-zinc-400">
                   Posted by <b>{localPost.authorUsername}</b>
                 </h3>
+                {localPost.category && (
+                  <div className="w-fit px-4 py-[0.25rem] bg-[#ea516f] w-fit text-xs text-white rounded-full my-2">
+                    {localPost.category}
+                  </div>
+                )}
                 <p className="mt-5 ">{localPost.textContent}</p>
               </div>
               <div

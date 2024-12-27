@@ -2,13 +2,14 @@ import { RiSearchLine } from "@remixicon/react";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 
-function SearchBar() {
+function SearchBar({ setSearchQuery }) {
   const [query, setQuery] = useState("");
   const { theme } = useSelector((state) => state.theme);
 
   const handleInputChange = (e) => {
     const newQuery = e.target.value;
     setQuery(newQuery);
+    setSearchQuery(newQuery);
   };
 
   return (
@@ -21,7 +22,7 @@ function SearchBar() {
         className="w-full bg-transparent focus:outline-none focus:ring-0"
       />
       <RiSearchLine
-        color={theme == "dark" ? "#EDEDED" : "#161616"}
+        color={theme === "dark" ? "#EDEDED" : "#161616"}
         className={query ? "opacity-100" : "opacity-50"}
       />
     </div>

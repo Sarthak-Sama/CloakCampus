@@ -10,11 +10,14 @@ function SideNav({ setCategory }) {
 
   return (
     <div className="w-[25%] text-[#161616] dark:text-[#EDEDED] h-screen flex flex-col items-center text-center pl-5 pr-12 pt-8 small-border-light dark:small-border-dark">
-      <h1 className="text-left text-4xl font-['shrimp] leading-[2rem] mb-10">
+      <Link
+        to={"/"}
+        className="text-left text-4xl font-['shrimp] leading-[2rem] mb-10"
+      >
         Cloak
         <br />
         Campus
-      </h1>
+      </Link>
       <Link
         to={"/upload"}
         className="flex gap-2 items-center bg-[#EA516F] text-[#161616] dark:text-[#EDEDED] px-10 py-3 rounded-full group"

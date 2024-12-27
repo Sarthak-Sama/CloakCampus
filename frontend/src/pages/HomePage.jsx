@@ -10,6 +10,7 @@ import PostPage from "./PostPage";
 
 function HomePage() {
   const [category, setCategory] = useState("all discussion");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isNotificationTabActive, setIsNotificationTabActive] = useState(false);
   const dispatch = useDispatch();
   const postArray = useSelector((state) => state.posts.posts);
@@ -27,6 +28,7 @@ function HomePage() {
     <div className="relative w-screen h-[100vh] overflow-hidden">
       <TopNav
         category={category}
+        setSearchQuery={setSearchQuery}
         isNotificationTabActive={isNotificationTabActive}
         toggleNotificationTab={toggleNotificationTab}
       />
@@ -37,7 +39,12 @@ function HomePage() {
         {id ? (
           <PostPage /> // If there's a post ID in the URL, show PostPage
         ) : postArray ? (
-          <PostGrid className="flex-grow" postsArray={postArray} />
+          <PostGrid
+            className="flex-grow"
+            postsArray={postArray}
+            category={category}
+            searchQuery={searchQuery}
+          />
         ) : (
           "loading"
         )}
