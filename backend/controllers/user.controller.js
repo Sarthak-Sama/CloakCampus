@@ -110,6 +110,7 @@ module.exports.signup = async (req, res, next) => {
       // Fetch profile image
       const defaultProfileImage =
         "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
+      let profilePictureSrc = defaultProfileImage;
       try {
         const imageID = Math.floor(Math.random() * 10000);
         const response = await axios.get(
