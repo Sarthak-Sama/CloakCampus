@@ -3,7 +3,7 @@ import Post from "./partials/Post";
 
 function PostGrid({ postsArray, category }) {
   return (
-    <div className="h-[88vh] mt-[12vh] w-[75%] py-10 px-2 overflow-auto">
+    <div>
       {postsArray ? (
         postsArray.map((post, index) => {
           if (

@@ -247,7 +247,7 @@ function PostPage() {
   return (
     <>
       {localPost ? (
-        <div className="w-[72%] h-[88vh] overflow-auto mt-[12vh] p-10 dark:text-white">
+        <div className="mt-[-6vh] overflow-auto p-10 dark:text-white">
           <div id="information" className="flex">
             <div id="images">
               {localPost.media && localPost.media.length > 0 && (

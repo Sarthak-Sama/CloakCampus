@@ -1,4 +1,4 @@
-import { addPost, setPosts } from "../reducers/postsSlice";
+import { addPost, setPosts, removePost } from "../reducers/postsSlice";
 import axios from "../../utils/axios";
 
 // Action to fetch posts from the API
@@ -31,5 +31,10 @@ export const createPost = (formData, navigate) => async (dispatch) => {
 
 export const deletePost = (postId) => async (dispatch) => {
   try {
-  } catch (error) {}
+    await axios.delete(`/posts/delete-post/${postId}`);
+    // Dispatch the removePost action to update the state
+    dispatch(removePost(postId));
+  } catch (error) {
+    console.log("Error occurred while deleting the post: ", error);
+  }
 };

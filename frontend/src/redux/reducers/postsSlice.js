@@ -22,10 +22,13 @@ const postsSlice = createSlice({
       // Sort the posts after adding the new one
       state.posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     },
+    removePost: (state, action) => {
+      state.posts = state.posts.filter((post) => post.id !== action.payload);
+    },
   },
 });
 
 // Export actions
-export const { setPosts, addPost } = postsSlice.actions;
+export const { setPosts, addPost, removePost } = postsSlice.actions;
 
 export default postsSlice.reducer;

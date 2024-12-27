@@ -99,13 +99,13 @@ module.exports.createPost = async (req, res, next) => {
 
 module.exports.deletePost = async (req, res, next) => {
   try {
-    // Check if the user is the author of the post or an admin
+    // Find the post by its ID
     const post = await postModel.findOne({ _id: req.params.postId });
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Allow deletion if the user is the author or an admin
+    // Check if the user is the author or an admin
     if (
       post.author.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
@@ -115,18 +115,22 @@ module.exports.deletePost = async (req, res, next) => {
         .json({ message: "You do not have permission to delete this post" });
     }
 
-    // Proceed to delete the post
+    // Delete the post
     await postModel.findOneAndDelete({ _id: req.params.postId });
 
     // Delete all comments associated with the post
-    await commentModel.deleteMany({ postId: post._id });
+    await commentModel.deleteMany({ postId: req.params.postId });
+
+    // Delete all votes associated with the post
+    await voteModel.deleteMany({ postId: req.params.postId });
 
     // Respond with success message
-    res
-      .status(200)
-      .json({ message: "Post and its comments deleted successfully" });
+    res.status(200).json({
+      message: "Post, associated comments, and votes deleted successfully",
+    });
   } catch (error) {
-    next(error); // Pass the error to the next middleware
+    console.error("Error deleting post:", error);
+    next(error); // Pass the error to the error-handling middleware
   }
 };
 
@@ -224,16 +228,48 @@ module.exports.searchPosts = async (req, res, next) => {
     const limit = 20;
     const skip = (page - 1) * limit;
 
+    // Search condition based on the query
     const searchConditions = {
-      title: { $regex: query || "", $options: "i" }, // Default query to an empty string if undefined
+      title: { $regex: query || "", $options: "i" }, // Case-insensitive search by title
     };
 
+    // Fetch posts matching the search query with pagination
     const posts = await postModel
       .find(searchConditions)
       .skip(skip)
       .limit(limit);
 
-    res.status(200).json(posts);
+    // Get the IDs of the fetched posts
+    const postIds = posts.map((post) => post._id);
+
+    // Fetch the user's votes for the loaded posts
+    const userVotes = await voteModel.find({
+      userId: req.user._id,
+      postId: { $in: postIds },
+    });
+
+    // Map the votes to their respective posts
+    const voteMap = userVotes.reduce((map, vote) => {
+      map[vote.postId.toString()] = vote.voteType; // "upvote" or "downvote"
+      return map;
+    }, {});
+
+    // Attach the user's vote information to the posts
+    const postsWithUserVote = posts.map((post) => ({
+      ...post.toObject(),
+      userVote: voteMap[post._id.toString()] || null, // Add the user's vote (if available) or null
+    }));
+
+    // Optionally, you can count the total number of search results for pagination
+    const totalPosts = await postModel.countDocuments(searchConditions);
+
+    // Send the response with the posts and pagination details
+    res.status(200).json({
+      posts: postsWithUserVote,
+      totalPosts, // Total number of search results
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit),
+    });
   } catch (err) {
     next(err); // Pass errors to the error-handling middleware
   }

@@ -90,95 +90,57 @@ module.exports.signup = async (req, res, next) => {
     const defaultUsername = `User${Math.floor(100 + Math.random() * 900)}`; // Default username if retries exceed
     // Fetch a random username from the API
     try {
-      const response = await axios.get(
-        "https://usernameapiv1.vercel.app/api/random-usernames"
-      );
-      const usernames = response.data.usernames; // List of random usernames
-      let index = 0; // Start from the first index
-
-      while (true) {
-        username = usernames[index]; // Get the username at the current index
-
-        // Check if the username already exists in the database
-        const existingUser = await userModel.findOne({ username });
-
-        if (!existingUser) {
-          break; // If the username is unique, break the loop
-        }
-
-        index++;
-
-        if (index >= usernames.length) {
-          throw new Error(
-            "Unable to find a unique username after trying all fetched usernames"
-          );
-        }
-      }
-    } catch (error) {
-      username = defaultUsername; // Use the default username if an error occurs
-    }
-
-    // Get a random image for profile picture
-    const max = 10000;
-    const maxRetries = 20;
-    let profileImageResponse;
-    const defaultProfileImage = "./profileIcon.jpg"; // Default image if retries fail
-    let retries = 0;
-
-    while (retries < maxRetries) {
+      // Fetch random username
+      let username;
       try {
-        let imageID = Math.floor(Math.random() * max);
-        profileImageResponse = await axios.get(
+        const response = await axios.get(
+          "https://usernameapiv1.vercel.app/api/random-usernames"
+        );
+        const usernames = response.data.usernames;
+        username =
+          usernames.find(async (name) => {
+            const existingUser = await userModel.findOne({ username: name });
+            return !existingUser;
+          }) || defaultUsername;
+      } catch (error) {
+        console.error("Failed to fetch username:", error.message);
+        username = defaultUsername; // Fallback
+      }
+
+      // Fetch profile image
+      const defaultProfileImage =
+        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
+      try {
+        const imageID = Math.floor(Math.random() * 10000);
+        const response = await axios.get(
           `https://api.nekosapi.com/v3/images/${imageID}`
         );
-        if (
-          profileImageResponse.status === 200 &&
-          profileImageResponse.data?.image_url
-        ) {
-          const existingUser = await userModel.findOne({
-            profilePictureSrc: profileImageResponse.data.image_url,
-          });
-          if (!existingUser) {
-            break;
-          }
+        if (response.status === 200) {
+          profilePictureSrc = response.data.image_url || defaultProfileImage;
         }
       } catch (error) {
-        if (error.response && error.response.status === 404) {
-          retries++;
-        } else {
-          next(error);
-          break;
-        }
+        console.error("Failed to fetch profile image:", error.message);
       }
+
+      // Continue user creation
+      const user = await userModel.create({
+        email,
+        password: hashedPassword,
+        username,
+        profilePictureSrc,
+      });
+      await sendOtpEmail(email, otp);
+
+      return res.status(201).json({
+        message: "User created successfully. Check your email for OTP.",
+        user,
+      });
+    } catch (error) {
+      console.error("Error during signup:", error);
+      next(error); // Ensure only one response is sent
     }
-
-    const profilePictureSrc = profileImageResponse
-      ? profileImageResponse.data.image_url
-      : defaultProfileImage; // Set default image if none was found
-
-    const university = isValidDomain;
-
-    const user = await userModel.create({
-      email,
-      password: hashedPassword,
-      username,
-      profilePictureSrc,
-      university,
-      otp, // Store the OTP temporarily
-      isVerified: false, // Track if the email is verified
-    });
-
-    // Send OTP email
-    await sendOtpEmail(email, otp);
-
-    // Respond with a message to check email for OTP
-    res.status(201).json({
-      message:
-        "User created successfully. Please check your email for the OTP.",
-      user,
-    });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
