@@ -6,8 +6,8 @@ const multerConfig = require("../config/multer.config");
 router.use(authMiddleware.isAuthenticated);
 
 router.get("/", postController.getPosts);
+router.get("/search", postController.searchPosts);
 router.get("/:postId", postController.getPostById);
-router.get("/posts/search", postController.searchPosts);
 
 router.post(
   "/create-post",
