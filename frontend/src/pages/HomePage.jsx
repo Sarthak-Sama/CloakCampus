@@ -7,6 +7,7 @@ import { fetchPosts } from "../redux/actions/postAction";
 import NotificationsTab from "../components/features/NotificationsTab";
 import { useParams } from "react-router-dom";
 import PostPage from "./PostPage";
+import axios from "../utils/axios";
 
 function HomePage() {
   const [category, setCategory] = useState("all discussion");
@@ -14,10 +15,15 @@ function HomePage() {
   const [isNotificationTabActive, setIsNotificationTabActive] = useState(false);
   const dispatch = useDispatch();
   const postArray = useSelector((state) => state.posts.posts);
+  let searchedPostArray = [];
   const { id } = useParams(); // Get the post ID from the URL if the route is "/post/:id"
 
   const toggleNotificationTab = () => {
     setIsNotificationTabActive((prevState) => !prevState);
+  };
+
+  const search = () => {
+    axios.get();
   };
 
   useEffect(() => {
@@ -41,9 +47,8 @@ function HomePage() {
         ) : postArray ? (
           <PostGrid
             className="flex-grow"
-            postsArray={postArray}
+            postsArray={searchQuery ? searchedPostArray : postArray}
             category={category}
-            searchQuery={searchQuery}
           />
         ) : (
           "loading"
