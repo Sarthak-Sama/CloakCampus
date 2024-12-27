@@ -129,6 +129,7 @@ module.exports.signup = async (req, res, next) => {
         password: hashedPassword,
         username,
         profilePictureSrc,
+        university: isValidDomain,
       });
       await sendOtpEmail(email, otp);
 
