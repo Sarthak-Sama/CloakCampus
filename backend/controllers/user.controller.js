@@ -74,15 +74,22 @@ module.exports.signup = async (req, res, next) => {
       });
     }
 
-    const isUserAlreadyExists = await userModel.findOne({ email });
-    if (isUserAlreadyExists) {
-      return res.status(409).json({
-        message: "User already exists",
-      });
-    }
-
     // Generate a random OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+
+    const userAlreadyExists = await userModel.findOne({ email });
+    if (userAlreadyExists) {
+      if (userAlreadyExists.isVerified) {
+        return res.status(409).json({
+          message: "User already exists",
+        });
+      } else {
+        await sendOtpEmail(email, otp);
+        return res.status(200).json({
+          message: "OTP sent to the email",
+        });
+      }
+    }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
