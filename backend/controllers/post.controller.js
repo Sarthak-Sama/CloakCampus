@@ -294,7 +294,7 @@ module.exports.createComment = async (req, res, next) => {
     const message = `${req.user.name} commented on your post: "${content}"`;
     // Check if the commenter is not the post author
     if (post.author.toString() !== req.user._id.toString()) {
-      createNotification(post.author, "comment", postId, comment._id, message);
+      createNotification(post.author, "comment", post, comment._id, message);
     }
 
     // Respond with success message and the created comment
@@ -460,7 +460,7 @@ module.exports.upvotePost = async (req, res, next) => {
     if (post.author.toString() !== req.user._id.toString()) {
       try {
         const message = `${req.user.username} liked your post`;
-        createNotification(post.author, "like", postId, message);
+        createNotification(post.author, "like", postId, null, message);
       } catch (err) {
         console.error("Notification creation failed:", err);
       }
