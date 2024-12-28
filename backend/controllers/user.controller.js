@@ -74,82 +74,89 @@ module.exports.signup = async (req, res, next) => {
       });
     }
 
-    // Generate a random OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    // Check if the user already exists
+    const existingUser = await userModel.findOne({ email });
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
 
-    const userAlreadyExists = await userModel.findOne({ email });
-    if (userAlreadyExists) {
-      if (userAlreadyExists.isVerified) {
+    if (existingUser) {
+      if (existingUser.isVerified) {
+        // User already exists and is verified
         return res.status(409).json({
-          message: "User already exists",
+          message: "User already exists and is verified.",
         });
       } else {
+        // User exists but is not verified
+        // Update password and OTP
+        existingUser.password = await bcrypt.hash(password, 10); // Hash the new password
+        existingUser.otp = otp; // Update OTP
+        await existingUser.save();
+
+        // Resend OTP email
         await sendOtpEmail(email, otp);
         return res.status(200).json({
-          message: "OTP sent to the email",
+          message:
+            "OTP sent to your email. Please verify your account with the new OTP.",
         });
       }
     }
 
-    // Hash the password
+    // If the user doesn't exist, create a new one
     const hashedPassword = await bcrypt.hash(password, 10);
-    let username;
-    const defaultUsername = `User${Math.floor(100 + Math.random() * 900)}`; // Default username if retries exceed
-    // Fetch a random username from the API
+    const defaultUsername = `User${Math.floor(100 + Math.random() * 900)}`; // Default username fallback
+
+    // Fetch random username
+    let username = defaultUsername;
     try {
-      // Fetch random username
-      let username;
-      try {
-        const response = await axios.get(
-          "https://usernameapiv1.vercel.app/api/random-usernames"
-        );
-        const usernames = response.data.usernames;
-        username =
-          usernames.find(async (name) => {
-            const existingUser = await userModel.findOne({ username: name });
-            return !existingUser;
-          }) || defaultUsername;
-      } catch (error) {
-        console.error("Failed to fetch username:", error.message);
-        username = defaultUsername; // Fallback
-      }
-
-      // Fetch profile image
-      const defaultProfileImage =
-        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
-      let profilePictureSrc = defaultProfileImage;
-      try {
-        const imageID = Math.floor(Math.random() * 10000);
-        const response = await axios.get(
-          `https://api.nekosapi.com/v3/images/${imageID}`
-        );
-        if (response.status === 200) {
-          profilePictureSrc = response.data.image_url || defaultProfileImage;
-        }
-      } catch (error) {
-        console.error("Failed to fetch profile image:", error.message);
-      }
-
-      // Continue user creation
-      const user = await userModel.create({
-        email,
-        password: hashedPassword,
-        username,
-        profilePictureSrc,
-        university: isValidDomain,
-      });
-      await sendOtpEmail(email, otp);
-
-      return res.status(201).json({
-        message: "User created successfully. Check your email for OTP.",
-        user,
-      });
+      const response = await axios.get(
+        "https://usernameapiv1.vercel.app/api/random-usernames",
+        { timeout: 5000 }
+      );
+      const usernames = response.data.usernames;
+      username =
+        usernames.find(async (name) => {
+          const existingUser = await userModel.findOne({ username: name });
+          return !existingUser;
+        }) || defaultUsername;
     } catch (error) {
-      console.error("Error during signup:", error);
-      next(error); // Ensure only one response is sent
+      console.error("Failed to fetch username:", error.message);
     }
-  } catch (err) {
-    next(err);
+
+    // Fetch profile image
+    const defaultProfileImage =
+      "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
+    let profilePictureSrc = defaultProfileImage;
+    try {
+      const imageID = Math.floor(Math.random() * 10000);
+      const response = await axios.get(
+        `https://api.nekosapi.com/v3/images/${imageID}`,
+        { timeout: 5000 }
+      );
+      if (response.status === 200) {
+        profilePictureSrc = response.data.image_url || defaultProfileImage;
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile image:", error.message);
+    }
+
+    // Create a new user record
+    const user = await userModel.create({
+      email,
+      password: hashedPassword,
+      username,
+      profilePictureSrc,
+      university: isValidDomain,
+      otp, // Store the OTP temporarily
+    });
+
+    // Send OTP email
+    await sendOtpEmail(email, otp);
+
+    return res.status(201).json({
+      message: "User created successfully. Please check your email for OTP.",
+    });
+  } catch (error) {
+    console.error("Error during signup:", error.message);
+    next(error);
   }
 };
 
