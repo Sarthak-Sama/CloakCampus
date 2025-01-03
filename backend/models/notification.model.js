@@ -16,7 +16,19 @@ const notificationSchema = new mongoose.Schema({
     ref: "Post", // Reference to the post (if applicable)
   },
   postImage: {
-    type: [String], // Array of image URLs (if applicable)
+    type: [
+      {
+        type: {
+          type: String,
+          enum: ["image", "video"], // restrict to either 'image' or 'video'
+          required: true,
+        },
+        url: {
+          type: String, // stores the URL or path to the media file
+          required: true,
+        },
+      },
+    ],
   },
   comment: {
     type: mongoose.Schema.Types.ObjectId,
