@@ -16,14 +16,14 @@ const notificationSchema = new mongoose.Schema({
     ref: "Post", // Reference to the post (if applicable)
   },
   postImage: {
-    type: String,
+    type: [String], // Array of image URLs (if applicable)
   },
   comment: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Comment", // Reference to the comment (if applicable)
   },
   parentCommentMessage: {
-    type: String,
+    type: String, // Message of the parent comment (if applicable)
   },
   message: {
     type: String, // Customizable notification message
@@ -48,6 +48,9 @@ notificationSchema.index(
   { readAt: 1 },
   { expireAfterSeconds: 7 * 24 * 60 * 60 }
 );
+
+// Compound index to optimize queries by user and isRead
+notificationSchema.index({ user: 1, isRead: 1 });
 
 const notificationModel = mongoose.model("Notification", notificationSchema);
 module.exports = notificationModel;
