@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const notificationController = require("../controllers/notification.controller");
+const authMiddleware = require("../middlewares/auth.middleware");
+
+router.use(authMiddleware.isAuthenticated);
 
 // Get all notifications for a user
-router.get("/:userId", notificationController.getNotifications);
+router.get("/", notificationController.getNotifications);
 
 // Mark a notification as read
 router.put("/mark-as-read/:id", notificationController.markAsRead);

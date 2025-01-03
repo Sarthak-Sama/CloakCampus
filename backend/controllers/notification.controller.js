@@ -3,13 +3,12 @@ const notificationModel = require("../models/notification.model");
 // Get all notifications for a user
 exports.getNotifications = async (req, res) => {
   try {
-    const { userId } = req.params;
     const notifications = await notificationModel
-      .find({ user: userId })
+      .find({ user: req.user._id })
       .sort({ createdAt: -1 });
     res.status(200).json(notifications);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching notifications" });
+    res.status(500).json({ error: `Error fetching notifications: ${error}` });
   }
 };
 
