@@ -295,17 +295,17 @@ module.exports.createComment = async (req, res, next) => {
     await post.save(); // Save the updated post
 
     // Notify the post author about the new comment
-    const message = `${req.user.name} commented on your post: "${content}"`;
+    const message = `${req.user.username} commented on your post: "${content}"`;
     // Check if the commenter is not the post author
     if (post.author.toString() !== req.user._id.toString()) {
-      createNotification(
-        post.authorUsername,
-        "comment",
-        post,
-        post.media,
-        comment._id,
-        message
-      );
+      createNotification({
+        userId: post.author,
+        type: "comment",
+        postId: post._id,
+        postImage: post.media,
+        commentId: comment._id,
+        message: message,
+      });
     }
 
     // Respond with success message and the created comment
@@ -343,17 +343,17 @@ module.exports.replyComment = async (req, res, next) => {
     await parentComment.save();
 
     // Create a notification for the original comment's author
-    const message = `${req.user.name} replied to your comment: ${content}`;
+    const message = `${req.user.username} replied to your comment: ${content}`;
     // Check if the replier is not the parent comment's author
     if (parentComment.author.toString() !== req.user._id.toString()) {
-      createNotification(
-        parentComment.authorUsername,
-        "reply",
-        parentComment.post,
-        parentComment.message,
-        reply._id,
-        message
-      );
+      createNotification({
+        userId: parentComment.authorUsername,
+        type: "reply",
+        postId: parentComment.post,
+        commentId: reply._id,
+        parentCommentMessage: parentComment.message,
+        message: message,
+      });
     }
 
     // Respond with success message and the created reply
@@ -472,14 +472,13 @@ module.exports.upvotePost = async (req, res, next) => {
     if (post.author.toString() !== req.user._id.toString()) {
       try {
         const message = `${req.user.username} liked your post`;
-        createNotification(
-          post.author,
-          "like",
-          postId,
-          post.media,
-          null,
-          message
-        );
+        createNotification({
+          userId: post.author,
+          type: "like",
+          postId: postId,
+          postImage: post.media,
+          message: message,
+        });
       } catch (err) {
         console.error("Notification creation failed:", err);
       }
