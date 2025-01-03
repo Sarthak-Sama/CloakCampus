@@ -5,6 +5,7 @@ const userRoutes = require("./routes/user.routes");
 const postRoutes = require("./routes/post.routes");
 const indexRoutes = require("./routes/index.routes");
 const adminRoutes = require("./routes/admin.routes");
+const notificationRoutes = require("./routes/notification.routes");
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -33,6 +34,7 @@ connectDB();
 app.use("/", indexRoutes);
 app.use("/user", userRoutes);
 app.use("/posts", postRoutes);
+app.use("/notifications");
 app.use("/admin", adminRoutes);
 
 const PORT = process.env.PORT || 5000;

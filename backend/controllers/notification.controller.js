@@ -45,7 +45,7 @@ exports.deleteNotification = async (req, res) => {
   }
 };
 
-// (Optional) Create a notification
+// Create a notification
 exports.createNotification = async (req, res) => {
   try {
     const { user, message } = req.body;
