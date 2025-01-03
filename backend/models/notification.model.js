@@ -15,9 +15,15 @@ const notificationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Post", // Reference to the post (if applicable)
   },
+  postImage: {
+    type: String,
+  },
   comment: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Comment", // Reference to the comment (if applicable)
+  },
+  parentCommentMessage: {
+    type: String,
   },
   message: {
     type: String, // Customizable notification message

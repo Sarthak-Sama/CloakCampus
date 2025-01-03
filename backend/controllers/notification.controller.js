@@ -15,18 +15,20 @@ exports.getNotifications = async (req, res) => {
 // Mark a notification as read
 exports.markAsRead = async (req, res) => {
   try {
-    const { id } = req.params;
-    const notification = await notificationModel.findByIdAndUpdate(
-      id,
-      { isRead: true, readAt: new Date() }, // Set the readAt timestamp
-      { new: true }
+    const userId = req.user._id; // Accessing the userId from the req. (set by the middleware)
+
+    const result = await notificationModel.updateMany(
+      { user: userId, isRead: false }, // Match unread notifications for the user
+      { isRead: true, readAt: new Date() } // Update them to "read"
     );
-    if (!notification) {
-      return res.status(404).json({ error: "Notification not found" });
-    }
-    res.status(200).json(notification);
+
+    res.status(200).json({
+      message: "All notifications marked as read",
+      updatedCount: result.nModified, // Number of documents modified
+    });
   } catch (error) {
-    res.status(500).json({ error: "Error updating notification" });
+    console.error("Error updating notifications:", error);
+    res.status(500).json({ error: `Error updating notifications: ${error}` });
   }
 };
 
@@ -41,17 +43,5 @@ exports.deleteNotification = async (req, res) => {
     res.status(200).json({ message: "Notification deleted" });
   } catch (error) {
     res.status(500).json({ error: "Error deleting notification" });
-  }
-};
-
-// Create a notification
-exports.createNotification = async (req, res) => {
-  try {
-    const { user, message } = req.body;
-    const notification = new notificationModel({ user, message });
-    await notification.save();
-    res.status(201).json(notification);
-  } catch (error) {
-    res.status(500).json({ error: "Error creating notification" });
   }
 };

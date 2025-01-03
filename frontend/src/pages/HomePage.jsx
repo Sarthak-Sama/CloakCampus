@@ -9,7 +9,6 @@ import { useParams } from "react-router-dom";
 import PostPage from "./PostPage";
 import axios from "../utils/axios";
 import { RiHome2Fill } from "@remixicon/react";
-import { fetchNotifications } from "../redux/actions/notificationAction";
 
 function HomePage() {
   const [category, setCategory] = useState("all discussion");
@@ -20,9 +19,6 @@ function HomePage() {
   const [postArray, setPostArray] = useState([]);
   const { id } = useParams(); // Get the post ID from the URL if the route is "/post/:id"
   const reduxPosts = useSelector((state) => state.posts.posts);
-  const notifications = useSelector(
-    (state) => state.notifications.notifications
-  );
   const toggleNotificationTab = () => {
     setIsNotificationTabActive((prevState) => !prevState);
   };
@@ -55,10 +51,7 @@ function HomePage() {
 
   useEffect(() => {
     dispatch(fetchPosts());
-    dispatch(fetchNotifications());
   }, [dispatch]);
-
-  console.log("notifications:", notifications);
 
   return (
     <div className="relative w-screen h-[100vh] overflow-hidden">

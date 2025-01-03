@@ -9,12 +9,9 @@ router.use(authMiddleware.isAuthenticated);
 router.get("/", notificationController.getNotifications);
 
 // Mark a notification as read
-router.put("/mark-as-read/:id", notificationController.markAsRead);
+router.patch("/mark-as-read", notificationController.markAsRead);
 
 // Delete a notification
 router.delete("/:id", notificationController.deleteNotification);
-
-// (Optional) Create a notification
-router.post("/", notificationController.createNotification);
 
 module.exports = router;

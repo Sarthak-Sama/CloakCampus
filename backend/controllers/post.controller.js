@@ -13,7 +13,9 @@ const createNotification = async (
   userId,
   type,
   postId = null,
+  postImage = [],
   commentId = null,
+  parentCommentMessage = null,
   message
 ) => {
   try {
@@ -21,7 +23,9 @@ const createNotification = async (
       user: userId, // User who will receive the notification
       type: type, // Type of notification: "like", "comment", or "reply"
       post: postId, // Post being liked (if applicable)
+      postImage: postImage, // Image urls of the post (if existing)
       comment: commentId, // Comment being replied to (if applicable)
+      parentCommentMessage: parentCommentMessage, //(if applicable)
       message: message, // The message to display in the notification
     });
   } catch (error) {
@@ -294,7 +298,14 @@ module.exports.createComment = async (req, res, next) => {
     const message = `${req.user.name} commented on your post: "${content}"`;
     // Check if the commenter is not the post author
     if (post.author.toString() !== req.user._id.toString()) {
-      createNotification(post.author, "comment", post, comment._id, message);
+      createNotification(
+        post.authorUsername,
+        "comment",
+        post,
+        post.media,
+        comment._id,
+        message
+      );
     }
 
     // Respond with success message and the created comment
@@ -336,9 +347,10 @@ module.exports.replyComment = async (req, res, next) => {
     // Check if the replier is not the parent comment's author
     if (parentComment.author.toString() !== req.user._id.toString()) {
       createNotification(
-        parentComment.author,
+        parentComment.authorUsername,
         "reply",
         parentComment.post,
+        parentComment.message,
         reply._id,
         message
       );
@@ -460,7 +472,14 @@ module.exports.upvotePost = async (req, res, next) => {
     if (post.author.toString() !== req.user._id.toString()) {
       try {
         const message = `${req.user.username} liked your post`;
-        createNotification(post.author, "like", postId, null, message);
+        createNotification(
+          post.author,
+          "like",
+          postId,
+          post.media,
+          null,
+          message
+        );
       } catch (err) {
         console.error("Notification creation failed:", err);
       }
@@ -514,12 +533,12 @@ module.exports.downvotePost = async (req, res, next) => {
 
     await postModel.findByIdAndUpdate(postId, { upvoteCount, downvoteCount });
 
-    // Check if the user is not the author of the post before creating a notification
-    const post = await postModel.findById(postId);
-    if (post.author.toString() !== req.user._id.toString()) {
-      const message = `${req.user.username} disliked your post`;
-      createNotification(post.author, "dislike", postId, message); // Adjust notification type if needed
-    }
+    // // Check if the user is not the author of the post before creating a notification
+    // const post = await postModel.findById(postId);
+    // if (post.author.toString() !== req.user._id.toString()) {
+    //   const message = `${req.user.username} disliked your post`;
+    //   createNotification(post.author, "dislike", postId, message); // Adjust notification type if needed
+    // }
 
     res.status(200).json({ message: "Post downvoted successfully." });
   } catch (error) {
