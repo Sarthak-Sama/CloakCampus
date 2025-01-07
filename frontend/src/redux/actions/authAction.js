@@ -97,13 +97,22 @@ const verifyOtp = async (email, otp, dispatch) => {
 };
 
 const forgotPassword = async (email) => {
+  console.log("forgot password", email);
+
   try {
-    const response = await axios.post("/forgotPassword", {
+    const response = await axios.post("/user/forgot-password", {
       email,
     });
-    console.log(response.data); // The response will indicate that the verification code has been sent
+    return { success: true, data: response.data };
   } catch (error) {
-    console.error("Password reset failed:", error.response.data);
+    console.error(
+      "Password reset failed:",
+      error.response?.data || error.message
+    );
+    return {
+      success: false,
+      error: error.response?.data?.message || "An unexpected error occurred",
+    };
   }
 };
 
@@ -112,11 +121,11 @@ const forgotPassword = async (email) => {
 
 const resetPassword = async (email, newPassword) => {
   try {
-    const response = await axios.post("/resetPassword", {
+    const response = await axios.patch("/user/reset-password", {
       email,
       newPassword,
     });
-    console.log(response.data); // Success message after password reset
+    return { success: true, data: response.data }; // Success message after password reset
   } catch (error) {
     console.error("Password reset failed:", error.response.data);
   }

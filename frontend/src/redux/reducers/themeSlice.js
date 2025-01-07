@@ -1,7 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const validThemes = ["light", "dark"];
+let savedTheme = localStorage.getItem("theme");
+
+// Apply the initial theme to the root element
+const root = window.document.documentElement;
+
+if (!savedTheme || !validThemes.includes(savedTheme)) {
+  savedTheme = "light";
+  localStorage.setItem("theme", "light");
+}
+
+root.classList.add(savedTheme); // Add the saved theme as a class to <html>
+
 const initialState = {
-  theme: localStorage.getItem("theme") || "light", // Initialize from local storage
+  theme: savedTheme,
 };
 
 const themeSlice = createSlice({
@@ -14,16 +27,16 @@ const themeSlice = createSlice({
       localStorage.setItem("theme", newTheme);
 
       const root = window.document.documentElement;
-      root.classList.remove(newTheme === "light" ? "dark" : "light"); // Remove old theme class
-      root.classList.add(newTheme); // Add new theme class
+      root.classList.remove(newTheme === "light" ? "dark" : "light");
+      root.classList.add(newTheme);
     },
     setTheme: (state, action) => {
       const newTheme = action.payload;
-      if (newTheme === state.theme) return; // Avoid redundant operations if theme is unchanged
+      if (!validThemes.includes(newTheme) || newTheme === state.theme) return;
 
       const root = window.document.documentElement;
-      root.classList.remove(state.theme); // Remove old theme class
-      root.classList.add(newTheme); // Add new theme class
+      root.classList.remove(state.theme);
+      root.classList.add(newTheme);
 
       state.theme = newTheme;
       localStorage.setItem("theme", newTheme);

@@ -13,6 +13,8 @@ import PostPage from "./pages/PostPage";
 import UniversityPage from "./pages/UniversityPage";
 import { useDispatch } from "react-redux";
 import { setTheme } from "./redux/reducers/themeSlice";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import PasswordResetPage from "./pages/PasswordResetPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -61,6 +63,24 @@ function App() {
           element={
             <PrivateRoute>
               <UniversityPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PrivateRoute>
+              <ForgotPasswordPage />
+            </PrivateRoute>
+          }
+        >
+          <Route path="verify-otp" element={<OtpVerification />} />
+        </Route>
+        <Route
+          path="/reset-password"
+          element={
+            <PrivateRoute>
+              <PasswordResetPage />
             </PrivateRoute>
           }
         />

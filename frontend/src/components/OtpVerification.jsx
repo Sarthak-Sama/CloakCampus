@@ -1,36 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { verifyOtp, signup } from "../redux/actions/authAction";
 import { useDispatch } from "react-redux";
+import { verifyOtp, signup, forgotPassword } from "../redux/actions/authAction";
+import axios from "../utils/axios";
 
-const OTPVerification = () => {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]); // Stores each digit of OTP
+const OTPVerification = ({ isPasswordResetFlow = false }) => {
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isVerified, setIsVerified] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [countdown, setCountdown] = useState(60); // Countdown timer for OTP expiry
+  const [countdown, setCountdown] = useState(60);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
 
   const dispatch = useDispatch();
-  const location = useLocation(); // Get location object
-  const navigate = useNavigate(); // Get the navigation object
-  const { email, password } = location.state || {}; // Retrieve email and password from state
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const email = location.state?.email;
+  const password = location.state?.password;
+
+  if (location.hash.slice(1) === "password") isPasswordResetFlow = true;
 
   // Handle OTP input change
   const handleOtpChange = (e, index) => {
     const value = e.target.value;
-    if (/[^0-9]/.test(value)) return; // Prevent non-numeric input
+    if (/[^0-9]/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Focus the next input if value is entered
     if (value && index < 5) {
       document.getElementById(`otp-${index + 1}`).focus();
     }
   };
 
-  // Handle OTP submission
+  // Handle OTP verification
   const handleVerifyOtp = async () => {
     const otpString = otp.join("");
     if (otpString.length !== 6) {
@@ -38,28 +42,41 @@ const OTPVerification = () => {
       return;
     }
 
-    const response = await verifyOtp(email, otpString, dispatch);
-    if (response.success) {
-      setIsVerified(true);
-      navigate("/");
-    } else {
-      response.errorMessage && setErrorMessage(response.errorMessage);
+    try {
+      if (isPasswordResetFlow) {
+        const response = await axios.post("/user/verify-code", {
+          email,
+          code: otpString,
+        });
+        if (response.status === 200) {
+          setIsVerified(true);
+          navigate("/reset-password", { state: { email, isVerified: true } });
+          console.log("/reset-password");
+        } else {
+          setErrorMessage(response.data.message || "OTP verification failed.");
+        }
+      } else {
+        const response = await verifyOtp(email, otpString, dispatch);
+        if (response.success) {
+          setIsVerified(true);
+          navigate("/");
+        } else {
+          setErrorMessage(response.errorMessage || "OTP verification failed.");
+        }
+      }
+    } catch (error) {
+      setErrorMessage("An error occurred. Please try again.");
     }
   };
 
-  // Countdown timer for OTP expiry
+  // Countdown timer
   useEffect(() => {
     if (countdown === 0) {
       setIsResendDisabled(false);
       return;
     }
-
-    if (countdown > 0) {
-      const timer = setInterval(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(timer);
-    }
+    const timer = setInterval(() => setCountdown((prev) => prev - 1), 1000);
+    return () => clearInterval(timer);
   }, [countdown]);
 
   // Handle OTP resend
@@ -70,15 +87,24 @@ const OTPVerification = () => {
     setIsVerified(false);
     setErrorMessage("");
 
-    // Resend the otp by signing up the user once again
-    await signup(email, password);
+    try {
+      if (isPasswordResetFlow) {
+        await forgotPassword(email);
+      } else {
+        await signup(email, password);
+      }
+    } catch {
+      setErrorMessage("Failed to resend OTP. Please try again.");
+    }
   };
 
   return (
     <div className="h-screen w-screen bg-[rgb(0,0,0,0.4)] absolute flex items-center justify-center">
       <div className="w-full max-w-sm mx-auto p-6 bg-white shadow-lg rounded-lg">
         <h2 className="text-2xl font-semibold text-center mb-6">
-          OTP Verification
+          {isPasswordResetFlow
+            ? "Reset Password OTP"
+            : "Signup OTP Verification"}
         </h2>
 
         <div className="flex justify-between space-x-2 mb-4">

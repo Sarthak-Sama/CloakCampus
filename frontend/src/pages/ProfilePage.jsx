@@ -9,7 +9,7 @@ import {
 } from "@remixicon/react";
 import { fetchPosts, deletePost } from "../redux/actions/postAction"; // Import delete action
 import Post from "../components/partials/Post";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function ProfilePage() {
   const dispatch = useDispatch();
@@ -80,9 +80,11 @@ function ProfilePage() {
                   <h3 className="text-zinc-500 text-sm">Email</h3>
                   <h3 className="text-lg">{user.email}</h3>
                 </div>
-                <RiArrowRightSLine className="group-hover:translate-x-2 transition-all duration-[0.3] ease-out" />
               </div>
-              <div className="w-full mb-1 flex items-center justify-between p-3 rounded-lg group">
+              <Link
+                to={"/university"}
+                className="w-full mb-1 flex items-center justify-between p-3 rounded-lg group"
+              >
                 <div className="p-2 bg-[#161616] text-[#EDEDED] dark:text-[#161616] dark:bg-zinc-500 rounded-[0.3rem]">
                   <RiMailLine />
                 </div>
@@ -91,8 +93,11 @@ function ProfilePage() {
                   <h3 className="text-lg">{user.university}</h3>
                 </div>
                 <RiArrowRightSLine className="group-hover:translate-x-2 transition-all duration-[0.3] ease-out" />
-              </div>
-              <div className="w-full flex items-center justify-between p-3 rounded-lg group">
+              </Link>
+              <Link
+                to={"/forgot-password"}
+                className="w-full flex items-center justify-between p-3 rounded-lg group"
+              >
                 <div className="p-2 bg-[#161616] text-[#EDEDED] dark:text-[#161616] dark:bg-zinc-500 rounded-[0.3rem]">
                   <RiMailLine />
                 </div>
@@ -101,7 +106,7 @@ function ProfilePage() {
                   <h3 className="text-lg">*******</h3>
                 </div>
                 <RiArrowRightSLine className="group-hover:translate-x-2 transition-all duration-[0.3] ease-out" />
-              </div>
+              </Link>
               <div className="w-full flex items-center justify-between p-3 rounded-lg group">
                 <div className="p-2 bg-[#161616] text-[#EDEDED] dark:text-[#161616] dark:bg-zinc-500 rounded-[0.3rem]">
                   <RiMailLine />
@@ -110,7 +115,6 @@ function ProfilePage() {
                   <h3 className="text-zinc-500 text-sm">Member Since</h3>
                   <h3 className="text-lg">{user.createdAt.slice(0, 10)}</h3>
                 </div>
-                <RiArrowRightSLine className="group-hover:translate-x-2 transition-all duration-[0.3] ease-out" />
               </div>
             </div>
           </div>

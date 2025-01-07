@@ -380,6 +380,10 @@ function Post({ postdata }) {
               >
                 <textarea
                   value={commentText}
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent navigation
+                    e.stopPropagation(); // Prevent event bubbling to the parent Link}
+                  }}
                   onChange={(e) => {
                     const words = e.target.value.trim().split(/\s+/);
                     const charCount = e.target.value.length;
@@ -408,6 +412,9 @@ function Post({ postdata }) {
                 />
                 <button type="submit">
                   <RiSendPlaneFill
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
                     color={isHoveredOverSendIcon ? "#EA516F" : "#EDEDED"}
                     onMouseEnter={() => {
                       setIsHoveredOverSendIcon(true);

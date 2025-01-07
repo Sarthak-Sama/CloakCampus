@@ -15,6 +15,7 @@ function TopNav({
   searchFunc,
   isNotificationTabActive,
   toggleNotificationTab,
+  numberOfNewNotifications,
 }) {
   const dispatch = useDispatch();
   const [hoveredOverUser, setHoveredOverUser] = useState(false);
@@ -74,9 +75,15 @@ function TopNav({
             </div>
 
             <div
-              className="flex items-center ml-3"
+              className="flex items-center ml-3 relative"
               onClick={toggleNotificationTab}
             >
+              {numberOfNewNotifications > 0 && (
+                <div className="absolute right-1 top-1 translate-x-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center rounded-full bg-[#ea516f] text-xs text-[#EDEDED] dark:text-[#161616]">
+                  {numberOfNewNotifications}
+                </div>
+              )}
+
               {isNotificationTabActive ? (
                 <RiNotificationFill size={25} />
               ) : (

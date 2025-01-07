@@ -12,6 +12,6 @@ router.get("/profile", userController.getProfile);
 // Routes for password reset functionality
 router.post("/forgot-password", userController.forgotPassword); // Route to request a password reset
 router.post("/verify-code", userController.verifyCode); // Route to verify the code
-router.post("/reset-password", userController.resetPassword); // Route to reset the password
+router.patch("/reset-password", userController.resetPassword); // Route to reset the password
 
 module.exports = router;

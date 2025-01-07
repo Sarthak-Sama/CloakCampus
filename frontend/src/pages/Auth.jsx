@@ -152,13 +152,15 @@ function Auth() {
         exit={{ x: "10%", opacity: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
           Log in to Your Account
         </h2>
-        <p className="text-gray-600 mb-8">Welcome Back to CloakCampus!</p>
+        <p className="text-gray-600 dark:text-gray-300 mb-8">
+          Welcome Back to CloakCampus!
+        </p>
         <form className="space-y-4" onSubmit={handleLogin} method="POST">
           <div>
-            <label className="block text-gray-600 text-sm text-left">
+            <label className="block text-gray-600 dark:text-gray-300 text-sm text-left">
               Email
             </label>
             <input
@@ -170,7 +172,7 @@ function Auth() {
             />
           </div>
           <div>
-            <label className="block text-gray-600 text-sm text-left">
+            <label className="block text-gray-600 dark:text-gray-300 text-sm text-left">
               Password
             </label>
             <div className="relative">
@@ -198,7 +200,9 @@ function Auth() {
           <div className="flex items-center justify-between">
             <label className="flex items-center">
               <input type="checkbox" className="form-checkbox text-[#EA516F]" />
-              <span className="ml-2 text-gray-600 text-sm">Remember Me</span>
+              <span className="ml-2 text-gray-600 dark:text-gray-300 text-sm">
+                Remember Me
+              </span>
             </label>
             <a href="#" className="text-sm text-[#EA516F] hover:underline">
               Forgot password?

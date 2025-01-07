@@ -13,10 +13,17 @@ const notificationsSlice = createSlice({
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
     },
+    setMarkAsRead: (state) => {
+      state.notifications.forEach((notification) => {
+        if (!notification.isRead) {
+          notification.isRead = true;
+        }
+      });
+    },
   },
 });
 
 // Export actions
-export const { setNotifications } = notificationsSlice.actions;
+export const { setNotifications, setMarkAsRead } = notificationsSlice.actions;
 
 export default notificationsSlice.reducer;

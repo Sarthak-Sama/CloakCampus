@@ -65,7 +65,11 @@ function Comment({ comment, setComments, updateNestedComments }) {
   };
 
   return (
-    <div key={comment._id} className="comment my-4 pb-4">
+    <div
+      id={`comment-${comment._id}`}
+      key={comment._id}
+      className="comment my-4 pb-4"
+    >
       <div className="flex items-start gap-3">
         {/* Avatar */}
         <div className="avatar w-10 h-10 bg-gray-300 rounded-full flex-shrink-0"></div>

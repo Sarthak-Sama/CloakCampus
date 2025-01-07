@@ -1,6 +1,6 @@
 import axios from "../utils/axios";
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
@@ -20,6 +20,8 @@ import { useSelector } from "react-redux";
 function PostPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const containerRef = useRef(null);
   const [localPost, setLocalPost] = useState(null);
   const [likeBtnActive, setLikeBtnActive] = useState(false);
   const [dislikeBtnActive, setDislikeBtnActive] = useState(false);
@@ -33,6 +35,7 @@ function PostPage() {
   const [isHoveredOverSendIcon, setIsHoveredOverSendIcon] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [comments, setComments] = useState([]);
+  const [isRendered, setIsRendered] = useState(false);
   const theme = useSelector((state) => state.theme.theme);
 
   useEffect(() => {
@@ -244,10 +247,45 @@ function PostPage() {
     }
   };
 
+  useEffect(() => {
+    // Set state to true when component is fully rendered
+    if (localPost) setIsRendered(true);
+  }, [localPost]); // Empty array ensures this runs once when the component is mounted
+
+  useEffect(() => {
+    if (isRendered) {
+      const fragment = window.location.hash; // Use window.location.hash for reliability
+      console.log(fragment);
+
+      if (fragment) {
+        const container = containerRef.current; // Ensure this points to the correct container
+        const element = document.querySelector(fragment);
+        console.log(container);
+        console.log(element);
+
+        if (element && container) {
+          const offsetTop = element.offsetTop - container.offsetTop;
+          console.log(offsetTop);
+          container.scrollTo({
+            top: 500,
+            behavior: "smooth",
+          });
+        } else {
+          console.error("Element or container not found");
+        }
+      }
+    } else {
+      console.log("Component not yet rendered");
+    }
+  }, [isRendered]); // Only depend on isRendered
+
   return (
     <>
       {localPost ? (
-        <div className="mt-[-6vh] overflow-auto p-10 dark:text-white">
+        <div
+          ref={containerRef}
+          className="mt-[-6vh] overflow-auto p-10 dark:text-white"
+        >
           <div id="information" className="flex">
             <div id="images">
               {localPost.media && localPost.media.length > 0 && (
