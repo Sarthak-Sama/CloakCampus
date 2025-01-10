@@ -3,7 +3,7 @@ import Post from "./partials/Post";
 
 function PostGrid({ postsArray, category }) {
   return (
-    <div>
+    <div className="bg-red-200">
       {postsArray ? (
         postsArray.map((post, index) => {
           if (

@@ -178,7 +178,7 @@ module.exports.getPosts = async (req, res, next) => {
 
     // Optionally: Get total count of posts for pagination
     const totalPosts = await postModel.countDocuments({
-      university: req.user.university.universityName,
+      university: user.university.universityName,
     });
 
     // Send paginated response

@@ -9,7 +9,7 @@ function SideNav({ setCategory }) {
   const categoriesArray = user?.categories;
 
   return (
-    <div className="w-[25%] text-[#161616] dark:text-[#EDEDED] h-screen flex flex-col items-center text-center pl-5 pr-12 pt-8 small-border-light dark:small-border-dark">
+    <div className="w-[100%] text-[#161616] dark:text-[#EDEDED] h-screen flex flex-col items-center text-center pl-5 pr-12 pt-8 small-border-light dark:small-border-dark">
       <Link
         to={"/"}
         className="text-left text-4xl font-['shrimp] leading-[2rem] mb-10"

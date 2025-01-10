@@ -2,15 +2,18 @@ import { addPost, setPosts, removePost } from "../reducers/postsSlice";
 import axios from "../../utils/axios";
 
 // Action to fetch posts from the API
-export const fetchPosts = () => async (dispatch) => {
-  try {
-    const response = await axios.get("/posts");
-    // Dispatch the setPosts action to add the fetched posts to the state
-    dispatch(setPosts(response.data.posts));
-  } catch (error) {
-    console.error("Error fetching posts: ", error);
-  }
-};
+export const fetchPosts =
+  (pageNumber = 1) =>
+  async (dispatch) => {
+    try {
+      const response = await axios.get(`/posts?page=${pageNumber}`);
+      // Dispatch the setPosts action to add the fetched posts to the state
+      dispatch(setPosts(response.data.posts));
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching posts: ", error);
+    }
+  };
 
 // Action to add a new post to the API
 export const createPost = (formData, navigate) => async (dispatch) => {

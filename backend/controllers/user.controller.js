@@ -318,14 +318,10 @@ module.exports.login = async (req, res, next) => {
 
 module.exports.logout = async (req, res, next) => {
   try {
-    if (req.headers.authorization) {
-      console.log("Headers");
-    }
     const token = req.headers.authorization
       ? req.headers.authorization.split(" ")[1]
       : req.cookies.token;
-    console.log(req.cookies.token);
-    console.log(token);
+
     if (!token) {
       return res.status(400).json({
         message: "No token provided",

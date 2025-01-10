@@ -66,15 +66,27 @@ const login = async (email, password, toRemember, dispatch) => {
 };
 
 // Logout function (Handles token removal and dispatching the logout action)
-const logout = async (dispatch) => {
+const logout = async (dispatch, navigate) => {
+  console.log("Logging out...");
+  console.log(sessionStorage.getItem("token"));
+  try {
+    await axios.post("/user/logout");
+    console.log("backend se hogya logout");
+  } catch (error) {
+    console.log("Error occurred while logging out: " + error);
+  }
   // Send the req to backend to blacklist the JWT
-  await axios.post("/user/logout");
+  console.log("backend ka kaam khtm");
   // Remove the token from sessionStorage or cookies
   sessionStorage.removeItem("token");
   Cookies.remove("token");
+  console.log("NIKAL GAYA TOKEN AND COOKIES");
 
   // Dispatch logoutUser action to update the Redux state
   dispatch(logoutUser());
+  navigate("/auth");
+
+  console.log("sab khtm ho gaya");
 };
 
 // OTP Verification function

@@ -18,7 +18,6 @@ function UploadPostPage() {
 
   const { user } = useSelector((state) => state.user);
   const categoriesArray = user?.categories;
-  console.log(categoriesArray);
   useEffect(() => {
     loadUser();
   }, [user, dispatch]);

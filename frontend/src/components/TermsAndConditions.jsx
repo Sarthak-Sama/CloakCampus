@@ -170,7 +170,7 @@ const TermsModal = ({ toggleTerms }) => {
   );
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded shadow-lg w-[80%] lg:w-[50%] overflow-y-auto max-h-[80%]">
+      <div className="bg-white dark:bg-[#161616] dark:text-[#EDEDED] p-6 rounded shadow-lg w-[80%] lg:w-[50%] overflow-y-auto max-h-[80%]">
         {termsContent}
 
         <button

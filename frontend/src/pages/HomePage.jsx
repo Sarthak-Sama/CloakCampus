@@ -10,11 +10,13 @@ import PostPage from "./PostPage";
 import axios from "../utils/axios";
 import { RiHome2Fill } from "@remixicon/react";
 import { fetchNotifications } from "../redux/actions/notificationAction";
+import { motion } from "framer-motion";
 
 function HomePage() {
   const [category, setCategory] = useState("all discussion");
   const [searchQuery, setSearchQuery] = useState("");
   const [isNotificationTabActive, setIsNotificationTabActive] = useState(false);
+  const [isSideNavActive, setIsSideNavActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [numberOfNewNotifications, setNumberOfNewNotifications] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,6 +33,31 @@ function HomePage() {
   const toggleNotificationTab = () => {
     setIsNotificationTabActive((prevState) => !prevState);
   };
+
+  // Function to handle screen resizing
+  const handleResize = () => {
+    if (window.innerWidth < 1024) {
+      setIsSideNavActive(false); // Hide side nav for small/medium screens
+    } else {
+      setIsSideNavActive(true); // Show side nav for larger screens
+    }
+  };
+
+  // Add event listener for window resize
+  useEffect(() => {
+    // Initial check when component mounts
+    handleResize();
+
+    // Add event listener to track window resize
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const toggleSideNav = () => setIsSideNavActive((prevState) => !prevState);
 
   const search = async (query, page = currentPage) => {
     if (loading) return; // Prevent new search if already loading
@@ -66,13 +93,33 @@ function HomePage() {
     setPostArray(reduxPosts);
   };
 
+  // Infinite scroll handler
+  // const handleScroll = useCallback(() => {
+  //   if (
+  //     window.innerHeight + document.documentElement.scrollTop >=
+  //     document.documentElement.offsetHeight - 50
+  //   ) {
+  //     if (hasMore && !loading) {
+  //       setCurrentPage((prevPage) => prevPage + 1);
+  //     }
+  //   }
+  // }, [hasMore, loading]);
+
+  // useEffect(() => {
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, [handleScroll]);
+
   useEffect(() => {
     setPostArray(reduxPosts); // Sync postArray with reduxPosts
   }, [reduxPosts]); // Depend only on reduxPosts
 
   useEffect(() => {
-    dispatch(fetchPosts());
     dispatch(fetchNotifications());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchPosts());
   }, [dispatch]);
 
   // Update the count of unread notifications whenever notifications change
@@ -91,11 +138,24 @@ function HomePage() {
         isNotificationTabActive={isNotificationTabActive}
         toggleNotificationTab={toggleNotificationTab}
         numberOfNewNotifications={numberOfNewNotifications}
+        toggleSideNav={toggleSideNav}
       />
 
       <div className="flex relative z-10">
-        <SideNav setCategory={setCategory} />
-        <div className="h-[88vh] mt-[12vh] w-[75%] py-10 px-2 overflow-auto">
+        <motion.div
+          className="w-[25%]"
+          initial={{ x: "0%" }}
+          animate={{ x: isSideNavActive ? "0%" : "-100%" }}
+          exit={{ x: "-50%" }}
+          transition={{}}
+        >
+          <SideNav setCategory={setCategory} />
+        </motion.div>
+        <div
+          className={`h-[88vh] mt-[12vh] bg-blue-200 ${
+            isSideNavActive ? "w-[75%]" : "w-[100vw]"
+          } py-10 px-2 overflow-auto`}
+        >
           {postArray != useSelector((state) => state.posts.posts) && !id && (
             <div className="flex items-end gap-4 ml-10 dark:text-[#EDEDED]">
               <RiHome2Fill

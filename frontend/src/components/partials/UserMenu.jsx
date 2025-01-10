@@ -1,13 +1,14 @@
 import { RiLogoutBoxRLine, RiSchoolLine, RiUserLine } from "@remixicon/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React from "react";
 import { useDispatch } from "react-redux";
 import { logout } from "../../redux/actions/authAction";
 
 function UserMenu() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const handleLogout = async () => {
-    await logout(dispatch);
+    await logout(dispatch, navigate);
   };
   return (
     <>

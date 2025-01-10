@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout, resetPassword } from "../redux/actions/authAction"; // Assuming this action exists
 import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
+import { useDispatch } from "react-redux";
 
 const PasswordResetPage = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -12,6 +13,7 @@ const PasswordResetPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -63,11 +65,11 @@ const PasswordResetPage = () => {
     setLoading(true);
 
     try {
-      const response = await resetPassword({ email, newPassword });
+      const response = await resetPassword(email, newPassword);
 
       if (response.success) {
         setMessage("Your password has been reset successfully.");
-        setTimeout(() => logout(), 3000); // Redirect to login after success
+        setTimeout(() => logout(dispatch, navigate), 3000); // Redirect to login after success
       } else {
         setError(response.error || "An error occurred. Please try again.");
       }

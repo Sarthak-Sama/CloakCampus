@@ -5,6 +5,7 @@ import { fetchUser } from "../redux/actions/userAction"; // Import fetchUser act
 import SearchBar from "./partials/SearchBar";
 import {
   RiArrowDownSLine,
+  RiMenuFill,
   RiNotificationFill,
   RiNotificationLine,
 } from "@remixicon/react";
@@ -16,6 +17,7 @@ function TopNav({
   isNotificationTabActive,
   toggleNotificationTab,
   numberOfNewNotifications,
+  toggleSideNav,
 }) {
   const dispatch = useDispatch();
   const [hoveredOverUser, setHoveredOverUser] = useState(false);
@@ -35,8 +37,21 @@ function TopNav({
   };
 
   return (
-    <div className="h-[12vh] w-[75%] right-0 absolute z-[9999] flex items-center justify-between px-10 bg-[#EDEDED] dark:bg-[#161616] text-[#161616] dark:text-[#EDEDED] shadow-lg shadow-bottom">
-      <div className="flex gap-2">
+    <div
+      className={`h-[12vh] ${
+        window.innerWidth < 1024 ? "w-[75%]" : "w-[100%]"
+      } right-0 absolute z-[9999] flex items-center justify-between px-10 bg-[#EDEDED] dark:bg-[#161616] text-[#161616] dark:text-[#EDEDED] shadow-lg shadow-bottom`}
+    >
+      <div className="flex items-center gap-5">
+        {window.innerWidth < 1024 ? null : (
+          <RiMenuFill
+            onClick={() => {
+              toggleSideNav();
+            }}
+            className="text-[#161616] dark:text-[#EDEDED]"
+          />
+        )}
+
         <div className="text-2xl capitalize">{category}</div>
       </div>
       <div className="flex gap-7 items-center">

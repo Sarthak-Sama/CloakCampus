@@ -206,9 +206,9 @@ function Post({ postdata }) {
   };
 
   return (
-    <Link to={`/post/${postdata._id}`}>
-      <div className="w-[75%] mx-auto rounded-[0.6rem] lg:rounded-[0.9rem] my-3 p-5 gap-8 bg-zinc-300 dark:bg-zinc-800 text-[#161616] dark:text-[#EDEDED]">
-        <div className="lg:flex gap-5 pr-6">
+    <Link className="bg-red-200" to={`/post/${postdata._id}`}>
+      <div className="w-[50%] md:w-[75%] mx-auto rounded-[0.6rem] md:rounded-[0.9rem] my-3 p-5 gap-8 bg-zinc-300 dark:bg-zinc-800 text-[#161616] dark:text-[#EDEDED]">
+        <div className="md:flex gap-5 pr-6">
           {postdata.media && postdata.media.length > 0 && (
             <div
               id="thumbnail"

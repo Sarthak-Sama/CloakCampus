@@ -8,7 +8,10 @@ import { useDispatch } from "react-redux";
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1024);
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+  const [isMediumScreen, setIsMediumScreen] = useState(
+    window.innerWidth >= 1024
+  );
   const [showTerms, setShowTerms] = useState(false); // State for showing terms modal
   const [showPassword, setShowPassword] = useState(false); // State for showing password
   const [password, setPassword] = useState("");
@@ -29,7 +32,7 @@ function Auth() {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsWideScreen(window.innerWidth >= 1024);
+      setIsLargeScreen(window.innerWidth >= 1024);
     };
 
     window.addEventListener("resize", handleResize);
@@ -142,14 +145,26 @@ function Auth() {
   };
 
   return (
-    <div className="w-[100vw] h-[100vh] flex overflow-hidden relative">
+    <div
+      className={`w-[100vw] h-[100vh] lg:flex overflow-hidden ${
+        !isLogin && "overflow-y-scroll"
+      } relative`}
+    >
       {/* -------- Login Form----- */}
       <motion.div
         id="login-form"
-        className={`relative z-9 w-[80] lg:w-[33%] mx-[10vw] my-[12vh] lg:my-[25vh] text-center`}
-        initial={{ x: "0%", opacity: 1 }}
-        animate={{ x: isLogin ? "0%" : "10%", opacity: isLogin ? 1 : 0 }}
-        exit={{ x: "10%", opacity: 0 }}
+        className={`relative z-9  lg:w-[33%] mx-[10vw] my-[8vh] sm:my-[12vh] lg:my-[25vh] text-center`}
+        initial={
+          isLargeScreen ? { x: "0%", opacity: 1 } : { y: "100%", opacity: 1 }
+        }
+        animate={
+          isLargeScreen
+            ? { x: isLogin ? "0%" : "10%", opacity: isLogin ? 1 : 0 }
+            : { y: isLogin ? "0%" : "10%", opacity: isLogin ? 1 : 0 }
+        }
+        exit={
+          isLargeScreen ? { x: "10%", opacity: 0 } : { y: "10%", opacity: 0 }
+        }
         transition={{ duration: 0.2 }}
       >
         <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
@@ -304,21 +319,29 @@ function Auth() {
       {/* ------Signup Form----- */}
       <motion.div
         id="signup-form"
-        className={`relative z-9 w-[80] lg:w-[33%] mx-[10vw] my-[8vh] lg:my-[20vh] text-center`}
-        initial={{ x: "0%", opacity: 0 }}
-        animate={{ x: !isLogin ? "0%" : "-10%", opacity: !isLogin ? 1 : 0 }}
-        exit={{ x: "-10%", opacity: 0 }}
+        className={`relative z-9 w-[80] lg:w-[33%] mx-[10vw] mt-[-15vh] sm:my-[8vh] lg:my-[20vh] text-center`}
+        initial={
+          isLargeScreen ? { x: "0%", opacity: 0 } : { y: "0%", opacity: 0 }
+        }
+        animate={
+          isLargeScreen
+            ? { x: !isLogin ? "0%" : "-10%", opacity: !isLogin ? 1 : 0 }
+            : { y: !isLogin ? "0%" : "-10%", opacity: !isLogin ? 1 : 0 }
+        }
+        exit={
+          isLargeScreen ? { x: "-10%", opacity: 0 } : { y: "-10%", opacity: 0 }
+        }
         transition={{ duration: 0.2 }}
       >
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
           Create Your Account
         </h2>
-        <p className="text-gray-600 mb-8">
+        <p className="text-gray-600 dark:text-gray-300 mb-8">
           Ready to dive in? Join CloakCampus and start your anonymous journey!
         </p>
         <form className="space-y-4" onSubmit={handleSignUp} method="POST">
           <div>
-            <label className="block text-gray-600 text-sm text-left">
+            <label className="block text-gray-600 dark:text-gray-300 text-sm text-left">
               Email
             </label>
             <input
@@ -330,7 +353,7 @@ function Auth() {
             />
           </div>
           <div>
-            <label className="block text-gray-600 text-sm text-left">
+            <label className="block text-gray-600 dark:text-gray-300 text-sm text-left">
               Password
             </label>
             <div className="relative">
@@ -376,7 +399,7 @@ function Auth() {
             )}
           </div>
           <div>
-            <label className="block text-gray-600 text-sm text-left">
+            <label className="block text-gray-600 dark:text-gray-300 text-sm text-left">
               Confirm Password
             </label>
             <input
@@ -401,7 +424,7 @@ function Auth() {
                 className="form-checkbox text-[#EA516F]"
                 onChange={(e) => setTermsChecked(e.target.checked)} // Update termsChecked state
               />
-              <span className="ml-2 text-gray-600 text-sm">
+              <span className="ml-2 text-gray-600 dark:text-gray-300 text-sm">
                 Agree to{" "}
                 <button
                   type="button"
@@ -511,32 +534,36 @@ function Auth() {
       {/* -------Slider------ */}
       <motion.div
         id="slider"
-        className={`w-[50vw] absolute z-9999 bottom-0 right-0 flex ${
+        className={`w-[100vw] lg:w-[50vw] absolute z-9999 bottom-0 right-0 flex ${
           isLogin ? "justify-end" : "justify-start"
         }`}
-        initial={{ x: "0%" }}
-        animate={{ x: isLogin ? "0%" : "-100%" }} // Toggle between 0% (left) and 100% (right)
-        exit={{ x: "0%", opacity: 0 }}
+        initial={isLargeScreen ? { x: "0%" } : { y: "0%" }}
+        animate={
+          isLargeScreen
+            ? { x: isLogin ? "0%" : "-100%" }
+            : { y: isLogin ? "0%" : "-213%" }
+        }
+        exit={isLargeScreen ? { x: "0%", opacity: 0 } : { y: "0%", opacity: 0 }}
         transition={{ type: "spring", duration: 0.5 }}
       >
         <div
-          className="bg-[rgb(53,86,220)] w-[full] lg:w-[38rem] lg:h-[100vh] py-10 pr-2 flex flex-col items-center justify-center"
+          className="bg-[rgb(53,86,220)] w-full h-[32vh] lg:w-[38rem] lg:h-[100vh] py-10 pr-10 flex flex-col items-center justify-center"
           style={{
             clipPath: isLogin
-              ? isWideScreen
+              ? isLargeScreen
                 ? "polygon(0% 0%,100% 0%, 100% 100%, 15% 100%)"
                 : undefined
-              : isWideScreen
+              : isLargeScreen
               ? "polygon(0% 0%, 0% 100%, 100% 100%, 85% 0%)"
               : undefined,
           }}
         >
-          <h2 className="font-[800] text-2xl text-white ml-10">
+          <h2 className="font-[800] text-[5.5vw] md:text-2xl text-white ml-10">
             {isLogin
               ? "Don't have an Account Yet ?"
               : "Already Have an Account ?"}
           </h2>
-          <p className="text-center w-[26rem] text-white mt-6 leading-[1.25rem] ml-10">
+          <p className="text-center text-[3.75vw]  sm:text-[1rem] sm:w-[26rem] text-white mt-6 leading-[4vw] sm:leading-[1.25rem] ml-10">
             {isLogin
               ? `Ready to dive in? Sign up now and unleash your inner commentator,
             confessor, and secret-keeper, all without anyone knowing it’s you!`
@@ -545,9 +572,9 @@ function Auth() {
           </p>
           <button
             onClick={toggleAuthMode}
-            className="text-white hover:text-[rgb(53,86,220)] hover:bg-white uppercase border-[1.5px] border-white px-12 py-4 rounded-full transition-all duration-[0.3s] ease-in-out mt-10 ml-10"
+            className="text-white hover:text-[rgb(53,86,220)] hover:bg-white uppercase text-[5vw] sm:text-[1.2rem] border-[1.5px] border-white px-6 py-3 sm:px-12 sm:py-4 rounded-full transition-all duration-[0.3s] ease-in-out mt-[5vh] sm:mt-10 ml-10"
           >
-            Sign Up
+            {isLogin ? "Sign Up" : "Login"}
           </button>
         </div>
       </motion.div>
