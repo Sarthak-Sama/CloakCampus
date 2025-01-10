@@ -2,8 +2,10 @@ import React from "react";
 import Post from "./partials/Post";
 
 function PostGrid({ postsArray, category }) {
+  // Add scroll event listener
+
   return (
-    <div className="bg-red-200">
+    <div className="overflow-auto">
       {postsArray ? (
         postsArray.map((post, index) => {
           if (

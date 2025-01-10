@@ -22,11 +22,9 @@
 
 .small-border-dark {
   position: relative;
-  border-radius: 100%;
 }
 .small-border-light {
   position: relative;
-  border-radius: 100%;
 }
 
 .small-border-dark::after {

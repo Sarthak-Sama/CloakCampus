@@ -286,12 +286,15 @@ function PostPage() {
           ref={containerRef}
           className="mt-[-6vh] overflow-auto p-10 dark:text-white"
         >
-          <div id="information" className="flex">
+          <div
+            id="information"
+            className="flex flex-col md:flex-row md:items-between"
+          >
             <div id="images">
               {localPost.media && localPost.media.length > 0 && (
                 <div
                   id="thumbnail"
-                  className="w-[75%] flex overflow-hidden relative group"
+                  className="w-[100%] sm:w-[80%] md:w-[75%] md:mb-0 mb-10 mx-auto flex overflow-hidden relative group"
                 >
                   {localPost.media[currentImageIndex].type === "image" ? (
                     <img

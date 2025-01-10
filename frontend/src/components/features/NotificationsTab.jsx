@@ -48,7 +48,7 @@ function NotificationsTab({
           backdropFilter: "blur(18px)",
           background: "rgba(0,0,0,0.2)",
         }}
-        className="w-[32%] h-screen bg-blue-200 right-0 top-[12vh] absolute z-20 shadow-xl shadow-left overflow-y-scroll"
+        className="md:w-[45%] lg:w-[32%] h-screen bg-blue-200 right-0 top-[12vh] absolute z-20 shadow-xl shadow-left overflow-y-scroll"
         initial={{ x: "100%" }}
         animate={{ x: isNotificationTabActive ? "0%" : "100%" }}
         transition={{ type: "tween", stiffness: 300 }}

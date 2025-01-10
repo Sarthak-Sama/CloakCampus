@@ -21,8 +21,7 @@ function TopNav({
 }) {
   const dispatch = useDispatch();
   const [hoveredOverUser, setHoveredOverUser] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [sortOption, setSortOption] = useState("latest");
+  const isMediumScreen = window.innerWidth < 1024;
 
   useEffect(() => {
     dispatch(fetchUser());
@@ -30,32 +29,26 @@ function TopNav({
 
   const { user } = useSelector((state) => state.user);
 
-  const handleSort = (sortOption) => {
-    // Implement sorting logic based on sortOption
-    setSortOption(sortOption);
-    setDropdownOpen(false); // Close dropdown after selection
-  };
-
   return (
     <div
       className={`h-[12vh] ${
-        window.innerWidth < 1024 ? "w-[75%]" : "w-[100%]"
-      } right-0 absolute z-[9999] flex items-center justify-between px-10 bg-[#EDEDED] dark:bg-[#161616] text-[#161616] dark:text-[#EDEDED] shadow-lg shadow-bottom`}
+        isMediumScreen ? "w-[100%]" : "w-[75%] right-0 absolute z-[9999]"
+      }  flex items-center justify-between px-10 bg-[#EDEDED] dark:bg-[#161616] text-[#161616] dark:text-[#EDEDED] shadow-lg shadow-bottom`}
     >
       <div className="flex items-center gap-5">
-        {window.innerWidth < 1024 ? null : (
+        {isMediumScreen ? (
           <RiMenuFill
             onClick={() => {
               toggleSideNav();
             }}
             className="text-[#161616] dark:text-[#EDEDED]"
           />
-        )}
+        ) : null}
 
-        <div className="text-2xl capitalize">{category}</div>
+        <div className="text-2xl capitalize hidden sm:block">{category}</div>
       </div>
       <div className="flex gap-7 items-center">
-        <div id="search-div">
+        <div id="search-div" className="ml-5 sm:ml-0">
           <SearchBar searchFunc={searchFunc} />
         </div>
         {user ? (
@@ -83,7 +76,7 @@ function TopNav({
               id="profile-name"
               className="flex items-center gap-1 group"
             >
-              <div className="text-[1.1rem]">
+              <div className="text-[1.1rem] hidden sm:block">
                 {user ? user.username : "Guest"}
               </div>
               <RiArrowDownSLine className="group-hover:translate-y-[20%] transition-all duration-[0.3s] ease-in-out" />
@@ -112,7 +105,7 @@ function TopNav({
       </div>
       <motion.div
         id="user-menu"
-        className="absolute right-[8%] top-[90%]"
+        className="absolute z-[99999] right-[20%] sm:right-[10%] md:right-[9.3%] lg:right-[8%] top-[10.5%] lg:top-[90%]"
         initial={{ opacity: 0, y: -20 }}
         animate={
           hoveredOverUser

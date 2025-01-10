@@ -10,10 +10,12 @@ const postsSlice = createSlice({
   reducers: {
     // Renamed loadPost to setPosts for better clarity
     setPosts: (state, action) => {
-      // Here we replace the posts array with the fetched posts
-      state.posts = action.payload.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      const { posts, isFirstPage } = action.payload;
+      if (isFirstPage) {
+        state.posts = posts;
+      } else {
+        state.posts = [...state.posts, ...posts];
+      }
     },
 
     addPost: (state, action) => {

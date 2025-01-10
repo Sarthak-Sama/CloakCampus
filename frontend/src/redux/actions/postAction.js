@@ -7,9 +7,17 @@ export const fetchPosts =
   async (dispatch) => {
     try {
       const response = await axios.get(`/posts?page=${pageNumber}`);
-      // Dispatch the setPosts action to add the fetched posts to the state
-      dispatch(setPosts(response.data.posts));
-      console.log(response.data);
+      // Change this to indicate if it's the first page
+      dispatch(
+        setPosts({
+          posts: response.data.posts,
+          isFirstPage: pageNumber === 1,
+        })
+      );
+      return {
+        hasMore: response.data.totalPages > pageNumber,
+        posts: response.data.posts,
+      };
     } catch (error) {
       console.error("Error fetching posts: ", error);
     }

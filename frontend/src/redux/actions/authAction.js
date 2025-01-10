@@ -47,6 +47,7 @@ const signup = async (email, password) => {
 // Login function
 const login = async (email, password, toRemember, dispatch) => {
   try {
+    console.log(toRemember);
     const response = await axios.post("/user/login", {
       email,
       password,

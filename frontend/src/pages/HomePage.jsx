@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import TopNav from "../components/TopNav";
 import SideNav from "../components/SideNav";
 import PostGrid from "../components/PostGrid";
@@ -11,6 +11,7 @@ import axios from "../utils/axios";
 import { RiHome2Fill } from "@remixicon/react";
 import { fetchNotifications } from "../redux/actions/notificationAction";
 import { motion } from "framer-motion";
+import { throttle } from "lodash";
 
 function HomePage() {
   const [category, setCategory] = useState("all discussion");
@@ -19,13 +20,16 @@ function HomePage() {
   const [isSideNavActive, setIsSideNavActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [numberOfNewNotifications, setNumberOfNewNotifications] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
   const [postArray, setPostArray] = useState([]);
+  const postGridRef = useRef(null);
   const { id } = useParams(); // Get the post ID from the URL if the route is "/post/:id"
   const reduxPosts = useSelector((state) => state.posts.posts);
+  const isMediumScreen = window.innerWidth < 1024;
   // Get notifications from Redux
   const notifications = useSelector(
     (state) => state.notifications.notifications
@@ -92,34 +96,60 @@ function HomePage() {
   const navBack = () => {
     setPostArray(reduxPosts);
   };
-
-  // Infinite scroll handler
-  // const handleScroll = useCallback(() => {
-  //   if (
-  //     window.innerHeight + document.documentElement.scrollTop >=
-  //     document.documentElement.offsetHeight - 50
-  //   ) {
-  //     if (hasMore && !loading) {
-  //       setCurrentPage((prevPage) => prevPage + 1);
-  //     }
-  //   }
-  // }, [hasMore, loading]);
-
-  // useEffect(() => {
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, [handleScroll]);
+  const handleScroll = useCallback(
+    throttle(() => {
+      if (!loading && hasMore) {
+        const { scrollTop, clientHeight, scrollHeight } = postGridRef.current;
+        if (scrollTop + clientHeight >= scrollHeight - 200) {
+          const currentScrollPos = scrollTop;
+          setCurrentPage((prevPage) => prevPage + 1);
+          // Immediately restore scroll position
+          requestAnimationFrame(() => {
+            if (postGridRef.current) {
+              postGridRef.current.scrollTop = currentScrollPos;
+            }
+          });
+        }
+      }
+    }, 300),
+    [loading, hasMore]
+  );
 
   useEffect(() => {
-    setPostArray(reduxPosts); // Sync postArray with reduxPosts
-  }, [reduxPosts]); // Depend only on reduxPosts
+    const fetchData = async () => {
+      if (currentPage === 1) {
+        const response = await dispatch(fetchPosts(currentPage));
+        if (response) {
+          setHasMore(response.hasMore);
+          setPostArray(response.posts);
+          setLoading(false);
+        }
+      } else {
+        // For subsequent pages, preserve scroll position
+        const scrollPosition = postGridRef.current?.scrollTop;
+        const response = await dispatch(fetchPosts(currentPage));
+        if (response) {
+          setHasMore(response.hasMore);
+          setPostArray((prev) => [...prev, ...response.posts]);
+          setLoading(false);
+
+          // Use multiple frames to ensure scroll position is maintained
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              if (postGridRef.current) {
+                postGridRef.current.scrollTop = scrollPosition;
+              }
+            });
+          });
+        }
+      }
+    };
+
+    fetchData();
+  }, [dispatch, currentPage]);
 
   useEffect(() => {
     dispatch(fetchNotifications());
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(fetchPosts());
   }, [dispatch]);
 
   // Update the count of unread notifications whenever notifications change
@@ -143,7 +173,7 @@ function HomePage() {
 
       <div className="flex relative z-10">
         <motion.div
-          className="w-[25%]"
+          className={`sm:w-[30vw] absolute z-[99999] w-[80%] lg:w-[25%] lg:relative`}
           initial={{ x: "0%" }}
           animate={{ x: isSideNavActive ? "0%" : "-100%" }}
           exit={{ x: "-50%" }}
@@ -152,25 +182,26 @@ function HomePage() {
           <SideNav setCategory={setCategory} />
         </motion.div>
         <div
-          className={`h-[88vh] mt-[12vh] bg-blue-200 ${
-            isSideNavActive ? "w-[75%]" : "w-[100vw]"
-          } py-10 px-2 overflow-auto`}
+          className={`h-[88vh] mt-[0] lg:mt-[12vh] w-[100%] lg:w-[75%] py-10 px-2 overflow-auto`}
+          ref={postGridRef}
+          onScroll={handleScroll}
         >
-          {postArray != useSelector((state) => state.posts.posts) && !id && (
-            <div className="flex items-end gap-4 ml-10 dark:text-[#EDEDED]">
-              <RiHome2Fill
-                onClick={() => navBack()}
-                size={30}
-                className="mt-5 ml-5 opacity-50 hover:opacity-100"
-              />
-              <h2 className="">{`Showing search result for "${searchQuery}":`}</h2>
-            </div>
-          )}
-          {/* Conditionally render PostPage, PostGrid, or "Searching..." based on loading state and the URL */}
+          {postArray != useSelector((state) => state.posts.posts) &&
+            searchQuery &&
+            !id && (
+              <div className="flex items-end gap-4 ml-10 dark:text-[#EDEDED]">
+                <RiHome2Fill
+                  onClick={() => navBack()}
+                  size={30}
+                  className="mt-5 ml-5 opacity-50 hover:opacity-100"
+                />
+                <h2 className="">{`Showing search result for "${searchQuery}":`}</h2>
+              </div>
+            )}
           {id ? (
-            <PostPage /> // If there's a post ID in the URL, show PostPage
+            <PostPage />
           ) : loading ? (
-            "Searching..." // Show "Searching..." while loading
+            "Searching..."
           ) : postArray ? (
             <PostGrid
               className="flex-grow"

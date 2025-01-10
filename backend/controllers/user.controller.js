@@ -297,7 +297,7 @@ module.exports.login = async (req, res, next) => {
           httpOnly: true, // Prevents JavaScript access
           secure: false, // You can enable this in production by setting secure to true
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-          sameSite: "Strict", // Helps prevent CSRF
+          sameSite: "None",
         });
       }
 
