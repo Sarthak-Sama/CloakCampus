@@ -6,6 +6,7 @@ const instance = axios.create({
   headers: {
     accept: "application/json",
   },
+  withCredentials: true,
 });
 
 // Added a request interceptor to dynamically set the Authorization header
