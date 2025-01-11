@@ -16,7 +16,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://p652kfhs-3000.inc1.devtunnels.ms/",
+      "https://p652kfhs-3000.inc1.devtunnels.ms",
       "https://your-production-domain.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],

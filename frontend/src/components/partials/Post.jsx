@@ -168,6 +168,7 @@ function Post({ postdata }) {
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
+    if (!commentText) return;
     setCommentInputVisible(false);
     try {
       axios.post(`/posts/${postdata._id}/comment`, {
