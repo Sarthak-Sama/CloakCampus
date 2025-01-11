@@ -58,7 +58,10 @@ function NotificationsTab({
             {/* Unread Notifications */}
             {unreadNotifications.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mx-5 mt-5">
+                <h2
+                  id="unread-notification-text"
+                  className={`text-[70%] sm:text-[75%] text-center font-semibold mx-5 mt-5 text-[#EA516F] notification-type-text`}
+                >
                   Unread Notifications
                 </h2>
                 {unreadNotifications.map((notification, index) => (
@@ -106,7 +109,13 @@ function NotificationsTab({
             {/* Read Notifications */}
             {readNotifications.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mx-5 mt-5">
+                <h2
+                  id="read-notification-text"
+                  className={`text-[70%] sm:text-[75%] text-center font-semibold mx-5 mt-5 text-[#161616] dark:text-[#EDEDED] notification-type-text ${
+                    document.querySelector("html").classList.contains("dark") &&
+                    "isDark"
+                  }`}
+                >
                   Read Notifications
                 </h2>
                 {readNotifications.map((notification, index) => (

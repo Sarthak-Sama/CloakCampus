@@ -44,7 +44,7 @@ function ProfilePage() {
   return (
     <>
       {user ? (
-        <div className="md:flex block max-w-screen relative dark:text-white">
+        <div className="md:flex block max-w-screen relative dark:text-white h-fit min-h-screen">
           <RiArrowLeftLine
             onClick={() => {
               navigate(-1);
@@ -54,7 +54,7 @@ function ProfilePage() {
           />
           <div
             id="info-div"
-            className="items-center w-screen md:w-[20rem] md:h-screen pt-16 pl-10 pr-10 md:pr-0"
+            className="w-full md:w-[20rem] min-h-fit md:h-screen pt-16 pl-10 pr-10 md:pr-0"
           >
             <div id="profile" className="flex flex-col items-center w-full">
               <div

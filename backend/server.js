@@ -14,7 +14,11 @@ require("./config/passport.config");
 const app = express();
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://your-production-domain.com"],
+    origin: [
+      "http://localhost:3000",
+      "https://p652kfhs-3000.inc1.devtunnels.ms/",
+      "https://your-production-domain.com",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true, // Allow cookies
     allowedHeaders: ["Content-Type", "Authorization"],

@@ -153,7 +153,7 @@ function Auth() {
       {/* -------- Login Form----- */}
       <motion.div
         id="login-form"
-        className={`relative z-9  lg:w-[33%] mx-[10vw] my-[8vh] sm:my-[12vh] lg:my-[25vh] text-center`}
+        className={`relative z-10  lg:w-[33%] mx-[10vw] my-[8vh] sm:my-[12vh] lg:my-[25vh] text-center`}
         initial={
           isLargeScreen ? { x: "0%", opacity: 1 } : { y: "100%", opacity: 1 }
         }
@@ -319,7 +319,7 @@ function Auth() {
       {/* ------Signup Form----- */}
       <motion.div
         id="signup-form"
-        className={`relative z-9 w-[80] lg:w-[33%] mx-[10vw] mt-[-15vh] sm:my-[8vh] lg:my-[20vh] text-center`}
+        className={`relative z-9 w-[80] lg:w-[33%] mx-[10vw] mt-[-15vh]  sm:my-[8vh] lg:my-[20vh] text-center`}
         initial={
           isLargeScreen ? { x: "0%", opacity: 0 } : { y: "0%", opacity: 0 }
         }
@@ -534,7 +534,7 @@ function Auth() {
       {/* -------Slider------ */}
       <motion.div
         id="slider"
-        className={`w-[100vw] lg:w-[50vw] absolute z-9999 bottom-0 right-0 flex ${
+        className={`w-[100vw] h-screen lg:w-[50vw] fixed z-50 bottom-0 right-0 flex ${
           isLogin ? "justify-end" : "justify-start"
         }`}
         initial={isLargeScreen ? { x: "0%" } : { y: "0%" }}
