@@ -196,15 +196,42 @@ module.exports.getPosts = async (req, res, next) => {
 module.exports.getPostById = async (req, res, next) => {
   try {
     const postId = req.params.postId;
-    const page = parseInt(req.query.page) || 1; // Get page from query or default to 1
-    const limit = 30; // Comments per page
+
+    const post = await postModel.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if user has voted
+    const userVote = await voteModel.findOne({
+      userId: req.user._id,
+      postId: postId,
+    });
+
+    const postWithUserVote = {
+      ...post.toObject(),
+      userVote: userVote ? userVote.voteType : null,
+    };
+
+    res.status(200).json({ post: postWithUserVote });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.getPostComments = async (req, res, next) => {
+  try {
+    const postId = req.params.postId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = 30;
     const skip = (page - 1) * limit;
 
-    // Fetch the post and its comments
-    const post = await postModel.findById(postId).populate({
+    // Get comments for the post
+    const comments = await postModel.findById(postId).populate({
       path: "comments",
       options: {
-        sort: { createdAt: -1 }, // Sort comments by latest
+        sort: { createdAt: -1 },
         limit: limit,
         skip: skip,
       },
@@ -216,7 +243,7 @@ module.exports.getPostById = async (req, res, next) => {
       },
     });
 
-    if (!post) {
+    if (!comments) {
       return res.status(404).json({ message: "Post not found" });
     }
 
@@ -228,25 +255,15 @@ module.exports.getPostById = async (req, res, next) => {
 
     const totalPages = Math.ceil(totalComments.comments.length / limit);
 
-    // Check if the user has voted on the post
-    const userVote = await voteModel.findOne({
-      userId: req.user._id,
-      postId: postId,
-    });
-
-    // Add the userVote attribute to the post object
-    const postWithUserVote = {
-      ...post.toObject(),
-      userVote: userVote ? userVote.voteType : null,
+    res.status(200).json({
+      comments: comments.comments,
       pagination: {
         currentPage: page,
         totalPages: totalPages,
         totalComments: totalComments.comments.length,
         commentsPerPage: limit,
       },
-    };
-
-    res.status(200).json({ post: postWithUserVote });
+    });
   } catch (err) {
     next(err);
   }

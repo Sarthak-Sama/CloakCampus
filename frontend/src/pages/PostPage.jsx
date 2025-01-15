@@ -42,18 +42,50 @@ function PostPage() {
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportCategory, setReportCategory] = useState("");
   const [reportReason, setReportReason] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMoreComments, setHasMoreComments] = useState(true);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
 
+  const fetchPost = async () => {
+    try {
+      const { data } = await axios.get(`/posts/${id}`);
+      setLocalPost(data.post);
+    } catch (error) {
+      navigate("/loading");
+    }
+  };
+
+  const fetchComments = async () => {
+    if (isLoadingComments || !hasMoreComments) return;
+    setIsLoadingComments(true);
+    try {
+      const { data } = await axios.get(`/posts/${id}/comments?page=${page}`);
+      setLocalPost((prev) => ({
+        ...prev,
+        comments: [...prev.comments, ...data.comments],
+      }));
+      setHasMoreComments(
+        data.pagination.currentPage !== data.pagination.totalPages
+      );
+      setPage(page + 1);
+    } catch (error) {
+      console.error("Error loading more comments:", error);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  };
+
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5) {
+      fetchComments();
+    }
+  };
   useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const { data } = await axios.get(`/posts/${id}`);
-        setLocalPost(data.post);
-      } catch (error) {
-        navigate("/loading");
-      }
-    };
-
     fetchPost();
+    fetchComments();
   }, [id, navigate]);
 
   useEffect(() => {
@@ -335,6 +367,7 @@ function PostPage() {
       {localPost ? (
         <div
           ref={containerRef}
+          onScroll={handleScroll}
           className="mt-[-6vh] overflow-auto p-10 dark:text-white"
         >
           <div
@@ -538,7 +571,14 @@ function PostPage() {
             </div>
             <div id="comments">
               {comments.length > 0 ? (
-                renderComments(comments)
+                <>
+                  renderComments(comments)
+                  {isLoadingComments && (
+                    <div className="text-center py-4">
+                      Loading more comments...
+                    </div>
+                  )}
+                </>
               ) : (
                 <p>No comments yet. Be the first to comment!</p>
               )}

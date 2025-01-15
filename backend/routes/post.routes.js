@@ -8,6 +8,7 @@ router.use(authMiddleware.isAuthenticated);
 router.get("/", postController.getPosts);
 router.get("/search", postController.searchPosts);
 router.get("/:postId", postController.getPostById);
+router.get("/:postId/comments", postController.getPostComments);
 
 router.post(
   "/create-post",
