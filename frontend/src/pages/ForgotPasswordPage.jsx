@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { forgotPassword } from "../redux/actions/authAction"; // Assuming this action exists
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { RiCloseLine, RiCrossLine } from "@remixicon/react";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -9,7 +10,6 @@ const ForgotPasswordPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -44,7 +44,15 @@ const ForgotPasswordPage = () => {
 
   return (
     <div className="flex items-center justify-center w-screen min-h-screen bg-[#EDEDED] dark:bg-black">
-      <div className="bg-white dark:bg-[#161616] p-8 shadow-lg rounded-lg w-full max-w-md">
+      <RiCloseLine
+        size={50}
+        color="#EDEDED"
+        className="absolute opacity-50 hover:opacity-100 left-5 top-5"
+        onClick={() => {
+          navigate("/profile");
+        }}
+      />
+      <div className="h-screen sm:h-fit flex flex-col justify-center bg-white dark:bg-[#161616] p-8 shadow-lg rounded-lg w-full max-w-md">
         <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200 text-center">
           Forgot Password
         </h1>

@@ -47,39 +47,36 @@ function TopNav({
 
         <div className="text-2xl capitalize hidden sm:block">{category}</div>
       </div>
-      <div className="flex gap-7 items-center">
+      <div className="flex gap-2 sm:gap-7 items-center">
         <div id="search-div" className="ml-5 sm:ml-0">
           <SearchBar searchFunc={searchFunc} />
         </div>
         {user ? (
-          <div id="nav-btns" className="flex items-center gap-2">
+          <div id="nav-btns" className="flex items-center">
             <div
-              style={{
-                backgroundImage: `url(${user.profilePictureSrc})`,
-                backgroundSize: "cover",
-                backgroundPosition: "top",
-                backgroundRepeat: "no-repeat",
-              }}
-              className="bg-yellow-300 w-10 h-10 rounded-full transition-all duration-[0.3s] ease-in-out"
-              onMouseEnter={(e) =>
-                (e.target.style.outline = "2.5px solid #EA516F")
-              }
-              onMouseLeave={(e) => (e.target.style.outline = "none")}
-            ></div>
-            <div
+              className="flex items-center gap-2 group"
               onMouseEnter={() => {
                 setHoveredOverUser(true);
               }}
               onMouseLeave={() => {
                 setHoveredOverUser(false);
               }}
-              id="profile-name"
-              className="flex items-center gap-1 group"
             >
-              <div className="text-[1.1rem] hidden sm:block">
-                {user ? user.username : "Guest"}
+              <div
+                style={{
+                  backgroundImage: `url(${user.profilePictureSrc})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "top",
+                  backgroundRepeat: "no-repeat",
+                }}
+                className="bg-yellow-300 w-10 h-10 rounded-full transition-all duration-[0.3s] ease-in-out"
+              ></div>
+              <div id="profile-name" className="flex items-center gap-1">
+                <div className="text-[1.1rem] hidden sm:block">
+                  {user ? user.username : "Guest"}
+                </div>
+                <RiArrowDownSLine className="group-hover:translate-y-[20%] transition-all duration-[0.3s] ease-in-out" />
               </div>
-              <RiArrowDownSLine className="group-hover:translate-y-[20%] transition-all duration-[0.3s] ease-in-out" />
             </div>
 
             <div

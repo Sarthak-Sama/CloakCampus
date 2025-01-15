@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useNavigate, useLocation, Link } from "react-router-dom";
 import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import TermsModal from "../components/TermsAndConditions";
 import { signup, login } from "../redux/actions/authAction";
@@ -223,9 +223,12 @@ function Auth() {
                 Remember Me
               </span>
             </label>
-            <a href="#" className="text-sm text-[#EA516F] hover:underline">
+            <Link
+              to={"/forgot-password"}
+              className="text-sm text-[#EA516F] hover:underline"
+            >
               Forgot password?
-            </a>
+            </Link>
           </div>
           <button className="w-full py-2 bg-[#EA516F] text-white rounded hover:bg-[#EA516F] transition duration-300">
             {isLoading ? (

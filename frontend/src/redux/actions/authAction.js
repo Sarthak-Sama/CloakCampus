@@ -47,7 +47,6 @@ const signup = async (email, password) => {
 // Login function
 const login = async (email, password, toRemember, dispatch) => {
   try {
-    console.log(toRemember);
     const response = await axios.post("/user/login", {
       email,
       password,
@@ -68,26 +67,20 @@ const login = async (email, password, toRemember, dispatch) => {
 
 // Logout function (Handles token removal and dispatching the logout action)
 const logout = async (dispatch, navigate) => {
-  console.log("Logging out...");
-  console.log(sessionStorage.getItem("token"));
   try {
+    // Send the req to backend to blacklist the JWT
     await axios.post("/user/logout");
-    console.log("backend se hogya logout");
   } catch (error) {
     console.log("Error occurred while logging out: " + error);
   }
-  // Send the req to backend to blacklist the JWT
-  console.log("backend ka kaam khtm");
+
   // Remove the token from sessionStorage or cookies
   sessionStorage.removeItem("token");
   Cookies.remove("token");
-  console.log("NIKAL GAYA TOKEN AND COOKIES");
 
   // Dispatch logoutUser action to update the Redux state
   dispatch(logoutUser());
   navigate("/auth");
-
-  console.log("sab khtm ho gaya");
 };
 
 // OTP Verification function
@@ -110,8 +103,6 @@ const verifyOtp = async (email, otp, dispatch) => {
 };
 
 const forgotPassword = async (email) => {
-  console.log("forgot password", email);
-
   try {
     const response = await axios.post("/user/forgot-password", {
       email,
@@ -154,7 +145,6 @@ const getProfile = async () => {
         Authorization: `Bearer ${token}`, // Send the token as a Bearer token in the Authorization header
       },
     });
-    console.log(response.data); // The profile data returned from the backend
   } catch (error) {
     console.error("Failed to get profile:", error.response.data);
   }

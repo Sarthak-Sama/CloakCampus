@@ -11,11 +11,11 @@ import {
   RiThumbUpFill,
   RiThumbUpLine,
 } from "@remixicon/react";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import axios from "../../utils/axios";
 import { Link } from "react-router-dom";
 
-function Post({ postdata }) {
+function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
   const [likeBtnActive, setLikeBtnActive] = useState(false);
   const [dislikeBtnActive, setDislikeBtnActive] = useState(false);
   const [commentBtnActive, setCommentBtnActive] = useState(false);
@@ -27,6 +27,11 @@ function Post({ postdata }) {
   const [commentText, setCommentText] = useState("");
   const [isHoveredOverSendIcon, setIsHoveredOverSendIcon] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportCategory, setReportCategory] = useState("");
+  const [reportReason, setReportReason] = useState("");
 
   const getTimeAgo = (timestamp) => {
     const now = new Date();
@@ -199,10 +204,62 @@ function Post({ postdata }) {
       await navigator.clipboard.writeText(
         `${window.location.href}post/${postdata._id}`
       );
-      alert("Text copied to clipboard!");
     } catch (err) {
       console.error("Failed to copy text: ", err);
       alert("Failed to copy text.");
+    }
+    setPopupText("Link copied to clipboard.");
+    setIsLinkCopiedNotificationVisible(true);
+    setInterval(() => {
+      setIsLinkCopiedNotificationVisible(false);
+    }, 2000);
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!touchStartX.current || !touchEndX.current) return;
+
+    const diffX = touchStartX.current - touchEndX.current;
+    const threshold = 50; // minimum distance for swipe
+
+    if (Math.abs(diffX) > threshold) {
+      if (diffX > 0) {
+        // Swiped left, show next image
+        handleNextImage(e);
+      } else {
+        // Swiped right, show previous image
+        handlePrevImage(e);
+      }
+    }
+
+    // Reset values
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  const handleReport = async (e) => {
+    try {
+      await axios.post(`/posts/report/${postdata._id}`, {
+        category: reportCategory,
+        reason: reportReason,
+      });
+      setPopupText("Thanks for reporting.");
+      setReportDialogOpen(false);
+      // Optional: Show success notification
+    } catch (error) {
+      if (error.response?.status === 409) {
+        console.error(error.response.data.message);
+        setPopupText("Failed to report post.");
+      } else {
+        setPopupText("Failed to report post.");
+      }
     }
   };
 
@@ -213,21 +270,22 @@ function Post({ postdata }) {
           {postdata.media && postdata.media.length > 0 && (
             <div
               id="thumbnail"
-              className="w-[100%] translate-x-[3%] sm:w-[50%] lg:w-[35%] flex overflow-hidden relative group"
+              className="w-[100%] translate-x-[3%] sm:w-[50%] lg:w-[50%] rounded-[0.6rem] overflow-hidden relative group"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
               {postdata.media[currentImageIndex].type === "image" ? (
                 <img
-                  className="max-w-full h-auto rounded-[0.6rem] shadow-md"
-                  key={postdata.media[currentImageIndex]._id}
+                  className="max-w-full h-auto shadow-md"
                   src={postdata.media[currentImageIndex].url}
                   alt="Post media"
                 />
               ) : (
                 <video
-                  key={postdata.media[currentImageIndex]._id}
                   src={postdata.media[currentImageIndex].url}
                   controls
-                  className="w-full max-w-lg h-auto rounded-lg shadow-md"
+                  className="w-full max-w-lg h-auto shadow-md"
                 />
               )}
               {postdata.media.length > 1 && (
@@ -366,7 +424,13 @@ function Post({ postdata }) {
             >
               <RiShareLine />
             </div>
-            <div>
+            <div
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setReportDialogOpen(true);
+              }}
+            >
               <RiMore2Line />
             </div>
           </div>
@@ -430,6 +494,78 @@ function Post({ postdata }) {
           </>
         )}
       </div>
+      {reportDialogOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setReportDialogOpen(false);
+          }}
+        >
+          <div
+            className="w-[90%] max-w-md bg-zinc-300 dark:bg-zinc-800 rounded-lg p-6"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <h2 className="text-xl font-semibold mb-4 text-[#161616] dark:text-[#EDEDED]">
+              Report Post
+            </h2>
+
+            <select
+              value={reportCategory}
+              onChange={(e) => setReportCategory(e.target.value)}
+              className="w-full p-2 mb-4 rounded-md bg-zinc-200 dark:bg-zinc-700 text-[#161616] dark:text-[#EDEDED] border border-zinc-400 dark:border-zinc-600"
+            >
+              <option value="" disabled>
+                Select a category
+              </option>
+              <option value="Spam">Spam</option>
+              <option value="Harassment">Harassment</option>
+              <option value="Hate Speech">Hate Speech</option>
+              <option value="False Information">Misinformation</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <textarea
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              placeholder="Please provide additional details..."
+              className="w-full p-2 mb-4 rounded-md bg-zinc-200 dark:bg-zinc-700 text-[#161616] dark:text-[#EDEDED] border border-zinc-400 dark:border-zinc-600 min-h-[100px] resize-none"
+            />
+
+            <div className="flex justify-center sm:justify-end gap-3">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setReportDialogOpen(false);
+                }}
+                className="px-4 py-2 rounded-md bg-zinc-400 dark:bg-zinc-600 text-[#161616] dark:text-[#EDEDED] hover:bg-zinc-500 dark:hover:bg-zinc-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleReport();
+                }}
+                disabled={!reportCategory || !reportReason}
+                className={`px-4 py-2 rounded-md ${
+                  !reportCategory || !reportReason
+                    ? "bg-zinc-500 cursor-not-allowed"
+                    : "bg-[#ea516f] hover:bg-[#d4465f]"
+                } text-white transition-colors`}
+              >
+                Submit Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Link>
   );
 }

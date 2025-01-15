@@ -20,16 +20,18 @@ function HomePage() {
   const [isSideNavActive, setIsSideNavActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [numberOfNewNotifications, setNumberOfNewNotifications] = useState(0);
+  const [isLinkCopiedNotificationVisible, setIsLinkCopiedNotificationVisible] =
+    useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
   const [postArray, setPostArray] = useState([]);
+  const [popupText, setPopupText] = useState("");
   const postGridRef = useRef(null);
   const { id } = useParams(); // Get the post ID from the URL if the route is "/post/:id"
   const reduxPosts = useSelector((state) => state.posts.posts);
-  const isMediumScreen = window.innerWidth < 1024;
   // Get notifications from Redux
   const notifications = useSelector(
     (state) => state.notifications.notifications
@@ -207,6 +209,10 @@ function HomePage() {
               className="flex-grow"
               postsArray={postArray}
               category={category}
+              setIsLinkCopiedNotificationVisible={
+                setIsLinkCopiedNotificationVisible
+              }
+              setPopupText={setPopupText}
             />
           ) : (
             "loading"
@@ -219,6 +225,13 @@ function HomePage() {
         setIsNotificationTabActive={setIsNotificationTabActive}
         setNumberOfNewNotifications={setNumberOfNewNotifications}
       />
+      <h4
+        className={`z-50 px-12 py-3 text-center text-xs sm:text-lg fixed left-1/2 lg:left-[60%] top-[87%] -translate-x-1/2 -translate-y-1/2 -t px-5 py-2 bg-[rgba(0,0,0,0.8)] text-white rounded-lg pointer-events-none transition duration-300 ease-in-out ${
+          isLinkCopiedNotificationVisible ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        {popupText}
+      </h4>
     </div>
   );
 }

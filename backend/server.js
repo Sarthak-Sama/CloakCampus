@@ -34,6 +34,14 @@ app.use(passport.initialize());
 const connectDB = require("./config/mongodb.config");
 connectDB();
 
+// Connect to Redis
+const {
+  redisClient,
+  loadAllowedDomainsToCache,
+} = require("./config/redisClient.config");
+redisClient.connect();
+loadAllowedDomainsToCache();
+
 // Routes
 app.use("/", indexRoutes);
 app.use("/user", userRoutes);

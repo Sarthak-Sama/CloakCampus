@@ -12,6 +12,7 @@ function UploadPostPage() {
   const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
   const [blobUrls, setBlobUrls] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -61,6 +62,7 @@ function UploadPostPage() {
     }
 
     setError("");
+    setIsUploading(true);
 
     const formData = new FormData();
     formData.append("title", title);
@@ -85,6 +87,8 @@ function UploadPostPage() {
     } catch (error) {
       setError("Oops... A problem occurred while posting.");
       console.error("Upload error:", error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -108,19 +112,18 @@ function UploadPostPage() {
   }, [blobUrls]);
 
   return (
-    <div className="flex justify-center items-center w-screen min-h-screen bg-gray-100 dark:bg-[#191919]">
+    <div className="flex items-center justify-center w-screen min-h-screen bg-gray-100 dark:bg-[#191919] py-4 md:py-8">
       <RiArrowLeftLine
         size={40}
-        className="text-black opacity-50 hover:opacity-100 dark:text-[#EDEDED] absolute left-0 top-0 mt-5 ml-5"
+        className="hidden sm:block text-black opacity-50 hover:opacity-100 dark:text-[#EDEDED] fixed left-0 top-0 mt-5 ml-5"
         onClick={goBack}
       />
-      <div className="bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg w-[60%]">
-        <div className="md:flex gap-5">
+      <div className="h-fit bg-white dark:bg-zinc-800 p-4 md:p-8 rounded-lg shadow-lg w-full sm:w-[60%] mx-2 md:mx-0">
+        <div className="flex flex-col md:flex-row gap-5">
           <div className="w-full md:w-1/2">
             <h2 className="text-xl font-semibold text-gray-700 dark:text-[#EDEDED] mb-4">
               Upload Post
             </h2>
-
             {/* Title Input */}
             <div className="mb-4">
               <label className="block text-gray-600 dark:text-zinc-300 mb-1">
@@ -149,9 +152,7 @@ function UploadPostPage() {
                 required
               />
             </div>
-
             {/* Category Menu */}
-
             <div className="mb-4">
               <label className="inline mr-5 text-gray-600 dark:text-zinc-300 mb-1">
                 Category (Optional):
@@ -218,11 +219,22 @@ function UploadPostPage() {
                             </div>
                           </div>
                         ) : (
-                          <video
-                            src={file.preview}
-                            className="object-cover w-full h-full rounded-md"
-                            controls
-                          />
+                          <div className="w-full h-full relative">
+                            <video
+                              src={file.preview}
+                              className="object-cover w-full h-full rounded-md"
+                              controls
+                            />
+                            <div
+                              className="absolute w-5 h-5 translate-x-1/2 -translate-y-1/2 right-1 top-1 rounded-full bg-red-500 flex items-center justify-center cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeFile(index);
+                              }}
+                            >
+                              <RiCloseLine color="#EFEFEF" />
+                            </div>
+                          </div>
                         )}
                       </div>
                     ))}
@@ -238,9 +250,10 @@ function UploadPostPage() {
         {/* Submit Button */}
         <button
           onClick={handleSubmit}
-          className="w-[100%] md:w-[50%]  mt-4 bg-[#EA516F] text-white py-2 rounded-md hover:bg-[#EA516F] transition"
+          disabled={isUploading}
+          className="w-[100%] md:w-[50%] mt-4 bg-[#EA516F] text-white py-2 rounded-md hover:bg-[#EA516F] transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Upload
+          {isUploading ? "Uploading..." : "Upload"}
         </button>
       </div>
     </div>

@@ -196,16 +196,37 @@ module.exports.getPosts = async (req, res, next) => {
 module.exports.getPostById = async (req, res, next) => {
   try {
     const postId = req.params.postId;
+    const page = parseInt(req.query.page) || 1; // Get page from query or default to 1
+    const limit = 30; // Comments per page
+    const skip = (page - 1) * limit;
 
     // Fetch the post and its comments
     const post = await postModel.findById(postId).populate({
       path: "comments",
-      options: { sort: { createdAt: -1 } }, // Sort comments by latest
+      options: {
+        sort: { createdAt: -1 }, // Sort comments by latest
+        limit: limit,
+        skip: skip,
+      },
+      populate: {
+        path: "replies",
+        options: {
+          sort: { createdAt: -1 },
+        },
+      },
     });
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
+
+    // Get total comments count
+    const totalComments = await postModel.findById(postId).populate({
+      path: "comments",
+      select: "_id",
+    });
+
+    const totalPages = Math.ceil(totalComments.comments.length / limit);
 
     // Check if the user has voted on the post
     const userVote = await voteModel.findOne({
@@ -216,7 +237,13 @@ module.exports.getPostById = async (req, res, next) => {
     // Add the userVote attribute to the post object
     const postWithUserVote = {
       ...post.toObject(),
-      userVote: userVote ? userVote.voteType : null, // Add voteType or null
+      userVote: userVote ? userVote.voteType : null,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalComments: totalComments.comments.length,
+        commentsPerPage: limit,
+      },
     };
 
     res.status(200).json({ post: postWithUserVote });
@@ -287,6 +314,7 @@ module.exports.createComment = async (req, res, next) => {
       content,
       author: req.user._id,
       authorUsername: req.user.username,
+      authorPfp: req.user.profilePictureSrc,
       postId: post._id,
     });
 
@@ -335,6 +363,7 @@ module.exports.replyComment = async (req, res, next) => {
       content,
       author: req.user._id,
       authorUsername: req.user.username,
+      authorPfp: req.user.profilePictureSrc,
       postId: parentComment.postId, // Inherit the postId from the parent comment
       parentComment: parentCommentId, // Link to the parent comment
     });

@@ -9,7 +9,6 @@ import PrivateRoute from "./components/RedirectingComponents/PrivateRoute";
 import RedirectRoute from "./components/RedirectingComponents/RedirectRoute";
 import UploadPostPage from "./pages/UploadPostPage";
 import LoadingPage from "./pages/LoadingPage";
-import PostPage from "./pages/PostPage";
 import UniversityPage from "./pages/UniversityPage";
 import { useDispatch } from "react-redux";
 import { setTheme } from "./redux/reducers/themeSlice";
@@ -66,24 +65,10 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/forgot-password"
-          element={
-            <PrivateRoute>
-              <ForgotPasswordPage />
-            </PrivateRoute>
-          }
-        >
+        <Route path="/forgot-password" element={<ForgotPasswordPage />}>
           <Route path="verify-otp" element={<OtpVerification />} />
         </Route>
-        <Route
-          path="/reset-password"
-          element={
-            <PrivateRoute>
-              <PasswordResetPage />
-            </PrivateRoute>
-          }
-        />
+        <Route path="/reset-password" element={<PasswordResetPage />} />
 
         {/* Auth Route - Redirects to / if already logged in */}
         <Route

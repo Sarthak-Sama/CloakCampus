@@ -23,6 +23,8 @@ const OTPVerification = ({ isPasswordResetFlow = false }) => {
   // Handle OTP input change
   const handleOtpChange = (e, index) => {
     const value = e.target.value;
+
+    // Handle single digit input
     if (/[^0-9]/.test(value)) return;
 
     const newOtp = [...otp];
@@ -31,6 +33,35 @@ const OTPVerification = ({ isPasswordResetFlow = false }) => {
 
     if (value && index < 5) {
       document.getElementById(`otp-${index + 1}`).focus();
+    }
+  };
+
+  // Add paste handler
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text");
+    const pastedOtp = pastedData
+      .slice(0, 6)
+      .split("")
+      .map((char) => (/[0-9]/.test(char) ? char : ""));
+
+    const newOtp = [...otp];
+    pastedOtp.forEach((digit, i) => {
+      if (i < 6) newOtp[i] = digit;
+    });
+    setOtp(newOtp);
+
+    // Focus on the last filled input or the next empty input
+    const lastFilledIndex = newOtp.findLastIndex((digit) => digit !== "");
+    const nextIndex =
+      lastFilledIndex < 5 ? lastFilledIndex + 1 : lastFilledIndex;
+    document.getElementById(`otp-${nextIndex}`)?.focus();
+  };
+
+  // Add new handler for backspace
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      document.getElementById(`otp-${index - 1}`).focus();
     }
   };
 
@@ -51,7 +82,6 @@ const OTPVerification = ({ isPasswordResetFlow = false }) => {
         if (response.status === 200) {
           setIsVerified(true);
           navigate("/reset-password", { state: { email, isVerified: true } });
-          console.log("/reset-password");
         } else {
           setErrorMessage(response.data.message || "OTP verification failed.");
         }
@@ -100,7 +130,7 @@ const OTPVerification = ({ isPasswordResetFlow = false }) => {
 
   return (
     <div className="h-screen w-screen bg-[rgb(0,0,0,0.4)] absolute flex items-center justify-center">
-      <div className="w-full max-w-sm mx-auto p-6 bg-white shadow-lg rounded-lg">
+      <div className="scale-[80%] flex flex-col items-center sm:scale-100 w-full max-w-sm mx-auto p-6 bg-white shadow-lg rounded-lg">
         <h2 className="text-2xl font-semibold text-center mb-6">
           {isPasswordResetFlow
             ? "Reset Password OTP"
@@ -116,6 +146,8 @@ const OTPVerification = ({ isPasswordResetFlow = false }) => {
               maxLength="1"
               value={digit}
               onChange={(e) => handleOtpChange(e, index)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              onPaste={handlePaste}
               className="w-12 h-12 text-xl text-center border-2 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#EA516F]"
               autoFocus={index === 0}
             />

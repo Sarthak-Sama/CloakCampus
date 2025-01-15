@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout, resetPassword } from "../redux/actions/authAction"; // Assuming this action exists
-import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
+import { RiCloseLine, RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import { useDispatch } from "react-redux";
 
 const PasswordResetPage = () => {
@@ -88,7 +88,15 @@ const PasswordResetPage = () => {
 
   return (
     <div className="flex items-center justify-center w-screen min-h-screen bg-[#EDEDED] dark:bg-black">
-      <div className="bg-white dark:bg-[#161616] p-8 shadow-lg rounded-lg w-full max-w-md">
+      <RiCloseLine
+        size={50}
+        color="#EDEDED"
+        className="absolute opacity-50 hover:opacity-100 left-5 top-5"
+        onClick={() => {
+          navigate("/profile");
+        }}
+      />
+      <div className="h-screen sm:h-fit flex flex-col justify-center bg-white dark:bg-[#161616] p-8 shadow-lg rounded-lg w-full max-w-md">
         <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200 text-center">
           Reset Password
         </h1>

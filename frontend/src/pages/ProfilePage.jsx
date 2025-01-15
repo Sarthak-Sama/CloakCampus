@@ -147,11 +147,11 @@ function ProfilePage() {
 
       {showConfirmation && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-5 rounded-lg">
+          <div className="w-[80%] sm:w-fit bg-white p-5 rounded-lg">
             <h3 className="text-xl mb-4">
               Are you sure you want to delete this post?
             </h3>
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-center sm:justify-end space-x-4">
               <button
                 className="bg-red-500 text-white px-4 py-2 rounded"
                 onClick={confirmDelete}

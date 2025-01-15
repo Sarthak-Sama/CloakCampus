@@ -1,4 +1,3 @@
-const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const userModel = require("../models/user.model");
@@ -7,6 +6,7 @@ const crypto = require("crypto");
 const Domain = require("../models/domain.model");
 const axios = require("axios");
 const blackListModel = require("../models/blacklist.model");
+const { redisClient } = require("../config/redisClient.config");
 
 // Function to send OTP email
 const sendOtpEmail = async (email, otp) => {
@@ -76,7 +76,7 @@ module.exports.signup = async (req, res, next) => {
 
     // Check if the user already exists
     const existingUser = await userModel.findOne({ email });
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
 
     if (existingUser) {
       if (existingUser.isVerified) {
@@ -173,9 +173,12 @@ module.exports.verifyOtp = async (req, res, next) => {
     return res.status(400).json({ message: "Invalid OTP" });
   }
 
-  user.isVerified = true; // Mark the email as verified
-  user.otp = undefined; // Clear the OTP
+  user.isVerified = true;
+  user.otp = undefined;
   await user.save();
+
+  // Store user data in Redis with proper key and serialization
+  await redisClient.set(`user:${user._id}`, JSON.stringify(user.toJSON()));
 
   // Create JWT token with expiration
   const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
@@ -188,7 +191,7 @@ module.exports.verifyOtp = async (req, res, next) => {
     // secure: process.env.NODE_ENV === "production", // Use secure cookies in production
     secure: false,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    sameSite: "Strict", // Helps prevent CSRF
+    sameSite: "None", // Helps prevent CSRF
   });
 
   // Log the user in by creating a JWT token
@@ -204,116 +207,88 @@ module.exports.verifyOtp = async (req, res, next) => {
 };
 
 module.exports.login = async (req, res, next) => {
-  passport.authenticate(
-    "local",
-    { session: false },
-    async (err, user, info) => {
-      if (err) {
-        return next(err); // Ensure that no further code is executed after the error is handled
-      }
-      if (!user) {
-        return res.status(401).json({ message: info.message }); // Return after sending response
-      }
-      if (!user.isVerified) {
-        return res.status(403).json({ message: "Email not verified" }); // Return after sending response
-      }
+  try {
+    const { email, password } = req.body;
 
-      // let usernameUpdated = false;
-      // let profilePictureUpdated = false;
-
-      // try {
-      //   // Generate a random username
-      //   const usernamesResponse = await axios.get(
-      //     "https://usernameapiv1.vercel.app/api/random-usernames"
-      //   );
-      //   const usernames = usernamesResponse.data.usernames;
-      //   let usernameIndex = 0;
-
-      //   while (usernameIndex < usernames.length) {
-      //     const username = usernames[usernameIndex];
-      //     const existingUser = await userModel.findOne({ username });
-
-      //     if (!existingUser) {
-      //       user.username = username; // Update the username
-      //       usernameUpdated = true;
-      //       break;
-      //     }
-      //     usernameIndex++;
-      //   }
-
-      //   // Generate a random profile picture
-      //   const max = 10000;
-      //   const maxRetries = 20;
-      //   let profileImageResponse;
-      //   let retries = 0;
-
-      //   while (retries < maxRetries) {
-      //     try {
-      //       let imageID = Math.floor(Math.random() * max);
-      //       profileImageResponse = await axios.get(
-      //         `https://api.nekosapi.com/v3/images/${imageID}`
-      //       );
-
-      //       if (
-      //         profileImageResponse.status === 200 &&
-      //         profileImageResponse.data?.url
-      //       ) {
-      //         const existingUser = await userModel.findOne({
-      //           profilePictureSrc: profileImageResponse.data.image_url,
-      //         });
-
-      //         if (!existingUser) {
-      //           user.profilePictureSrc = profileImageResponse.data.image_url; // Update the profile picture
-      //           profilePictureUpdated = true;
-      //           break;
-      //         }
-      //       }
-      //     } catch (error) {
-      //       if (error.response && error.response.status === 404) {
-      //         retries++;
-      //       } else {
-      //         return next(error); // Return after handling error
-      //       }
-      //     }
-      //   }
-
-      //   // Save the user if any updates were made
-      //   if (usernameUpdated || profilePictureUpdated) {
-      //     await user.save();
-      //   }
-      // } catch (error) {
-      //   return next(error); // Return after handling error
-      // }
-
-      // Create JWT token with expiration
-      const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      }); // Token valid for 7 days
-
-      // Check if toRemember is true and set the token in a cookie accordingly
-      const { toRemember } = req.body; // Extract toRemember from request body
-      if (toRemember) {
-        res.cookie("token", token, {
-          httpOnly: true, // Prevents JavaScript access
-          secure: false, // You can enable this in production by setting secure to true
-          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-          sameSite: "None",
-        });
-      }
-
-      // Final response after all operations
-      return res.status(200).json({
-        message: "User signed in successfully",
-        user: {
-          _id: user._id,
-          username: user.username, // Existing or newly set username
-          email: user.email,
-          profilePictureSrc: user.profilePictureSrc, // Existing or newly set profile picture
-        },
-        token,
+    // Extract domain from the email
+    const emailDomain = email.split("@")[1];
+    // Check if the domain is in the allowed domains set in Redis
+    const isAllowedDomain = await redisClient.sIsMember(
+      "allowed_domains",
+      emailDomain
+    );
+    if (!isAllowedDomain) {
+      return res.status(400).json({
+        message: "Your university is not yet avaiable on CloakCampus.",
       });
     }
-  )(req, res, next);
+
+    // First check Redis cache using email
+    let userData = await redisClient.get(`user:email:${email}`);
+    let user;
+
+    if (userData) {
+      // User found in cache
+      user = JSON.parse(userData);
+      // Verify password
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+    } else {
+      // Not in cache, check database
+      user = await userModel.findOne({ email }).populate("university");
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      // Verify password
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Store in Redis with both ID and email keys
+      userData = JSON.stringify(user.toJSON());
+      await Promise.all([
+        redisClient.set(`user:${user._id}`, userData),
+        redisClient.set(`user:email:${email}`, userData),
+      ]);
+    }
+
+    if (!user.isVerified) {
+      return res.status(403).json({ message: "Email not verified" });
+    }
+
+    // Create JWT token
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    // Handle remember me functionality
+    const { toRemember } = req.body;
+    if (toRemember) {
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        sameSite: "None",
+      });
+    }
+
+    return res.status(200).json({
+      message: "User signed in successfully",
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePictureSrc: user.profilePictureSrc,
+      },
+      token,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports.logout = async (req, res, next) => {
@@ -340,32 +315,34 @@ module.exports.logout = async (req, res, next) => {
 };
 
 module.exports.getProfile = async (req, res, next) => {
-  passport.authenticate("jwt", { session: false }, async (err, user) => {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+  try {
+    // Get user ID from the authenticated request
+    const userId = req.user._id; // Assuming your auth middleware sets req.user
 
-    try {
-      // Populate the 'university' field using async/await
-      const userData = await userModel
-        .findById(user._id)
-        .populate("university");
+    // Try to get user data from Redis cache
+    const cachedUser = await redisClient.get(`user:${userId}`);
 
-      if (!userData) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.status(200).json({
-        message: "Profile data",
-        user: userData, // Respond with the populated user data
+    if (cachedUser) {
+      return res.status(200).json({
+        message: "Profile data (from cache)",
+        user: JSON.parse(cachedUser),
       });
-    } catch (error) {
-      return next(error);
     }
-  })(req, res, next);
+
+    // If somehow not in cache (fallback), fetch from database
+    const userData = await userModel.findById(userId).populate("university");
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Profile data",
+      user: userData,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // New function for forgot password
@@ -378,9 +355,7 @@ module.exports.forgotPassword = async (req, res, next) => {
   }
 
   // Generate a random verification code
-  const verificationCode = Math.floor(
-    100000 + Math.random() * 900000
-  ).toString(); // 6-digit code
+  const verificationCode = crypto.randomInt(100000, 999999).toString(); // 6-digit code
   user.verificationCode = verificationCode;
   user.codeExpiration = Date.now() + 15 * 60 * 1000; // 15 minutes expiration
   await user.save();

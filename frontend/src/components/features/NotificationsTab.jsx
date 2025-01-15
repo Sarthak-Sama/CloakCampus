@@ -42,13 +42,13 @@ function NotificationsTab({
   }, [unreadNotifications, setNumberOfNewNotifications]);
 
   return (
-    <div>
+    <div className="bg-red-200">
       <motion.div
         style={{
           backdropFilter: "blur(18px)",
           background: "rgba(0,0,0,0.2)",
         }}
-        className="md:w-[45%] lg:w-[32%] h-screen bg-blue-200 right-0 top-[12vh] absolute z-20 shadow-xl shadow-left overflow-y-scroll"
+        className="md:w-[45%] lg:w-[32%] h-[88vh] bg-blue-200 right-0 top-[12vh] absolute z-20 shadow-xl shadow-left overflow-y-scroll"
         initial={{ x: "100%" }}
         animate={{ x: isNotificationTabActive ? "0%" : "100%" }}
         transition={{ type: "tween", stiffness: 300 }}

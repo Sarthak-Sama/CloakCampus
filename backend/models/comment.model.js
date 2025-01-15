@@ -15,6 +15,11 @@ const commentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  authorPfp: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   postId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Post",

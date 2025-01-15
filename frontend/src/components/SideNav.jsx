@@ -7,13 +7,16 @@ import { useSelector } from "react-redux";
 function SideNav({ setCategory }) {
   const { user } = useSelector((state) => state.user);
   const categoriesArray = user?.categories;
+  const { theme } = useSelector((state) => state.theme);
 
   return (
     <div
       className={`w-[100%] h-[88vh] lg:h-screen bg-[#EDEDED] dark:bg-[#161616] text-[#161616] dark:text-[#EDEDED] flex flex-col items-center text-center pl-5 pr-12 pt-8 ${
         window.innerWidth < 1024
           ? "border-zinc-600 border-r-[1px]"
-          : "small-border-light dark:small-border-dark"
+          : theme === "dark"
+          ? "small-border-dark"
+          : "small-border-light"
       } `}
     >
       <Link
@@ -35,7 +38,7 @@ function SideNav({ setCategory }) {
         onClick={() => {
           setCategory("all discussion");
         }}
-        className="text-lg mt-10"
+        className="text-lg mt-10 w-[80%] py-2 rounded-lg active:bg-zinc-300 sm:hover:bg-zinc-300 dark:acitve:bg-zinc-800 dark:hover:bg-zinc-800 transition duration-300"
       >
         All Discussion
       </Link>
@@ -49,7 +52,7 @@ function SideNav({ setCategory }) {
                     setCategory(cat);
                   }}
                   key={index}
-                  className="text-[1.1rem] my-2"
+                  className="text-[1.1rem] my-1 w-[80%] py-2 rounded-lg active:bg-zinc-300 sm:hover:bg-zinc-300 dark:acitve:bg-zinc-800 dark:hover:bg-zinc-800 transition duration-300"
                 >
                   {cat}
                 </Link>
