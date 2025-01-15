@@ -317,7 +317,8 @@ module.exports.logout = async (req, res, next) => {
 module.exports.getProfile = async (req, res, next) => {
   try {
     // Get user ID from the authenticated request
-    const userId = req.user._id; // Assuming your auth middleware sets req.user
+    console.log("req.user", req.user);
+    const userId = req.user._id;
 
     // Try to get user data from Redis cache
     const cachedUser = await redisClient.get(`user:${userId}`);

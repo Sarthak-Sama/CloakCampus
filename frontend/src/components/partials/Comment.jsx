@@ -8,6 +8,7 @@ function Comment({ comment, setComments, updateNestedComments }) {
   const [repliesVisible, setRepliesVisible] = useState(false);
   const [replies, setReplies] = useState([]);
   const [repliesFetched, setRepliesFetched] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getTimeAgo = (timestamp) => {
     const now = new Date();
@@ -59,20 +60,30 @@ function Comment({ comment, setComments, updateNestedComments }) {
   }, [repliesVisible, repliesFetched, comment._id]);
 
   const handleReplySubmit = async (parentId) => {
+    if (isSubmitting) return;
+
     try {
+      setIsSubmitting(true);
       const { data } = await axios.post(`/posts/${parentId}/reply`, {
         content: replyText,
       });
 
-      setReplyText("");
-      setIsReplying(false);
+      // Update local replies state
+      setReplies((prevReplies) => [...prevReplies, data.reply]);
 
-      // Pass the new reply to the update function
+      // Update parent comments state
       setComments((prevComments) =>
         updateNestedComments(prevComments, parentId, data.reply)
       );
+
+      setReplyText("");
+      setIsReplying(false);
+      setRepliesVisible(true); // Keep replies visible
+      setRepliesFetched(true); // Mark replies as fetched
     } catch (err) {
       console.error("Error while replying: ", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -92,7 +103,12 @@ function Comment({ comment, setComments, updateNestedComments }) {
     >
       <div className="flex items-start gap-3">
         {/* Avatar */}
-        <div className="avatar w-10 h-10 bg-gray-300 rounded-full flex-shrink-0"></div>
+        <div className="avatar w-10 h-10 bg-gray-300 overflow-hidden rounded-full flex-shrink-0">
+          <img
+            src={comment.authorPfp || "/media/profileIcon.jpg"}
+            className="w-full h-full object-cover object-top"
+          />
+        </div>
 
         {/* Comment content */}
         <div className="flex-1">
@@ -133,19 +149,25 @@ function Comment({ comment, setComments, updateNestedComments }) {
 
           {/* Reply Form */}
           {isReplying && (
-            <div className="reply-input mt-3 p-4 border rounded-lg bg-gray-50">
+            <div className="reply-input mt-3 p-4">
               <textarea
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Write a reply..."
-                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full p-2 text-black dark:text-white bg-transparent focus:outline-none resize-none"
                 rows="2"
+                disabled={isSubmitting}
               />
               <button
                 onClick={() => handleReplySubmit(comment._id)}
-                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg"
+                disabled={isSubmitting}
+                className={`mt-2 ${
+                  isSubmitting
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-[rgba(234,81,111,0.8)] hover:bg-[rgba(234,81,111,1)]"
+                } transition-color duration-300 ease-in-out text-white px-4 py-2 rounded-lg`}
               >
-                Send
+                {isSubmitting ? "Replying..." : "Reply"}
               </button>
             </div>
           )}
