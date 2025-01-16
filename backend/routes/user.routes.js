@@ -3,12 +3,12 @@ const router = express.Router();
 const userController = require("../controllers/user.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 
-router.use(authMiddleware.isAuthenticated);
-
 router.post("/signup", userController.signup);
 router.post("/verify-otp", userController.verifyOtp);
 router.post("/login", userController.login);
 router.post("/logout", userController.logout);
+
+router.use(authMiddleware.isAuthenticated);
 
 router.get("/profile", userController.getProfile);
 
