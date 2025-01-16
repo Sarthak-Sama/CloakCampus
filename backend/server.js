@@ -38,9 +38,19 @@ connectDB();
 const {
   redisClient,
   loadAllowedDomainsToCache,
+  loadRandomUsernamesToCache,
+  loadRandomPfpsToCache,
 } = require("./config/redisClient.config");
 redisClient.connect();
+
 loadAllowedDomainsToCache();
+loadRandomUsernamesToCache();
+loadRandomPfpsToCache();
+
+setInterval(() => {
+  loadRandomUsernamesToCache();
+  loadRandomPfpsToCache();
+}, 1000 * 60 * 60 * 12); // Update cache every 12 hours
 
 // Routes
 app.use("/", indexRoutes);

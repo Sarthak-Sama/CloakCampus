@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const userModel = require("../models/user.model");
@@ -7,6 +8,53 @@ const crypto = require("crypto");
 const axios = require("axios");
 const blackListModel = require("../models/blacklist.model");
 const { redisClient } = require("../config/redisClient.config");
+
+const fetchRandomUsername = async () => {
+  // Try to get a cached username from Redis
+  const cachedUsername = await redisClient.sPop("randomUsernames");
+
+  if (cachedUsername) {
+    return cachedUsername; // Return the cached username if available
+  }
+
+  // If no cached username, fetch a new one from the API
+  try {
+    const response = await axios.get(
+      "https://usernameapiv1.vercel.app/api/random-usernames"
+    );
+    const newUsername = response.data.usernames[0]; // Get the first username from the response
+    return newUsername; // Return the newly fetched username
+  } catch (error) {
+    console.error("Error fetching random username:", error);
+    return nulll; // Return null if an error occurs
+  }
+};
+
+const fetchRandomPfps = async (retryCount = 0, maxRetries = 5) => {
+  // Try cached first
+  const cachedPfp = await redisClient.sPop("randomPfps");
+  if (cachedPfp) return cachedPfp;
+
+  try {
+    const response = await axios.get(
+      `https://api.nekosapi.com/v4/images/${Math.floor(Math.random() * 9999)}`
+    );
+    return response.data.url;
+  } catch (error) {
+    console.error(`Attempt ${retryCount + 1} failed:`, error.message);
+
+    if (
+      retryCount < maxRetries &&
+      (error.response?.status === 500 || error.response?.status === 404)
+    ) {
+      console.log(`Retrying... Attempt ${retryCount + 2}`);
+      return fetchRandomPfps(retryCount + 1, maxRetries);
+    }
+
+    console.error("Max retries reached or unrecoverable error");
+    return null;
+  }
+};
 
 // Function to send OTP email
 const sendOtpEmail = async (email, otp) => {
@@ -105,21 +153,7 @@ module.exports.signup = async (req, res, next) => {
     const defaultUsername = `User${Math.floor(100 + Math.random() * 900)}`; // Default username fallback
 
     // Fetch random username
-    let username = defaultUsername;
-    try {
-      const response = await axios.get(
-        "https://usernameapiv1.vercel.app/api/random-usernames",
-        { timeout: 5000 }
-      );
-      const usernames = response.data.usernames;
-      username =
-        usernames.find(async (name) => {
-          const existingUser = await userModel.findOne({ username: name });
-          return !existingUser;
-        }) || defaultUsername;
-    } catch (error) {
-      console.error("Failed to fetch username:", error.message);
-    }
+    let username = (await fetchRandomUsername()) || defaultUsername;
 
     // Fetch profile image
     const defaultProfileImage =
@@ -181,7 +215,10 @@ module.exports.verifyOtp = async (req, res, next) => {
   await user.save();
 
   // Store user data in Redis with proper key and serialization
-  await redisClient.set(`user:${user._id}`, JSON.stringify(user.toJSON()));
+  await redisClient.set(
+    `user:email:${user.email}`,
+    JSON.stringify(user.toJSON())
+  );
 
   // Create JWT token with expiration
   const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
@@ -232,6 +269,7 @@ module.exports.login = async (req, res, next) => {
 
     if (userData) {
       // User found in cache
+      console.log("User found in cache");
       user = JSON.parse(userData);
       // Verify password
       const isValid = await bcrypt.compare(password, user.password);
@@ -240,6 +278,7 @@ module.exports.login = async (req, res, next) => {
       }
     } else {
       // Not in cache, check database
+      console.log("User not found in cache");
       user = await userModel.findOne({ email }).populate("university");
       if (!user) {
         return res.status(401).json({ message: "User not found" });
@@ -253,14 +292,38 @@ module.exports.login = async (req, res, next) => {
 
       // Store in Redis with both ID and email keys
       userData = JSON.stringify(user.toJSON());
-      await Promise.all([
-        redisClient.set(`user:${user._id}`, userData),
-        redisClient.set(`user:email:${email}`, userData),
-      ]);
+      await Promise.all([redisClient.set(`user:email:${email}`, userData)]);
     }
 
     if (!user.isVerified) {
       return res.status(403).json({ message: "Email not verified" });
+    }
+
+    // Fetching a Random Username
+    const newUsername = await fetchRandomUsername();
+
+    //Fetching a Random Profile Picture
+    let attempts = 0;
+    const maxAttempts = 5;
+    let newPfp;
+    let pfpExists;
+    do {
+      newPfp = await fetchRandomPfps();
+      attempts++;
+      // Check if pfp already exists
+      pfpExists = await userModel.findOne({ profilePictureSrc: newPfp });
+    } while (!!pfpExists || attempts < maxAttempts);
+
+    // Updating the new Username and Profile Picture
+    user.username = newUsername && newUsername;
+    user.profilePictureSrc = newPfp && newPfp;
+    if (user instanceof mongoose.Document) {
+      await user.save();
+    } else {
+      await userModel.findByIdAndUpdate(user._id, {
+        username: newUsername,
+        profilePictureSrc: newPfp,
+      });
     }
 
     // Create JWT token

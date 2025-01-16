@@ -1,3 +1,4 @@
+const axios = require("axios");
 const redis = require("redis");
 const domainModel = require("../models/domain.model");
 const redisClient = redis.createClient({
@@ -25,6 +26,63 @@ const loadAllowedDomainsToCache = async () => {
     console.error("Error loading domains into Redis:", error);
   }
 };
+const loadRandomUsernamesToCache = async () => {
+  const tempKey = "randomUsernamesNew";
+
+  try {
+    for (let i = 0; i < 150; i++) {
+      try {
+        const response = await axios.get(
+          "https://usernameapiv1.vercel.app/api/random-usernames"
+        );
+        const newUsername = response.data.usernames[0];
+        await redisClient.sAdd(tempKey, newUsername);
+      } catch (error) {
+        console.error("Error fetching random username:", error);
+      }
+    }
+
+    // Atomic Swap: Swapping the old cache with the new one
+    await redisClient.multi().rename(tempKey, "randomUsernames").exec();
+
+    console.log("Random Usernames cache updated successfully");
+  } catch (error) {
+    console.error("Cache update failed:", error);
+    await redisClient.del(tempKey); // Cleanup on failure
+  }
+};
+const loadRandomPfpsToCache = async () => {
+  const tempKey = "randomPfpsNew";
+
+  try {
+    // Fill temporary set
+    for (let i = 0; i < 15; i++) {
+      try {
+        const response = await axios.get(
+          `https://api.nekosapi.com/v4/images/random`
+        );
+        for (let file of response.data) {
+          newUrl = file.url;
+          await redisClient.sAdd(tempKey, newUrl);
+        }
+      } catch (error) {
+        console.error(`Error fetching pfp at index ${i}:`, error.message);
+        if (error.response?.status === 500 || error.response?.status === 404) {
+          i--; // Retry same index
+          continue;
+        }
+      }
+    }
+
+    // Atomic swap after all pfps are loaded
+    await redisClient.multi().rename(tempKey, "randomPfps").exec();
+
+    console.log("Random Pfps cached in Redis");
+  } catch (error) {
+    console.error("Cache update failed:", error);
+    await redisClient.del(tempKey); // Cleanup on failure
+  }
+};
 
 redisClient.on("connect", () => {
   console.log("Connected to Redis");
@@ -34,4 +92,9 @@ redisClient.on("error", (err) => {
   console.log("Redis error:", err);
 });
 
-module.exports = { redisClient, loadAllowedDomainsToCache };
+module.exports = {
+  redisClient,
+  loadAllowedDomainsToCache,
+  loadRandomUsernamesToCache,
+  loadRandomPfpsToCache,
+};
