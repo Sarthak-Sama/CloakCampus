@@ -21,12 +21,12 @@ const domainSchema = new mongoose.Schema({
     required: true,
   },
   universityStudentCount: {
-    type: Integer,
+    type: Number,
     required: true,
     default: 0,
   },
   universityPostsCount: {
-    type: Integer,
+    type: Number,
     required: true,
     default: 0,
   },
