@@ -43,9 +43,9 @@ const {
 } = require("./config/redisClient.config");
 redisClient.connect();
 
-loadAllowedDomainsToCache();
-loadRandomUsernamesToCache();
-loadRandomPfpsToCache();
+// loadAllowedDomainsToCache();
+// loadRandomUsernamesToCache();
+// loadRandomPfpsToCache();
 
 setInterval(() => {
   loadRandomUsernamesToCache();
