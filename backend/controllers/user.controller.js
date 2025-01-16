@@ -1,9 +1,9 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const userModel = require("../models/user.model");
+const domainModel = require("../models/domain.model");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-const Domain = require("../models/domain.model");
 const axios = require("axios");
 const blackListModel = require("../models/blacklist.model");
 const { redisClient } = require("../config/redisClient.config");
@@ -67,7 +67,7 @@ module.exports.signup = async (req, res, next) => {
     const emailDomain = email.substring(email.lastIndexOf("@"));
 
     // Validate email domain against the database
-    const isValidDomain = await Domain.findOne({ domain: emailDomain });
+    const isValidDomain = await domainModel.findOne({ domain: emailDomain });
     if (!isValidDomain) {
       return res.status(403).json({
         message: "Email domain not allowed. Please use a valid email.",
@@ -139,7 +139,7 @@ module.exports.signup = async (req, res, next) => {
     }
 
     // Create a new user record
-    const user = await userModel.create({
+    await userModel.create({
       email,
       password: hashedPassword,
       username,
@@ -147,6 +147,9 @@ module.exports.signup = async (req, res, next) => {
       university: isValidDomain,
       otp, // Store the OTP temporarily
     });
+
+    isValidDomain.universityStudentCount += 1;
+    await isValidDomain.save();
 
     // Send OTP email
     await sendOtpEmail(email, otp);

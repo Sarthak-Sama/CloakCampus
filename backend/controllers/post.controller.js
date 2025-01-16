@@ -90,6 +90,10 @@ module.exports.createPost = async (req, res, next) => {
       media, // Save media information
     });
 
+    const domain = await domainModel.findById(user.university);
+    domain.universityPostsCount += 1;
+    await domain.save();
+
     // Respond with success
     res.status(201).json({
       message: "Post successfully created",

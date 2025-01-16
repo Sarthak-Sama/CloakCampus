@@ -16,6 +16,20 @@ const domainSchema = new mongoose.Schema({
       type: String,
     },
   ],
+  universityDescription: {
+    type: String,
+    required: true,
+  },
+  universityStudentCount: {
+    type: Integer,
+    required: true,
+    default: 0,
+  },
+  universityPostsCount: {
+    type: Integer,
+    required: true,
+    default: 0,
+  },
 });
 
 const Domain = mongoose.model("Domain", domainSchema);

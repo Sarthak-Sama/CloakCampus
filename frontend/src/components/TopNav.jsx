@@ -10,6 +10,7 @@ import {
   RiNotificationLine,
 } from "@remixicon/react";
 import UserMenu from "./partials/UserMenu";
+import Skeleton from "react-loading-skeleton";
 
 function TopNav({
   category,
@@ -28,7 +29,6 @@ function TopNav({
   }, [dispatch]);
 
   const { user } = useSelector((state) => state.user);
-
   return (
     <div
       className={`h-[12vh] ${
@@ -97,7 +97,10 @@ function TopNav({
             </div>
           </div>
         ) : (
-          "loading"
+          <div className="flex items-center gap-2">
+            <Skeleton circle={true} height={45} width={45} />
+            <Skeleton width={"9vw"} height={25} />
+          </div>
         )}
       </div>
       <motion.div

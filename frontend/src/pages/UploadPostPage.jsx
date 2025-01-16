@@ -104,7 +104,7 @@ function UploadPostPage() {
     setBlobUrls(blobUrls.filter((_, index) => index !== indexToRemove));
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       // Cleanup blob URLs when component unmounts
       blobUrls.forEach((url) => URL.revokeObjectURL(url));
@@ -112,7 +112,7 @@ function UploadPostPage() {
   }, [blobUrls]);
 
   return (
-    <div className="flex items-center justify-center w-screen min-h-screen bg-gray-100 dark:bg-[#191919] py-4 md:py-8">
+    <div className="overflow-auto flex items-center justify-center w-screen min-h-screen bg-gray-100 dark:bg-[#191919] py-4 md:py-8">
       <RiArrowLeftLine
         size={40}
         className="hidden sm:block text-black opacity-50 hover:opacity-100 dark:text-[#EDEDED] fixed left-0 top-0 mt-5 ml-5"

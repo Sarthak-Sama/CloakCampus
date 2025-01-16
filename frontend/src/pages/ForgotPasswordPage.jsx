@@ -49,7 +49,7 @@ const ForgotPasswordPage = () => {
         color="#EDEDED"
         className="absolute opacity-50 hover:opacity-100 left-5 top-5"
         onClick={() => {
-          navigate("/profile");
+          navigate("/profile", { state: { fromForgotPassword: true } });
         }}
       />
       <div className="h-screen sm:h-fit flex flex-col justify-center bg-white dark:bg-[#161616] p-8 shadow-lg rounded-lg w-full max-w-md">

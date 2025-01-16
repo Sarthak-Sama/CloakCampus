@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUser } from "../redux/actions/userAction";
 import {
@@ -9,14 +9,22 @@ import {
 } from "@remixicon/react";
 import { fetchPosts, deletePost } from "../redux/actions/postAction"; // Import delete action
 import Post from "../components/partials/Post";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import Skeleton from "react-loading-skeleton";
+import { throttle } from "lodash";
 
 function ProfilePage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [selectedPostId, setSelectedPostId] = useState(null); // For tracking the post to delete
   const [showConfirmation, setShowConfirmation] = useState(false); // To show/hide the confirmation modal
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const postsContainerRef = useRef(null);
 
   useEffect(() => {
     dispatch(fetchUser());
@@ -24,7 +32,63 @@ function ProfilePage() {
   }, [dispatch]);
 
   const { user } = useSelector((state) => state.user);
-  const { posts } = useSelector((state) => state.posts);
+  const { postsArray } = useSelector((state) => state.posts);
+
+  const handleScroll = useCallback(
+    throttle(() => {
+      if (!isLoading && hasMore) {
+        const { scrollTop, clientHeight, scrollHeight } =
+          postsContainerRef.current;
+        if (scrollTop + clientHeight >= scrollHeight - 200) {
+          const currentScrollPos = scrollTop;
+          setCurrentPage((prevPage) => prevPage + 1);
+          // Immediately restore scroll position
+          requestAnimationFrame(() => {
+            if (postsContainerRef.current) {
+              postsContainerRef.current.scrollTop = currentScrollPos;
+            }
+          });
+        }
+      }
+    }, 300),
+    [isLoading, hasMore]
+  );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (currentPage === 1) {
+        const response = await dispatch(fetchPosts(currentPage));
+        if (response) {
+          setHasMore(response.hasMore);
+          setPosts(response.posts);
+          setIsLoading(false);
+        }
+      } else {
+        // For subsequent pages, preserve scroll position
+        const scrollPosition = postsContainerRef.current?.scrollTop;
+        const response = await dispatch(fetchPosts(currentPage));
+        if (response) {
+          setHasMore(response.hasMore);
+          setPosts((prev) => [...prev, ...response.posts]);
+          setIsLoading(false);
+
+          // Use multiple frames to ensure scroll position is maintained
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              if (postsContainerRef.current) {
+                postsContainerRef.current.scrollTop = scrollPosition;
+              }
+            });
+          });
+        }
+      }
+    };
+    if (currentPage === 1 && postsArray && postsArray.length > 0) {
+      setPosts(postsArray);
+    } else {
+      fetchData();
+    }
+  }, [dispatch, currentPage]);
 
   const handleDelete = (postId) => {
     setSelectedPostId(postId);
@@ -41,13 +105,19 @@ function ProfilePage() {
     setSelectedPostId(null); // Reset selected post
   };
 
+  console.log(location.state?.fromForgotPassword);
+
   return (
     <>
       {user ? (
-        <div className="md:flex block max-w-screen relative dark:text-white h-fit min-h-screen">
+        <div className="w-screen md:flex block max-w-screen relative dark:text-white h-fit min-h-screen">
           <RiArrowLeftLine
             onClick={() => {
-              navigate(-1);
+              if (location.state?.fromForgotPassword) {
+                navigate("/", { replace: true });
+              } else {
+                navigate(-1);
+              }
             }}
             size={40}
             className="absolute left-0 top-0 mt-5 ml-5 opacity-50 hover:opacity-100"
@@ -122,22 +192,39 @@ function ProfilePage() {
             <h1 className="text-3xl text-center mt-20 mb-5 uppercase">
               Your Posts
             </h1>
-            <div className=" h-[100%] lg:h-[80%] overflow-y-scroll pt-5">
-              {posts.map((post) => {
-                if (post.author === user._id) {
-                  return (
-                    <div className="relative" key={post._id}>
-                      <Post postdata={post} />
-                      <div
-                        className="absolute w-8 h-8 translate-x-1/2 -translate-y-1/2 right-[13%] top-1 rounded-full bg-red-500 flex items-center justify-center cursor-pointer"
-                        onClick={() => handleDelete(post._id)}
-                      >
-                        <RiCloseLine color="#EFEFEF" />
+            <div
+              ref={postsContainerRef}
+              onScroll={handleScroll}
+              className=" h-[100%] lg:h-[80%] overflow-y-scroll pt-5"
+            >
+              {posts && posts.length > 0 ? (
+                posts.map((post) => {
+                  if (post.author === user._id) {
+                    return (
+                      <div className="relative" key={post._id}>
+                        <Post postdata={post} />
+                        <div
+                          className="absolute w-8 h-8 translate-x-1/2 -translate-y-1/2 right-[13%] top-1 rounded-full bg-red-500 flex items-center justify-center cursor-pointer"
+                          onClick={() => handleDelete(post._id)}
+                        >
+                          <RiCloseLine color="#EFEFEF" />
+                        </div>
                       </div>
-                    </div>
-                  );
-                }
-              })}
+                    );
+                  }
+                })
+              ) : (
+                <div className="w-full h-[88vh] flex justify-center">
+                  <div className="w-[75%] relative">
+                    <Skeleton
+                      className="mt-5"
+                      count={4}
+                      width={"100%"}
+                      height={180}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

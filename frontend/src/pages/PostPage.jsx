@@ -16,21 +16,20 @@ import {
 } from "@remixicon/react";
 import Comment from "../components/partials/Comment";
 import { useSelector } from "react-redux";
+import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 function PostPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const containerRef = useRef(null);
   const [localPost, setLocalPost] = useState(null);
   const [likeBtnActive, setLikeBtnActive] = useState(false);
   const [dislikeBtnActive, setDislikeBtnActive] = useState(false);
-  const [commentBtnActive, setCommentBtnActive] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [dislikeCount, setDisLikeCount] = useState(0);
   const [userVote, setUserVote] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [commentInputVisible, setCommentInputVisible] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [isHoveredOverSendIcon, setIsHoveredOverSendIcon] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -45,6 +44,7 @@ function PostPage() {
   const [page, setPage] = useState(1);
   const [hasMoreComments, setHasMoreComments] = useState(true);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   const fetchPost = async () => {
     try {
@@ -56,17 +56,15 @@ function PostPage() {
   };
 
   const fetchComments = async () => {
+    console.log("Fetching comments...");
     if (isLoadingComments || !hasMoreComments) return;
     setIsLoadingComments(true);
     try {
       const { data } = await axios.get(`/posts/${id}/comments?page=${page}`);
-      setLocalPost((prev) => ({
-        ...prev,
-        comments: [...prev.comments, ...data.comments],
-      }));
-      setHasMoreComments(
-        data.pagination.currentPage !== data.pagination.totalPages
-      );
+      setComments((prevComments) => [...prevComments, ...data.comments]);
+      const hasMore =
+        data.pagination.currentPage !== data.pagination.totalPages;
+      setHasMoreComments(hasMore);
       setPage(page + 1);
     } catch (error) {
       console.error("Error loading more comments:", error);
@@ -79,13 +77,15 @@ function PostPage() {
     if (!containerRef.current) return;
 
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-    if (scrollHeight - scrollTop <= clientHeight * 1.5) {
+    if (scrollHeight - scrollTop - clientHeight < 500) {
       fetchComments();
     }
   };
   useEffect(() => {
     fetchPost();
+    console.log(localPost);
     fetchComments();
+    console.log(comments);
   }, [id, navigate]);
 
   useEffect(() => {
@@ -93,7 +93,6 @@ function PostPage() {
       setLikeCount(localPost.upvoteCount);
       setDisLikeCount(localPost.downvoteCount);
       setUserVote(localPost.userVote);
-      setComments(localPost.comments);
     }
   }, [localPost]);
 
@@ -236,14 +235,16 @@ function PostPage() {
   };
 
   const handleCommentSubmit = async (e) => {
+    if (isSubmittingComment || !commentText.trim()) return;
     e.preventDefault();
-    setCommentInputVisible(false);
+    setIsSubmittingComment(true);
     try {
       const { data } = await axios.post(`/posts/${id}/comment`, {
         content: commentText,
       });
       setCommentText("");
       setComments((prevComments) => [data.comment, ...prevComments]);
+      setIsSubmittingComment(false);
     } catch (err) {
       console.log("Error while commenting: ", err);
     }
@@ -362,13 +363,15 @@ function PostPage() {
     }
   };
 
+  console.log(comments);
+
   return (
     <>
       {localPost ? (
         <div
           ref={containerRef}
           onScroll={handleScroll}
-          className="mt-[-6vh] overflow-auto p-10 dark:text-white"
+          className="mt-[-4vh] h-[88vh] overflow-auto p-10 dark:text-white"
         >
           <div
             id="information"
@@ -467,7 +470,6 @@ function PostPage() {
                     onMouseEnter={() => {
                       setLikeBtnActive(true);
                       setDislikeBtnActive(false);
-                      setCommentBtnActive(false);
                     }}
                     onMouseLeave={() => {
                       setLikeBtnActive(false);
@@ -487,7 +489,6 @@ function PostPage() {
                     onMouseEnter={() => {
                       setDislikeBtnActive(true);
                       setLikeBtnActive(false);
-                      setCommentBtnActive(false);
                     }}
                     onMouseLeave={() => {
                       setDislikeBtnActive(false);
@@ -549,30 +550,113 @@ function PostPage() {
                   rows="1"
                 />
                 <button type="submit">
-                  <RiSendPlaneFill
-                    color={
-                      isHoveredOverSendIcon
-                        ? theme === "dark"
-                          ? "#EA516F"
-                          : "#D71B53"
-                        : theme === "dark"
-                        ? "#EDEDED"
-                        : "#4A4A4A"
-                    }
-                    onMouseEnter={() => {
-                      setIsHoveredOverSendIcon(true);
-                    }}
-                    onMouseLeave={() => {
-                      setIsHoveredOverSendIcon(false);
-                    }}
-                  />
+                  {isSubmittingComment ? (
+                    <div className="flex items-center justify-center scale-[0.5]">
+                      <svg
+                        className="loader-container"
+                        viewBox="0 0 40 40"
+                        height="40"
+                        width="40"
+                      >
+                        <circle
+                          className="loader-track"
+                          cx="20"
+                          cy="20"
+                          r="17.5"
+                          pathLength="100"
+                          strokeWidth="5"
+                          fill="none"
+                        />
+                        <circle
+                          className="loader-car"
+                          cx="20"
+                          cy="20"
+                          r="17.5"
+                          pathLength="100"
+                          strokeWidth="5"
+                          fill="none"
+                        />
+                      </svg>
+
+                      <style jsx>{`
+                        .loader-container {
+                          --uib-size: 40px;
+                          --uib-color: #ea516f;
+                          --uib-speed: 2s;
+                          --uib-bg-opacity: 0;
+                          height: var(--uib-size);
+                          width: var(--uib-size);
+                          transform-origin: center;
+                          animation: rotate var(--uib-speed) linear infinite;
+                          overflow: visible;
+                        }
+
+                        .loader-car {
+                          fill: none;
+                          stroke: var(--uib-color);
+                          stroke-dasharray: 1, 200;
+                          stroke-dashoffset: 0;
+                          stroke-linecap: round;
+                          animation: stretch calc(var(--uib-speed) * 0.75)
+                            ease-in-out infinite;
+                          will-change: stroke-dasharray, stroke-dashoffset;
+                          transition: stroke 0.5s ease;
+                        }
+
+                        .loader-track {
+                          fill: none;
+                          stroke: var(--uib-color);
+                          opacity: var(--uib-bg-opacity);
+                          transition: stroke 0.5s ease;
+                        }
+
+                        @keyframes rotate {
+                          100% {
+                            transform: rotate(360deg);
+                          }
+                        }
+
+                        @keyframes stretch {
+                          0% {
+                            stroke-dasharray: 0, 150;
+                            stroke-dashoffset: 0;
+                          }
+                          50% {
+                            stroke-dasharray: 75, 150;
+                            stroke-dashoffset: -25;
+                          }
+                          100% {
+                            stroke-dashoffset: -100;
+                          }
+                        }
+                      `}</style>
+                    </div>
+                  ) : (
+                    <RiSendPlaneFill
+                      color={
+                        isHoveredOverSendIcon
+                          ? theme === "dark"
+                            ? "#EA516F"
+                            : "#D71B53"
+                          : theme === "dark"
+                          ? "#EDEDED"
+                          : "#4A4A4A"
+                      }
+                      onMouseEnter={() => {
+                        setIsHoveredOverSendIcon(true);
+                      }}
+                      onMouseLeave={() => {
+                        setIsHoveredOverSendIcon(false);
+                      }}
+                    />
+                  )}
                 </button>
               </form>
             </div>
             <div id="comments">
               {comments.length > 0 ? (
                 <>
-                  renderComments(comments)
+                  {renderComments(comments)}
                   {isLoadingComments && (
                     <div className="text-center py-4">
                       Loading more comments...
@@ -586,7 +670,37 @@ function PostPage() {
           </div>
         </div>
       ) : (
-        <p>Post not found</p>
+        <div className="mt-[-4vh] pt-0 md:pt-10 h-[88vh] overflow-auto p-10 dark:text-white">
+          <div className="flex flex-col items-center md:flex-row md:items-between gap-10">
+            <div id="images-skeleton" className="w-[100%] md:w-[40%] h-[54vh]">
+              <Skeleton width={"100%"} height={400} />
+            </div>
+            <div
+              id="information-skeleton"
+              className="w-[100%] h-[54vh] md:w-[50%] flex flex-col justify-between"
+            >
+              <div>
+                <Skeleton className="mb-5" width={"100%"} height={50} />
+                <Skeleton
+                  className="mt-2"
+                  count={7}
+                  width={"100%"}
+                  height={25}
+                />
+              </div>
+              <div className="hidden md:block">
+                <Skeleton width={"100%"} height={25} />
+              </div>
+            </div>
+          </div>
+          <div
+            id="comment-section-skeleton"
+            className="w-[100%] md:w-[94%] mt-10 hidden md:block"
+          >
+            <Skeleton width={"100%"} height={50} />
+            <Skeleton className="mt-5" width={"100%"} height={15} />
+          </div>
+        </div>
       )}
       {reportDialogOpen && (
         <div

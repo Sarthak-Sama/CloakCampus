@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
+import Skeleton from "react-loading-skeleton";
 import TopNav from "../components/TopNav";
 import SideNav from "../components/SideNav";
 import PostGrid from "../components/PostGrid";
@@ -184,7 +185,7 @@ function HomePage() {
           <SideNav setCategory={setCategory} />
         </motion.div>
         <div
-          className={`h-[88vh] mt-[0] lg:mt-[12vh] w-[100%] lg:w-[75%] py-10 px-2 overflow-auto`}
+          className={`h-[88vh] overflow-auto mt-[0] lg:mt-[12vh] w-[100%] lg:w-[75%] py-10 px-2`}
           ref={postGridRef}
           onScroll={handleScroll}
         >
@@ -204,7 +205,7 @@ function HomePage() {
             <PostPage />
           ) : loading ? (
             "Searching..."
-          ) : postArray ? (
+          ) : postArray && postArray.length > 0 ? (
             <PostGrid
               className="flex-grow"
               postsArray={postArray}
@@ -215,7 +216,16 @@ function HomePage() {
               setPopupText={setPopupText}
             />
           ) : (
-            "loading"
+            <div className="w-full h-[88vh] flex justify-center">
+              <div className="w-[75%]">
+                <Skeleton
+                  className="mt-5"
+                  count={4}
+                  width={"100%"}
+                  height={180}
+                />
+              </div>
+            </div>
           )}
         </div>
       </div>
