@@ -5,6 +5,7 @@ const notificationModel = require("../models/notification.model");
 const commentModel = require("../models/comment.model");
 const cloudinary = require("../config/cloudinary.config");
 const reportModel = require("../models/report.model");
+const domainModel = require("../models/domain.model");
 const fs = require("fs");
 const path = require("path");
 // const nsfwDetector = require("../config/nsfwDetector.config");
