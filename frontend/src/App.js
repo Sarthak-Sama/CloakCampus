@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { SkeletonTheme } from "react-loading-skeleton";
 
@@ -11,16 +11,34 @@ import RedirectRoute from "./components/RedirectingComponents/RedirectRoute";
 import UploadPostPage from "./pages/UploadPostPage";
 import LoadingPage from "./pages/LoadingPage";
 import UniversityPage from "./pages/UniversityPage";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setTheme } from "./redux/reducers/themeSlice";
+import { createPost } from "./redux/actions/postAction";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import PasswordResetPage from "./pages/PasswordResetPage";
 
 function App() {
+  const [isUploadingPost, setIsUploadingPost] = useState(false);
   const dispatch = useDispatch();
   dispatch(setTheme());
+  const { theme } = useSelector((state) => state.theme);
+
+  const handleUpload = async (formData) => {
+    setIsUploadingPost(true);
+    try {
+      await dispatch(createPost(formData));
+    } catch (error) {
+      console.log("Oops... A problem occurred while posting.", error);
+    } finally {
+      setIsUploadingPost(false);
+    }
+  };
+  console.log("isuploadPostState: ", isUploadingPost);
   return (
-    <SkeletonTheme baseColor="#313131" highlightColor="#525252">
+    <SkeletonTheme
+      baseColor={theme === "dark" ? "#313131" : "#d4d4d8"}
+      highlightColor={theme === "dark" ? "#525252" : "#e8e5e5"}
+    >
       <div className="bg-[#EDEDED] dark:bg-[#161616]">
         <Routes>
           {/* Protected Routes - Redirects to /auth if not logged in */}
@@ -28,7 +46,7 @@ function App() {
             path="/"
             element={
               <PrivateRoute>
-                <HomePage />
+                <HomePage isUploadingPost={isUploadingPost} />
               </PrivateRoute>
             }
           />
@@ -36,7 +54,7 @@ function App() {
             path="/post/:id"
             element={
               <PrivateRoute>
-                <HomePage />{" "}
+                <HomePage isUploadingPost={isUploadingPost} />
                 {/* HomePage will conditionally show PostPage or PostGrid */}
               </PrivateRoute>
             }
@@ -45,7 +63,7 @@ function App() {
             path="/upload"
             element={
               <PrivateRoute>
-                <UploadPostPage />
+                <UploadPostPage handleUpload={handleUpload} />
               </PrivateRoute>
             }
           />

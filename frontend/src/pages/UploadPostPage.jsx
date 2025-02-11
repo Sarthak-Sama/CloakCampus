@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
-import { RiArrowLeftLine, RiCloseLine } from "@remixicon/react";
+import {
+  RiArrowLeftLine,
+  RiCloseLine,
+  RiRotateLockFill,
+} from "@remixicon/react";
 import { useDispatch, useSelector } from "react-redux";
 import { createPost } from "../redux/actions/postAction";
 import { loadUser } from "../redux/reducers/userSlice";
 
-function UploadPostPage() {
+function UploadPostPage({ handleUpload }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
   const [blobUrls, setBlobUrls] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [rotationAngles, setRotationAngles] = useState({});
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -48,7 +53,7 @@ function UploadPostPage() {
     },
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!title.trim()) {
@@ -82,14 +87,8 @@ function UploadPostPage() {
       });
     }
 
-    try {
-      await dispatch(createPost(formData, navigate));
-    } catch (error) {
-      setError("Oops... A problem occurred while posting.");
-      console.error("Upload error:", error);
-    } finally {
-      setIsUploading(false);
-    }
+    handleUpload(formData);
+    navigate("/");
   };
 
   const goBack = () => {
@@ -104,6 +103,13 @@ function UploadPostPage() {
     setBlobUrls(blobUrls.filter((_, index) => index !== indexToRemove));
   };
 
+  const rotateImage = (index, angle) => {
+    setRotationAngles((prev) => ({
+      ...prev,
+      [index]: (prev[index] || 0) + angle,
+    }));
+  };
+
   useEffect(() => {
     return () => {
       // Cleanup blob URLs when component unmounts
@@ -112,13 +118,13 @@ function UploadPostPage() {
   }, [blobUrls]);
 
   return (
-    <div className="overflow-auto flex items-center justify-center w-screen min-h-screen bg-gray-100 dark:bg-[#191919] py-4 md:py-8">
+    <div className="flex items-center justify-center w-screen h-screen overflow-y-hidden bg-gray-100 dark:bg-[#191919] py-4 md:py-8">
       <RiArrowLeftLine
         size={40}
         className="hidden sm:block text-black opacity-50 hover:opacity-100 dark:text-[#EDEDED] fixed left-0 top-0 mt-5 ml-5"
         onClick={goBack}
       />
-      <div className="h-fit bg-white dark:bg-zinc-800 p-4 md:p-8 rounded-lg shadow-lg w-full sm:w-[60%] mx-2 md:mx-0">
+      <div className="bg-white dark:bg-zinc-800 p-4 md:p-8 rounded-lg shadow-lg h-screen sm:h-[90%] md:h-[75%] overflow-auto md:overflow-hidden w-full sm:w-[75%] md:w-[60%] mx-0">
         <div className="flex flex-col md:flex-row gap-5">
           <div className="w-full md:w-1/2">
             <h2 className="text-xl font-semibold text-gray-700 dark:text-[#EDEDED] mb-4">
@@ -207,6 +213,11 @@ function UploadPostPage() {
                               src={file.preview}
                               alt="Preview"
                               className="object-cover w-full h-full rounded-md"
+                              style={{
+                                transform: `rotate(${
+                                  rotationAngles[index] || 0
+                                }deg)`,
+                              }}
                             />
                             <div
                               className="absolute w-5 h-5 translate-x-1/2 -translate-y-1/2 right-1 top-1 rounded-full bg-red-500 flex items-center justify-center cursor-pointer"
@@ -216,6 +227,30 @@ function UploadPostPage() {
                               }}
                             >
                               <RiCloseLine color="#EFEFEF" />
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 flex justify-center space-x-2 p-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  rotateImage(index, -90);
+                                }}
+                                className="p-1 bg-black bg-opacity-50 rounded-full"
+                              >
+                                <RiRotateLockFill color="#EFEFEF" size={16} />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  rotateImage(index, 90);
+                                }}
+                                className="p-1 bg-black bg-opacity-50 rounded-full"
+                              >
+                                <RiRotateLockFill
+                                  color="#EFEFEF"
+                                  size={16}
+                                  style={{ transform: "scaleX(-1)" }}
+                                />
+                              </button>
                             </div>
                           </div>
                         ) : (

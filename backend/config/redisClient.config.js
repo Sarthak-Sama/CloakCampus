@@ -56,13 +56,19 @@ const loadRandomPfpsToCache = async () => {
 
   try {
     // Fill temporary set
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 2; i++) {
       try {
-        const response = await axios.get(
-          `https://api.nekosapi.com/v4/images/random`
-        );
+        if (i < 1) {
+          const response = await axios.get(
+            `https://api.nekosapi.com/v4/images/random?rating=safe&limit=100`
+          );
+        } else {
+          const response = await axios.get(
+            `https://api.nekosapi.com/v4/images/random?rating=suggestive&limit=50`
+          );
+        }
         for (let file of response.data) {
-          newUrl = file.url;
+          const newUrl = file.url;
           await redisClient.sAdd(tempKey, newUrl);
         }
       } catch (error) {

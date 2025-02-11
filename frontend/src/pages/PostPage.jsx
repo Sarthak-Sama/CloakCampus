@@ -24,8 +24,6 @@ function PostPage() {
   const navigate = useNavigate();
   const containerRef = useRef(null);
   const [localPost, setLocalPost] = useState(null);
-  const [likeBtnActive, setLikeBtnActive] = useState(false);
-  const [dislikeBtnActive, setDislikeBtnActive] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [dislikeCount, setDisLikeCount] = useState(0);
   const [userVote, setUserVote] = useState("");
@@ -35,7 +33,7 @@ function PostPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [comments, setComments] = useState([]);
   const [isRendered, setIsRendered] = useState(false);
-  const theme = useSelector((state) => state.theme.theme);
+  const { theme } = useSelector((state) => state.theme);
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -371,7 +369,7 @@ function PostPage() {
         <div
           ref={containerRef}
           onScroll={handleScroll}
-          className="mt-[-4vh] h-[88vh] overflow-auto p-10 dark:text-white"
+          className="mt-[-4vh] overflow-auto p-10 dark:text-white"
         >
           <div
             id="information"
@@ -381,7 +379,7 @@ function PostPage() {
               {localPost.media && localPost.media.length > 0 && (
                 <div
                   id="thumbnail"
-                  className="w-[100%] sm:w-[80%] md:w-[75%] md:mb-0 mb-10 mx-auto flex overflow-hidden relative group"
+                  className="w-[100%] sm:w-[70%] md:w-[65%] md:mb-0 mb-10 mx-auto sm:ml-14 flex overflow-hidden relative group"
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
@@ -465,40 +463,44 @@ function PostPage() {
                 <div className="w-[35%] flex justify-between">
                   <div
                     id="like"
-                    className="flex gap-4"
+                    className="flex gap-4 group"
                     onClick={() => handleVote("upvote")}
-                    onMouseEnter={() => {
-                      setLikeBtnActive(true);
-                      setDislikeBtnActive(false);
-                    }}
-                    onMouseLeave={() => {
-                      setLikeBtnActive(false);
-                    }}
                   >
-                    {likeBtnActive || userVote === "upvote" ? (
-                      <RiThumbUpFill />
-                    ) : (
-                      <RiThumbUpLine />
-                    )}
+                    <RiThumbUpLine
+                      className={`${
+                        userVote === "upvote"
+                          ? "hidden"
+                          : "block group-hover:hidden"
+                      }`}
+                    />
+                    <RiThumbUpFill
+                      className={`${
+                        userVote === "upvote"
+                          ? "block"
+                          : "hidden group-hover:block"
+                      }`}
+                    />
                     <span>{likeCount > 0 && likeCount}</span>
                   </div>
                   <div
                     id="dislike"
-                    className="flex gap-2"
+                    className="flex gap-2 group"
                     onClick={() => handleVote("downvote")}
-                    onMouseEnter={() => {
-                      setDislikeBtnActive(true);
-                      setLikeBtnActive(false);
-                    }}
-                    onMouseLeave={() => {
-                      setDislikeBtnActive(false);
-                    }}
                   >
-                    {dislikeBtnActive || userVote === "downvote" ? (
-                      <RiThumbDownFill />
-                    ) : (
-                      <RiThumbDownLine />
-                    )}
+                    <RiThumbDownLine
+                      className={`${
+                        userVote === "downvote"
+                          ? "hidden"
+                          : "block group-hover:hidden"
+                      }`}
+                    />
+                    <RiThumbDownFill
+                      className={`${
+                        userVote === "downvote"
+                          ? "block"
+                          : "hidden group-hover:block"
+                      }`}
+                    />
                     <span>{dislikeCount > 0 && dislikeCount}</span>
                   </div>
                 </div>
@@ -658,8 +660,87 @@ function PostPage() {
                 <>
                   {renderComments(comments)}
                   {isLoadingComments && (
-                    <div className="text-center py-4">
-                      Loading more comments...
+                    <div className="flex items-center justify-center scale-[0.6] mt-2">
+                      <svg
+                        className="loader-container"
+                        viewBox="0 0 40 40"
+                        height="40"
+                        width="40"
+                      >
+                        <circle
+                          className="loader-track"
+                          cx="20"
+                          cy="20"
+                          r="17.5"
+                          pathLength="100"
+                          strokeWidth="5"
+                          fill="none"
+                        />
+                        <circle
+                          className="loader-car"
+                          cx="20"
+                          cy="20"
+                          r="17.5"
+                          pathLength="100"
+                          strokeWidth="5"
+                          fill="none"
+                        />
+                      </svg>
+
+                      <style jsx>{`
+                        .loader-container {
+                          --uib-size: 40px;
+                          --uib-color: ${theme === "dark"
+                            ? "#EDEDED"
+                            : "#191919"};
+                          --uib-speed: 2s;
+                          --uib-bg-opacity: 0;
+                          height: var(--uib-size);
+                          width: var(--uib-size);
+                          transform-origin: center;
+                          animation: rotate var(--uib-speed) linear infinite;
+                          overflow: visible;
+                        }
+
+                        .loader-car {
+                          fill: none;
+                          stroke: var(--uib-color);
+                          stroke-dasharray: 1, 200;
+                          stroke-dashoffset: 0;
+                          stroke-linecap: round;
+                          animation: stretch calc(var(--uib-speed) * 0.75)
+                            ease-in-out infinite;
+                          will-change: stroke-dasharray, stroke-dashoffset;
+                          transition: stroke 0.5s ease;
+                        }
+
+                        .loader-track {
+                          fill: none;
+                          stroke: var(--uib-color);
+                          opacity: var(--uib-bg-opacity);
+                          transition: stroke 0.5s ease;
+                        }
+
+                        @keyframes rotate {
+                          100% {
+                            transform: rotate(360deg);
+                          }
+                        }
+
+                        @keyframes stretch {
+                          0% {
+                            stroke-dasharray: 0, 150;
+                            stroke-dashoffset: 0;
+                          }
+                          50% {
+                            stroke-dasharray: 75, 150;
+                            stroke-dashoffset: -25;
+                          }
+                          100% {
+                            stroke-dashoffset: -100;
+                          }
+                        }
+                      `}</style>
                     </div>
                   )}
                 </>

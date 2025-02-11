@@ -33,7 +33,7 @@ export const createPost = (formData, navigate) => async (dispatch) => {
     });
     // Dispatch the addPost action to append the new post to the state
     dispatch(addPost(response.data));
-    navigate("/");
+    // navigate("/");
   } catch (error) {
     console.error("Error creating post: ", error);
     throw new Error("An error occured while posting.");

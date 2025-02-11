@@ -7,9 +7,7 @@ const indexRoutes = require("./routes/index.routes");
 const adminRoutes = require("./routes/admin.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const cors = require("cors");
-const passport = require("passport");
 const cookieParser = require("cookie-parser");
-require("./config/passport.config");
 
 const app = express();
 app.use(
@@ -28,7 +26,6 @@ app.use(cookieParser());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(passport.initialize());
 
 // Connect to MongoDB
 const connectDB = require("./config/mongodb.config");

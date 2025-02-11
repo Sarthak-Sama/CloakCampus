@@ -5,7 +5,7 @@ import ToggleButton from "./partials/ToggleButton";
 import { useSelector } from "react-redux";
 import Skeleton from "react-loading-skeleton";
 
-function SideNav({ setCategory }) {
+function SideNav({ setCategory, isUploadingPost, setPopupText }) {
   const { user } = useSelector((state) => state.user);
   const categoriesArray = user?.categories;
   const { theme } = useSelector((state) => state.theme);
@@ -28,7 +28,11 @@ function SideNav({ setCategory }) {
         Campus
       </Link>
       <Link
-        to={"/upload"}
+        to={!isUploadingPost && "/upload"}
+        onClick={() => {
+          if (isUploadingPost)
+            setPopupText("Please let the last upload finish first.");
+        }}
         className="flex gap-2 items-center bg-[#EA516F] text-[#161616] dark:text-[#EDEDED] px-10 py-3 rounded-full group"
       >
         <h3 className="uppercase text-lg">Post</h3>

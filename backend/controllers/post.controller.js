@@ -8,7 +8,7 @@ const reportModel = require("../models/report.model");
 const domainModel = require("../models/domain.model");
 const fs = require("fs");
 const path = require("path");
-// const nsfwDetector = require("../config/nsfwDetector.config");
+const isHarmfullContent = require("../config/contentModeration.config");
 
 const createNotification = async (
   userId,
@@ -38,47 +38,60 @@ const createNotification = async (
 module.exports.createPost = async (req, res, next) => {
   try {
     const { title, textContent, category } = req.body;
-    const media = []; // Array to hold media information
+    const media = [];
 
-    // Check if image exists and handle it
-    if (req.files && req.files.image && req.files.image.length > 0) {
-      for (const imageFile of req.files.image) {
-        const imagePath = imageFile.path;
+    // Run content moderation parallel with media uploads
+    const [titleAnalysis, contentAnalysis, ...mediaUploads] = await Promise.all(
+      [
+        isHarmfullContent(title),
+        isHarmfullContent(textContent),
+        // Handle image uploads if they exist
+        ...(req.files?.image?.map((imageFile) =>
+          cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
+        ) || []),
+        // Handle video upload if it exists
+        ...(req.files?.video?.map((videoFile) =>
+          cloudinary.uploader.upload(videoFile.path, { resource_type: "video" })
+        ) || []),
+      ]
+    );
 
-        // Check if the image is NSFW using the imported function
-        // const isNSFW = await nsfwDetector.isImageNSFW(imagePath);
-        // if (isNSFW) {
-        //     fs.unlinkSync(imagePath); // Remove the image file
-        //     return res.status(400).json({ message: "NSFW content detected in the image. Upload rejected." });
-        // }
+    // Check moderation results
+    if (titleAnalysis?.isHarassment || contentAnalysis?.isHarassment) {
+      try {
+        // Delete from Cloudinary
+        await Promise.all(
+          mediaUploads.map((upload) =>
+            cloudinary.uploader.destroy(upload.public_id)
+          )
+        );
 
-        // If the image is safe, upload to Cloudinary
-        const imageUpload = await cloudinary.uploader.upload(imagePath, {
-          resource_type: "image",
+        // Cleanup local files
+        if (req.files?.image) {
+          req.files.image.forEach((file) => fs.unlinkSync(file.path));
+        }
+        if (req.files?.video) {
+          req.files.video.forEach((file) => fs.unlinkSync(file.path));
+        }
+
+        return res.status(400).json({
+          message: "Content violates community guidelines",
+          reason: titleAnalysis.isHarassment
+            ? titleAnalysis.reason
+            : contentAnalysis.reason,
         });
-        media.push({ type: "image", url: imageUpload.secure_url });
-        fs.unlinkSync(imagePath); // Remove local image file after upload
+      } catch (error) {
+        console.error("Cleanup error:", error);
       }
     }
 
-    // Handle video (you can similarly integrate a video detection API here)
-    if (req.files && req.files.video && req.files.video.length > 0) {
-      const videoPath = req.files.video[0].path;
-
-      // Here you would call a function like isVideoNSFW if implemented (currently not shown)
-      // const isVideoNSFW = await nsfwDetector.isVideoNSFW(videoPath);
-
-      // if (isVideoNSFW) {
-      //     fs.unlinkSync(videoPath); // Remove the video file
-      //     return res.status(400).json({ message: "NSFW content detected in the video. Upload rejected." });
-      // }
-
-      const videoUpload = await cloudinary.uploader.upload(videoPath, {
-        resource_type: "video",
+    // Process successful media uploads
+    mediaUploads.forEach((upload) => {
+      media.push({
+        type: upload.resource_type,
+        url: upload.secure_url,
       });
-      media.push({ type: "video", url: videoUpload.secure_url });
-      fs.unlinkSync(videoPath); // Remove local video file after upload
-    }
+    });
     const user = await userModel.findById(req.user._id).populate("university"); // Populate the university field
 
     const post = await postModel.create({
@@ -95,14 +108,28 @@ module.exports.createPost = async (req, res, next) => {
     domain.universityPostsCount += 1;
     await domain.save();
 
+    // Cleanup local files
+    if (req.files?.image) {
+      req.files.image.forEach((file) => fs.unlinkSync(file.path));
+    }
+    if (req.files?.video) {
+      req.files.video.forEach((file) => fs.unlinkSync(file.path));
+    }
+
     // Respond with success
     res.status(201).json({
       message: "Post successfully created",
       post,
     });
-  } catch (error) {
-    console.error("Error in createPost:", error); // Log the error for debugging
-    next(error);
+  } catch (err) {
+    // Cleanup on error
+    if (req.files?.image) {
+      req.files.image.forEach((file) => fs.unlinkSync(file.path));
+    }
+    if (req.files?.video) {
+      req.files.video.forEach((file) => fs.unlinkSync(file.path));
+    }
+    next(err);
   }
 };
 

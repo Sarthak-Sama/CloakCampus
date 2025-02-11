@@ -443,7 +443,7 @@ function Auth() {
               </span>
             </label>
           </div>
-          <button className="w-full py-2 bg-[#EA516F] text-white rounded hover:bg-[#EA516F] transition duration-300">
+          <button className="w-full  bg-[#EA516F] text-white rounded hover:bg-[#EA516F] transition duration-300">
             {isLoading ? (
               <div className="flex items-center justify-center scale-[0.5]">
                 <svg
@@ -475,7 +475,7 @@ function Auth() {
                 <style jsx>{`
                   .loader-container {
                     --uib-size: 40px;
-                    --uib-color: black;
+                    --uib-color: #ededed;
                     --uib-speed: 2s;
                     --uib-bg-opacity: 0;
                     height: var(--uib-size);

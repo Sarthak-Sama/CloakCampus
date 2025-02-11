@@ -19,7 +19,7 @@ const postsSlice = createSlice({
     },
 
     addPost: (state, action) => {
-      state.posts.push(action.payload);
+      state.posts.push(action.payload.post);
 
       // Sort the posts after adding the new one
       state.posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

@@ -16,9 +16,6 @@ import axios from "../../utils/axios";
 import { Link } from "react-router-dom";
 
 function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
-  const [likeBtnActive, setLikeBtnActive] = useState(false);
-  const [dislikeBtnActive, setDislikeBtnActive] = useState(false);
-  const [commentBtnActive, setCommentBtnActive] = useState(false);
   const [likeCount, setLikeCount] = useState(postdata.upvoteCount);
   const [dislikeCount, setDisLikeCount] = useState(postdata.downvoteCount);
   const [userVote, setUserVote] = useState(postdata.userVote);
@@ -277,7 +274,7 @@ function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
             >
               {postdata.media[currentImageIndex].type === "image" ? (
                 <img
-                  className="max-w-full h-auto shadow-md"
+                  className="w-full max-h-[20rem] object-cover object-center shadow-md"
                   src={postdata.media[currentImageIndex].url}
                   alt="Post media"
                 />
@@ -346,73 +343,68 @@ function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
           <div className="w-[80%] lg:w-[35%] flex justify-around lg:justify-between">
             <div
               id="like"
-              className="flex gap-4"
+              className="flex gap-4 group"
               onClick={(e) => {
                 e.preventDefault(); // Prevent navigation
                 e.stopPropagation(); // Prevent event bubbling to the parent Link
                 handleVote("upvote");
               }}
-              onMouseEnter={() => {
-                setLikeBtnActive(true);
-                setDislikeBtnActive(false);
-                setCommentBtnActive(false);
-              }}
-              onMouseLeave={() => {
-                setLikeBtnActive(false);
-              }}
             >
-              {likeBtnActive || userVote === "upvote" ? (
-                <RiThumbUpFill />
-              ) : (
-                <RiThumbUpLine />
-              )}
+              <RiThumbUpLine
+                className={`${
+                  userVote === "upvote" ? "hidden" : "block group-hover:hidden"
+                }`}
+              />
+              <RiThumbUpFill
+                className={`${
+                  userVote === "upvote" ? "block" : "hidden group-hover:block"
+                }`}
+              />
               <span>{likeCount > 0 && likeCount}</span>
             </div>
             <div
               id="dislike"
-              className="flex gap-2"
+              className="flex gap-2 group"
               onClick={(e) => {
                 e.preventDefault(); // Prevent navigation
                 e.stopPropagation(); // Prevent event bubbling to the parent Link
                 handleVote("downvote");
               }}
-              onMouseEnter={() => {
-                setDislikeBtnActive(true);
-                setLikeBtnActive(false);
-                setCommentBtnActive(false);
-              }}
-              onMouseLeave={() => {
-                setDislikeBtnActive(false);
-              }}
             >
-              {dislikeBtnActive || userVote === "downvote" ? (
-                <RiThumbDownFill />
-              ) : (
-                <RiThumbDownLine />
-              )}
+              <RiThumbDownLine
+                className={`${
+                  userVote === "downvote"
+                    ? "hidden"
+                    : "block group-hover:hidden"
+                }`}
+              />
+              <RiThumbDownFill
+                className={`${
+                  userVote === "downvote" ? "block" : "hidden group-hover:block"
+                }`}
+              />
               <span>{dislikeCount > 0 && dislikeCount}</span>
             </div>
             <div
               id="comment"
+              className="group"
               onClick={(e) => {
                 e.preventDefault(); // Prevent navigation
                 e.stopPropagation(); // Prevent event bubbling to the parent Link
                 setCommentInputVisible(!commentInputVisible);
               }}
-              onMouseEnter={() => {
-                setCommentBtnActive(true);
-                setLikeBtnActive(false);
-                setDislikeBtnActive(false);
-              }}
-              onMouseLeave={() => {
-                setCommentBtnActive(false);
-              }}
             >
-              {commentBtnActive || commentInputVisible ? (
-                <RiMessage2Fill />
-              ) : (
-                <RiMessage2Line />
-              )}
+              <RiMessage2Fill
+                className={
+                  commentInputVisible ? "block" : "hidden group-hover:block"
+                }
+              />
+
+              <RiMessage2Line
+                className={
+                  commentInputVisible ? "hidden" : "block group-hover:hidden"
+                }
+              />
             </div>
           </div>
           <div className="w-[20%] lg:w-[10%] flex justify-around lg:justify-between pr-6 gap-3">

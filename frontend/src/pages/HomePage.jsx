@@ -5,7 +5,7 @@ import SideNav from "../components/SideNav";
 import PostGrid from "../components/PostGrid";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchPosts } from "../redux/actions/postAction";
-import NotificationsTab from "../components/features/NotificationsTab";
+import NotificationsTab from "../components/NotificationsTab";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import PostPage from "./PostPage";
 import axios from "../utils/axios";
@@ -14,7 +14,7 @@ import { fetchNotifications } from "../redux/actions/notificationAction";
 import { motion } from "framer-motion";
 import { throttle } from "lodash";
 
-function HomePage() {
+function HomePage({ isUploadingPost }) {
   const [category, setCategory] = useState("all discussion");
   const [searchQuery, setSearchQuery] = useState("");
   const [isNotificationTabActive, setIsNotificationTabActive] = useState(false);
@@ -30,9 +30,12 @@ function HomePage() {
   const navigate = useNavigate();
   const [postArray, setPostArray] = useState([]);
   const [popupText, setPopupText] = useState("");
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const postGridRef = useRef(null);
   const { id } = useParams(); // Get the post ID from the URL if the route is "/post/:id"
   const reduxPosts = useSelector((state) => state.posts.posts);
+  const { theme } = useSelector((state) => state.theme);
   // Get notifications from Redux
   const notifications = useSelector(
     (state) => state.notifications.notifications
@@ -120,6 +123,7 @@ function HomePage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (id) return;
       if (currentPage === 1) {
         const response = await dispatch(fetchPosts(currentPage));
         if (response) {
@@ -130,11 +134,13 @@ function HomePage() {
       } else {
         // For subsequent pages, preserve scroll position
         const scrollPosition = postGridRef.current?.scrollTop;
+        setIsFetching(true);
         const response = await dispatch(fetchPosts(currentPage));
+        console.log(response);
         if (response) {
           setHasMore(response.hasMore);
           setPostArray((prev) => [...prev, ...response.posts]);
-          setLoading(false);
+          setIsFetching(false);
 
           // Use multiple frames to ensure scroll position is maintained
           requestAnimationFrame(() => {
@@ -152,6 +158,12 @@ function HomePage() {
   }, [dispatch, currentPage]);
 
   useEffect(() => {
+    console.log("redux posts updated");
+    console.log(reduxPosts);
+    setPostArray(reduxPosts);
+  }, [reduxPosts]);
+
+  useEffect(() => {
     dispatch(fetchNotifications());
   }, [dispatch]);
 
@@ -162,6 +174,26 @@ function HomePage() {
     ).length;
     setNumberOfNewNotifications(unreadCount);
   }, [notifications]);
+  console.log(popupText);
+
+  useEffect(() => {
+    if (popupText) {
+      setIsPopupVisible(true);
+      const hideTimer = setTimeout(() => {
+        setIsPopupVisible(false);
+      }, 2000); // fade out after 3 seconds
+
+      // Clear the text after the fade-out transition (assume 300ms transition)
+      const clearTimer = setTimeout(() => {
+        setPopupText("");
+      }, 2300);
+
+      return () => {
+        clearTimeout(hideTimer);
+        clearTimeout(clearTimer);
+      };
+    }
+  }, [popupText]);
 
   return (
     <div className="relative w-screen h-[100vh] overflow-hidden">
@@ -182,13 +214,38 @@ function HomePage() {
           exit={{ x: "-50%" }}
           transition={{}}
         >
-          <SideNav setCategory={setCategory} />
+          <SideNav
+            setCategory={setCategory}
+            setPopupText={setPopupText}
+            isUploadingPost={isUploadingPost}
+          />
         </motion.div>
         <div
           className={`h-[88vh] overflow-auto mt-[0] lg:mt-[12vh] w-[100%] lg:w-[75%] py-10 px-2`}
           ref={postGridRef}
           onScroll={handleScroll}
         >
+          {isUploadingPost && (
+            <div className="w-full flex gap-5 items-center justify-center mb-10">
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  borderRadius: "50%",
+                  display: "inline-block",
+                  borderTop: `3px solid ${
+                    theme === "dark" ? "#EDEDED" : "#161616"
+                  }`,
+                  borderRight: "3px solid transparent",
+                  boxSizing: "border-box",
+                  animation: "rotation 1s linear infinite",
+                }}
+              />
+              <span className="text-[#161616] dark:text-[#EDEDED]">
+                Uploading your post...
+              </span>
+            </div>
+          )}
           {postArray != useSelector((state) => state.posts.posts) &&
             searchQuery &&
             !id && (
@@ -206,15 +263,99 @@ function HomePage() {
           ) : loading ? (
             "Searching..."
           ) : postArray && postArray.length > 0 ? (
-            <PostGrid
-              className="flex-grow"
-              postsArray={postArray}
-              category={category}
-              setIsLinkCopiedNotificationVisible={
-                setIsLinkCopiedNotificationVisible
-              }
-              setPopupText={setPopupText}
-            />
+            <>
+              <PostGrid
+                className="flex-grow"
+                postsArray={postArray}
+                category={category}
+                setIsLinkCopiedNotificationVisible={
+                  setIsLinkCopiedNotificationVisible
+                }
+                setPopupText={setPopupText}
+              />
+              {isFetching && (
+                <div className="flex items-center justify-center scale-[1] mt-2">
+                  <svg
+                    className="loader-container"
+                    viewBox="0 0 40 40"
+                    height="40"
+                    width="40"
+                  >
+                    <circle
+                      className="loader-track"
+                      cx="20"
+                      cy="20"
+                      r="17.5"
+                      pathLength="100"
+                      strokeWidth="5"
+                      fill="none"
+                    />
+                    <circle
+                      className="loader-car"
+                      cx="20"
+                      cy="20"
+                      r="17.5"
+                      pathLength="100"
+                      strokeWidth="5"
+                      fill="none"
+                    />
+                  </svg>
+
+                  <style jsx>{`
+                    .loader-container {
+                      --uib-size: 40px;
+                      --uib-color: ${theme === "dark" ? "#EDEDED" : "#191919"};
+                      --uib-speed: 2s;
+                      --uib-bg-opacity: 0;
+                      height: var(--uib-size);
+                      width: var(--uib-size);
+                      transform-origin: center;
+                      animation: rotate var(--uib-speed) linear infinite;
+                      overflow: visible;
+                    }
+
+                    .loader-car {
+                      fill: none;
+                      stroke: var(--uib-color);
+                      stroke-dasharray: 1, 200;
+                      stroke-dashoffset: 0;
+                      stroke-linecap: round;
+                      animation: stretch calc(var(--uib-speed) * 0.75)
+                        ease-in-out infinite;
+                      will-change: stroke-dasharray, stroke-dashoffset;
+                      transition: stroke 0.5s ease;
+                    }
+
+                    .loader-track {
+                      fill: none;
+                      stroke: var(--uib-color);
+                      opacity: var(--uib-bg-opacity);
+                      transition: stroke 0.5s ease;
+                    }
+
+                    @keyframes rotate {
+                      100% {
+                        transform: rotate(360deg);
+                      }
+                    }
+
+                    @keyframes stretch {
+                      0% {
+                        stroke-dasharray: 0, 150;
+                        stroke-dashoffset: 0;
+                      }
+                      50% {
+                        stroke-dasharray: 75, 150;
+                        stroke-dashoffset: -25;
+                      }
+                      100% {
+                        stroke-dashoffset: -100;
+                      }
+                    }
+                  `}</style>
+                </div>
+              )}
+            </>
           ) : (
             <div className="w-full h-[88vh] flex justify-center">
               <div className="w-[75%]">
@@ -237,7 +378,7 @@ function HomePage() {
       />
       <h4
         className={`z-50 px-12 py-3 text-center text-xs sm:text-lg fixed left-1/2 lg:left-[60%] top-[87%] -translate-x-1/2 -translate-y-1/2 -t px-5 py-2 bg-[rgba(0,0,0,0.8)] text-white rounded-lg pointer-events-none transition duration-300 ease-in-out ${
-          isLinkCopiedNotificationVisible ? "opacity-100" : "opacity-0"
+          isPopupVisible ? "opacity-100" : "opacity-0"
         }`}
       >
         {popupText}

@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   fetchNotifications,
   markAsRead,
-} from "../../redux/actions/notificationAction";
+} from "../redux/actions/notificationAction";
 import { Link } from "react-router-dom";
 
 function NotificationsTab({
@@ -156,7 +156,7 @@ function NotificationsTab({
             )}
           </>
         ) : (
-          <h2 className="mx-auto mt-10 text-center">
+          <h2 className="mx-auto mt-10 text-center text-[#161616] dark:text-[#EDEDED]">
             You don't have any notifications at the moment.
           </h2>
         )}

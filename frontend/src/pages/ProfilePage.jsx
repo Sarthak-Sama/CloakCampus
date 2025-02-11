@@ -23,8 +23,10 @@ function ProfilePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const [posts, setPosts] = useState([]);
   const postsContainerRef = useRef(null);
+  const { theme } = useSelector((state) => state.theme);
 
   useEffect(() => {
     dispatch(fetchUser());
@@ -65,12 +67,14 @@ function ProfilePage() {
         }
       } else {
         // For subsequent pages, preserve scroll position
+        setIsFetching(true);
         const scrollPosition = postsContainerRef.current?.scrollTop;
         const response = await dispatch(fetchPosts(currentPage));
         if (response) {
           setHasMore(response.hasMore);
           setPosts((prev) => [...prev, ...response.posts]);
           setIsLoading(false);
+          setIsFetching(false);
 
           // Use multiple frames to ensure scroll position is maintained
           requestAnimationFrame(() => {
@@ -105,12 +109,10 @@ function ProfilePage() {
     setSelectedPostId(null); // Reset selected post
   };
 
-  console.log(location.state?.fromForgotPassword);
-
   return (
     <>
       {user ? (
-        <div className="w-screen md:flex block max-w-screen relative dark:text-white h-fit min-h-screen">
+        <div className="h-screen overflow-y-scroll w-screen md:flex block relative dark:text-white">
           <RiArrowLeftLine
             onClick={() => {
               if (location.state?.fromForgotPassword) {
@@ -124,25 +126,29 @@ function ProfilePage() {
           />
           <div
             id="info-div"
-            className="w-full md:w-[20rem] min-h-fit md:h-screen pt-16 pl-10 pr-10 md:pr-0"
+            className="w-full md:w-[20rem] pt-16 pl-10 pr-10 md:pr-0"
           >
             <div id="profile" className="flex flex-col items-center w-full">
               <div
                 id="profile-img"
                 style={{
-                  backgroundImage: `url(${user.profilePictureSrc})`,
+                  backgroundImage: `url(${"/media/profileIcon.jpg"})`,
                   backgroundSize: "cover",
-                  backgroundPosition: "top",
-                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
                 }}
-                className="bg-red-200 w-[13rem] h-[13rem] rounded-full"
-              ></div>
+                className="w-[13rem] h-[13rem] rounded-full"
+              >
+                <img
+                  src={user.profilePictureSrc}
+                  className="w-full h-full rounded-full object-cover object-top"
+                />
+              </div>
               <h2 className="text-3xl text-center mt-5">{user.username}</h2>
             </div>
 
             <hr className="border-zinc-600 dark:border-zinc-300 w-[90%] border-[1px] my-5 mx-auto" />
             <div id="details" className="w-full ml-4">
-              <div className="w-full p-3 mb-1 flex items-center justify-between rounded-lg group">
+              <div className="p-3 mb-1 flex items-center justify-between rounded-lg group">
                 <div className="p-2 bg-[#161616] text-[#EDEDED] dark:text-[#161616] dark:bg-zinc-500 rounded-[0.3rem]">
                   <RiMailLine />
                 </div>
@@ -201,15 +207,102 @@ function ProfilePage() {
                 posts.map((post) => {
                   if (post.author === user._id) {
                     return (
-                      <div className="relative" key={post._id}>
-                        <Post postdata={post} />
-                        <div
-                          className="absolute w-8 h-8 translate-x-1/2 -translate-y-1/2 right-[13%] top-1 rounded-full bg-red-500 flex items-center justify-center cursor-pointer"
-                          onClick={() => handleDelete(post._id)}
-                        >
-                          <RiCloseLine color="#EFEFEF" />
+                      <>
+                        <div className="relative" key={post._id}>
+                          <Post postdata={post} />
+                          <div
+                            className="absolute w-8 h-8 translate-x-1/2 -translate-y-1/2 right-[13%] top-1 rounded-full bg-red-500 flex items-center justify-center cursor-pointer"
+                            onClick={() => handleDelete(post._id)}
+                          >
+                            <RiCloseLine color="#EFEFEF" />
+                          </div>
                         </div>
-                      </div>
+                        {isFetching && (
+                          <div className="flex items-center justify-center scale-[1] mt-2">
+                            <svg
+                              className="loader-container"
+                              viewBox="0 0 40 40"
+                              height="40"
+                              width="40"
+                            >
+                              <circle
+                                className="loader-track"
+                                cx="20"
+                                cy="20"
+                                r="17.5"
+                                pathLength="100"
+                                strokeWidth="5"
+                                fill="none"
+                              />
+                              <circle
+                                className="loader-car"
+                                cx="20"
+                                cy="20"
+                                r="17.5"
+                                pathLength="100"
+                                strokeWidth="5"
+                                fill="none"
+                              />
+                            </svg>
+
+                            <style jsx>{`
+                              .loader-container {
+                                --uib-size: 40px;
+                                --uib-color: ${theme === "dark"
+                                  ? "#EDEDED"
+                                  : "#191919"};
+                                --uib-speed: 2s;
+                                --uib-bg-opacity: 0;
+                                height: var(--uib-size);
+                                width: var(--uib-size);
+                                transform-origin: center;
+                                animation: rotate var(--uib-speed) linear
+                                  infinite;
+                                overflow: visible;
+                              }
+
+                              .loader-car {
+                                fill: none;
+                                stroke: var(--uib-color);
+                                stroke-dasharray: 1, 200;
+                                stroke-dashoffset: 0;
+                                stroke-linecap: round;
+                                animation: stretch calc(var(--uib-speed) * 0.75)
+                                  ease-in-out infinite;
+                                will-change: stroke-dasharray, stroke-dashoffset;
+                                transition: stroke 0.5s ease;
+                              }
+
+                              .loader-track {
+                                fill: none;
+                                stroke: var(--uib-color);
+                                opacity: var(--uib-bg-opacity);
+                                transition: stroke 0.5s ease;
+                              }
+
+                              @keyframes rotate {
+                                100% {
+                                  transform: rotate(360deg);
+                                }
+                              }
+
+                              @keyframes stretch {
+                                0% {
+                                  stroke-dasharray: 0, 150;
+                                  stroke-dashoffset: 0;
+                                }
+                                50% {
+                                  stroke-dasharray: 75, 150;
+                                  stroke-dashoffset: -25;
+                                }
+                                100% {
+                                  stroke-dashoffset: -100;
+                                }
+                              }
+                            `}</style>
+                          </div>
+                        )}
+                      </>
                     );
                   }
                 })
