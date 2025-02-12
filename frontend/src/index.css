@@ -1,18 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
   font-family: "shrimp";
-  src: url("../public/fonts/SHRIMP.ttf");
+  src: url("/fonts/SHRIMP.ttf");
 }
 @font-face {
   font-family: "kollektif";
-  src: url("../public/fonts/Kollektif.ttf");
+  src: url("fonts/Kollektif.ttf");
 }
 @font-face {
   font-family: "kollektif";
-  src: url("../public/fonts/Kollektif-Bold.ttf");
+  src: url("/fonts/Kollektif-Bold.ttf");
   font-weight: 800;
 }
 
