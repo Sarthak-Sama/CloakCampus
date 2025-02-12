@@ -15,7 +15,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://p652kfhs-3000.inc1.devtunnels.ms",
-      "https://your-production-domain.com",
+      "https://anonymous-forum-app.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true, // Allow cookies
