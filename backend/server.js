@@ -14,7 +14,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://p652kfhs-3000.inc1.devtunnels.ms",
+      "https://o8psy3-ip-202-41-10-109.tunnelmole.net",
+      "https://w5r1vrkq-3000.inc1.devtunnels.ms",
       "https://anonymous-forum-app.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],

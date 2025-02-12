@@ -2,7 +2,8 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const instance = axios.create({
-  baseURL: "https://anonymousforumapp.onrender.com/",
+  // baseURL: "https://anonymousforumapp.onrender.com/",
+  baseURL: "http://localhost:5000/",
   headers: {
     accept: "application/json",
   },
