@@ -231,7 +231,7 @@ module.exports.verifyOtp = async (req, res, next) => {
     // secure: process.env.NODE_ENV === "production", // Use secure cookies in production
     secure: false,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    sameSite: "None", // Helps prevent CSRF
+    sameSite: "Lax", // Helps prevent CSRF
   });
 
   // Log the user in by creating a JWT token
