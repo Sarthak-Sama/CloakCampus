@@ -51,7 +51,20 @@ const InstallPWAButton = () => {
     return null;
   }
 
-  return deferredPrompt ? (
+  //   return deferredPrompt ? (
+  //     <>
+  //       <hr className="border-zinc-600 rounded-full w-[80] mb-6" />
+  //       <button
+  //         className="flex items-center gap-2 opacity-70 hover:opacity-100 mb-5"
+  //         onClick={handleInstallClick}
+  //       >
+  //         <RiMobileDownloadLine />
+  //         Add App to your HomeScreen.
+  //       </button>
+  //     </>
+  //   ) : null;
+
+  return (
     <>
       <hr className="border-zinc-600 rounded-full w-[80] mb-6" />
       <button
@@ -62,7 +75,7 @@ const InstallPWAButton = () => {
         Add App to your HomeScreen.
       </button>
     </>
-  ) : null;
+  );
 };
 
 export default InstallPWAButton;
