@@ -89,9 +89,7 @@ function SideNav({ setCategory, isUploadingPost, setPopupText }) {
         <span>Color Mode:</span>
         <ToggleButton />
       </div>
-      <div className="">
-        <InstallPWAButton />
-      </div>
+      <div className="">{/* <InstallPWAButton /> */}</div>
     </div>
   );
 }

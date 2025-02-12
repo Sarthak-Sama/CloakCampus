@@ -33,7 +33,7 @@ function App() {
       setIsUploadingPost(false);
     }
   };
-  console.log("isuploadPostState: ", isUploadingPost);
+
   return (
     <SkeletonTheme
       baseColor={theme === "dark" ? "#313131" : "#d4d4d8"}

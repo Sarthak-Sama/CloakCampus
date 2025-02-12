@@ -15,7 +15,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://o8psy3-ip-202-41-10-109.tunnelmole.net",
-      "https://w5r1vrkq-3000.inc1.devtunnels.ms",
+      "https://w5r1vrkq-5173.inc1.devtunnels.ms",
       "https://cloak-campus.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
