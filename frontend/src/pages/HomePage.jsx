@@ -14,7 +14,12 @@ import { fetchNotifications } from "../redux/actions/notificationAction";
 import { motion } from "framer-motion";
 import { throttle } from "lodash";
 
-function HomePage({ isUploadingPost }) {
+function HomePage({
+  isUploadingPost,
+  deferredPrompt,
+  isInstalled,
+  setIsInstalled,
+}) {
   const [category, setCategory] = useState("all discussion");
   const [searchQuery, setSearchQuery] = useState("");
   const [isNotificationTabActive, setIsNotificationTabActive] = useState(false);
@@ -214,6 +219,9 @@ function HomePage({ isUploadingPost }) {
             setCategory={setCategory}
             setPopupText={setPopupText}
             isUploadingPost={isUploadingPost}
+            deferredPrompt={deferredPrompt}
+            isInstalled={isInstalled}
+            setIsInstalled={setIsInstalled}
           />
         </motion.div>
         <div

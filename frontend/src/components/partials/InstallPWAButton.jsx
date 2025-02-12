@@ -1,19 +1,14 @@
 import { RiMobileDownloadLine } from "@remixicon/react";
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { setInstalled } from "../../redux/reducers/pwaSlice";
 
-const InstallPWAButton = () => {
-  const { deferredPrompt, isInstalled } = useSelector((state) => state.pwa);
-  const dispatch = useDispatch();
-
+const InstallPWAButton = (deferredPrompt, isInstalled, setIsInstalled) => {
   const handleInstallClick = () => {
     console.log("clicked");
     if (deferredPrompt) {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === "accepted") {
-          dispatch(setInstalled(true));
+          dispatch(setIsInstalled(true));
           console.log("User accepted the install prompt");
         } else {
           console.log("User dismissed the install prompt");

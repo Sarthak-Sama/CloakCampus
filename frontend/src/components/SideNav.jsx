@@ -6,7 +6,14 @@ import { useSelector } from "react-redux";
 import Skeleton from "react-loading-skeleton";
 import InstallPWAButton from "./partials/InstallPWAButton";
 
-function SideNav({ setCategory, isUploadingPost, setPopupText }) {
+function SideNav({
+  setCategory,
+  isUploadingPost,
+  setPopupText,
+  deferredPrompt,
+  isInstalled,
+  setIsInstalled,
+}) {
   const { user } = useSelector((state) => state.user);
   const categoriesArray = user?.categories;
   const { theme } = useSelector((state) => state.theme);
@@ -89,7 +96,13 @@ function SideNav({ setCategory, isUploadingPost, setPopupText }) {
         <span>Color Mode:</span>
         <ToggleButton />
       </div>
-      <div className="">{/* <InstallPWAButton /> */}</div>
+      <div className="">
+        <InstallPWAButton
+          deferredPrompt={deferredPrompt}
+          isInstalled={isInstalled}
+          setIsInstalled={setIsInstalled}
+        />
+      </div>
     </div>
   );
 }

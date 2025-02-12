@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { SkeletonTheme } from "react-loading-skeleton";
 
@@ -33,6 +33,34 @@ function App() {
       setIsUploadingPost(false);
     }
   };
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  useEffect(() => {
+    // Listen for beforeinstallprompt event and store the event
+    const beforeInstallHandler = (e) => {
+      console.log("beforeinstallprompt event captured");
+      e.preventDefault();
+      setDeferredPrompt(e);
+      console.log("beforeinstallprompt event captured");
+    };
+
+    window.addEventListener("beforeinstallprompt", beforeInstallHandler);
+
+    // Listen for the appinstalled event to know when the app is installed
+    const appInstalledHandler = () => {
+      console.log("PWA was installed");
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener("appinstalled", appInstalledHandler);
+
+    // Cleanup listeners on unmount
+    return () => {
+      window.removeEventListener("beforeinstallprompt", beforeInstallHandler);
+      window.removeEventListener("appinstalled", appInstalledHandler);
+    };
+  }, []);
 
   return (
     <SkeletonTheme
@@ -46,7 +74,12 @@ function App() {
             path="/"
             element={
               <PrivateRoute>
-                <HomePage isUploadingPost={isUploadingPost} />
+                <HomePage
+                  isUploadingPost={isUploadingPost}
+                  deferredPrompt={deferredPrompt}
+                  isInstalled={isInstalled}
+                  setIsInstalled={setIsInstalled}
+                />
               </PrivateRoute>
             }
           />
@@ -54,7 +87,12 @@ function App() {
             path="/post/:id"
             element={
               <PrivateRoute>
-                <HomePage isUploadingPost={isUploadingPost} />
+                <HomePage
+                  isUploadingPost={isUploadingPost}
+                  deferredPrompt={deferredPrompt}
+                  isInstalled={isInstalled}
+                  setIsInstalled={setIsInstalled}
+                />
                 {/* HomePage will conditionally show PostPage or PostGrid */}
               </PrivateRoute>
             }

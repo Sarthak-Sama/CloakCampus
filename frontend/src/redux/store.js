@@ -3,7 +3,6 @@ import userReducer from "./reducers/userSlice";
 import postReducer from "./reducers/postsSlice";
 import themeReducer from "./reducers/themeSlice";
 import notificationReducer from "./reducers/notificationsSlice";
-import pwaReducer from "./reducers/pwaSlice";
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +10,5 @@ export const store = configureStore({
     posts: postReducer,
     notifications: notificationReducer,
     theme: themeReducer,
-    pwa: pwaReducer,
   },
 });
