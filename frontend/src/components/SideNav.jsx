@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ToggleButton from "./partials/ToggleButton";
 import { useSelector } from "react-redux";
 import Skeleton from "react-loading-skeleton";
+import InstallPWAButton from "./partials/InstallPWAButton";
 
 function SideNav({ setCategory, isUploadingPost, setPopupText }) {
   const { user } = useSelector((state) => state.user);
@@ -87,6 +88,9 @@ function SideNav({ setCategory, isUploadingPost, setPopupText }) {
       <div className="flex items-center">
         <span>Color Mode:</span>
         <ToggleButton />
+      </div>
+      <div className="">
+        <InstallPWAButton />
       </div>
     </div>
   );

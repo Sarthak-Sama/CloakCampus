@@ -136,7 +136,6 @@ function HomePage({ isUploadingPost }) {
         const scrollPosition = postGridRef.current?.scrollTop;
         setIsFetching(true);
         const response = await dispatch(fetchPosts(currentPage));
-        console.log(response);
         if (response) {
           setHasMore(response.hasMore);
           setPostArray((prev) => [...prev, ...response.posts]);
@@ -158,8 +157,6 @@ function HomePage({ isUploadingPost }) {
   }, [dispatch, currentPage]);
 
   useEffect(() => {
-    console.log("redux posts updated");
-    console.log(reduxPosts);
     setPostArray(reduxPosts);
   }, [reduxPosts]);
 
@@ -174,7 +171,6 @@ function HomePage({ isUploadingPost }) {
     ).length;
     setNumberOfNewNotifications(unreadCount);
   }, [notifications]);
-  console.log(popupText);
 
   useEffect(() => {
     if (popupText) {
