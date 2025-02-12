@@ -1,5 +1,6 @@
 import { useDispatch } from "react-redux";
 import { setDeferredPrompt, setInstalled } from "../redux/reducers/pwaSlice";
+import { useEffect } from "react";
 
 const PWAInstallHandler = () => {
   const dispatch = useDispatch();
