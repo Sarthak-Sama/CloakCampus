@@ -30,28 +30,18 @@ const fetchRandomUsername = async () => {
   }
 };
 
-const fetchRandomPfps = async (retryCount = 0, maxRetries = 5) => {
+const fetchRandomPfps = async () => {
   // Try cached first
   const cachedPfp = await redisClient.sPop("randomPfps");
   if (cachedPfp) return cachedPfp;
 
   try {
     const response = await axios.get(
-      `https://api.nekosapi.com/v4/images/${Math.floor(Math.random() * 9999)}`
+      `https://api.nekosapi.com/v4/images/random?rating=safe&limit=1`
     );
-    return response.data.url;
+    return response.data[0].url;
   } catch (error) {
-    console.error(`Attempt ${retryCount + 1} failed:`, error.message);
-
-    if (
-      retryCount < maxRetries &&
-      (error.response?.status === 500 || error.response?.status === 404)
-    ) {
-      console.log(`Retrying... Attempt ${retryCount + 2}`);
-      return fetchRandomPfps(retryCount + 1, maxRetries);
-    }
-
-    console.error("Max retries reached or unrecoverable error");
+    console.error("Failed to fetch random img", error.message);
     return null;
   }
 };

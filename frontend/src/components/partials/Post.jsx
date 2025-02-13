@@ -261,7 +261,7 @@ function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
   };
 
   return (
-    <Link className="bg-red-200" to={`/post/${postdata._id}`}>
+    <Link className="" to={`/post/${postdata._id}`}>
       <div className="w-[80%] md:w-[80%] lg:w-[75%] mx-auto rounded-[0.6rem] sm:rounded-[0.9rem] my-3 p-5 gap-8 bg-zinc-300 dark:bg-zinc-800 text-[#161616] dark:text-[#EDEDED]">
         <div className="flex flex-col items-center sm:items-start sm:flex-row gap-5 pr-6">
           {postdata.media && postdata.media.length > 0 && (

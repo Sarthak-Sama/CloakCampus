@@ -1,5 +1,5 @@
 import { RiAddLine } from "@remixicon/react";
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import ToggleButton from "./partials/ToggleButton";
 import { useSelector } from "react-redux";
@@ -13,13 +13,35 @@ function SideNav({
   deferredPrompt,
   isInstalled,
   setIsInstalled,
+  setIsSideNavActive,
 }) {
   const { user } = useSelector((state) => state.user);
   const categoriesArray = user?.categories;
   const { theme } = useSelector((state) => state.theme);
+
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchEndX, setTouchEndX] = useState(0);
+
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX - touchEndX > 50) {
+      // Swiped left
+      setIsSideNavActive(false);
+    }
+  };
   return (
     <div
-      className={`w-[100%] h-[88vh] lg:h-screen bg-[#EDEDED] dark:bg-[#161616] text-[#161616] dark:text-[#EDEDED] flex flex-col items-center text-center pl-5 pr-12 pt-8 ${
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className={`w-[100%] h-[88vh] lg:h-screen bg-[#EDEDED] dark:bg-[#161616] text-[#161616] dark:text-[#EDEDED] flex flex-col items-center text-center pl-8 pr-9 pt-8 ${
         window.innerWidth < 1024
           ? "border-zinc-600 border-r-[1px]"
           : theme === "dark"

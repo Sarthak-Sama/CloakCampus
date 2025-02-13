@@ -40,94 +40,54 @@ module.exports.createPost = async (req, res, next) => {
     const { title, textContent, category } = req.body;
     const media = [];
 
-    // Run content moderation parallel with media uploads
-    const [titleAnalysis, contentAnalysis, ...mediaUploads] = await Promise.all(
-      [
-        isHarmfullContent(title),
-        isHarmfullContent(textContent),
-        // Handle image uploads if they exist
-        ...(req.files?.image?.map((imageFile) =>
-          cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
-        ) || []),
-        // Handle video upload if it exists
-        ...(req.files?.video?.map((videoFile) =>
-          cloudinary.uploader.upload(videoFile.path, { resource_type: "video" })
-        ) || []),
-      ]
+    // Process only image uploads (video uploads are not allowed)
+    const imageUploads = (req.files?.image || []).map((imageFile) =>
+      cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
     );
 
-    // Check moderation results
-    if (titleAnalysis?.isHarassment || contentAnalysis?.isHarassment) {
-      try {
-        // Delete from Cloudinary
-        await Promise.all(
-          mediaUploads.map((upload) =>
-            cloudinary.uploader.destroy(upload.public_id)
-          )
-        );
+    // Execute all image uploads in parallel
+    const uploads = await Promise.all(imageUploads);
 
-        // Cleanup local files
-        if (req.files?.image) {
-          req.files.image.forEach((file) => fs.unlinkSync(file.path));
-        }
-        if (req.files?.video) {
-          req.files.video.forEach((file) => fs.unlinkSync(file.path));
-        }
-
-        return res.status(400).json({
-          message: "Content violates community guidelines",
-          reason: titleAnalysis.isHarassment
-            ? titleAnalysis.reason
-            : contentAnalysis.reason,
-        });
-      } catch (error) {
-        console.error("Cleanup error:", error);
-      }
-    }
-
-    // Process successful media uploads
-    mediaUploads.forEach((upload) => {
+    // Build media array from Cloudinary responses
+    uploads.forEach((upload) => {
       media.push({
         type: upload.resource_type,
         url: upload.secure_url,
       });
     });
-    const user = await userModel.findById(req.user._id).populate("university"); // Populate the university field
 
+    // Retrieve user data and create the post
+    const user = await userModel.findById(req.user._id).populate("university");
     const post = await postModel.create({
       title,
       textContent,
       author: req.user._id,
       authorUsername: req.user.username,
-      university: user.university.universityName, // Access the universityName after populating
+      university: user.university.universityName, // Using the populated university name
       category,
-      media, // Save media information
+      media,
     });
 
+    // Update university's post count
     const domain = await domainModel.findById(user.university);
     domain.universityPostsCount += 1;
     await domain.save();
 
-    // Cleanup local files
+    // Cleanup: Remove local image files after upload
     if (req.files?.image) {
       req.files.image.forEach((file) => fs.unlinkSync(file.path));
     }
-    if (req.files?.video) {
-      req.files.video.forEach((file) => fs.unlinkSync(file.path));
-    }
 
-    // Respond with success
     res.status(201).json({
       message: "Post successfully created",
       post,
     });
   } catch (err) {
-    // Cleanup on error
+    // On error, clean up local image files
     if (req.files?.image) {
-      req.files.image.forEach((file) => fs.unlinkSync(file.path));
-    }
-    if (req.files?.video) {
-      req.files.video.forEach((file) => fs.unlinkSync(file.path));
+      req.files.image.forEach((file) => {
+        if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      });
     }
     next(err);
   }

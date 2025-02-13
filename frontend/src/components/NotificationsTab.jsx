@@ -42,7 +42,7 @@ function NotificationsTab({
   }, [unreadNotifications, setNumberOfNewNotifications]);
 
   return (
-    <div className="bg-red-200">
+    <div className="">
       <motion.div
         style={{
           backdropFilter: "blur(18px)",
@@ -156,7 +156,7 @@ function NotificationsTab({
             )}
           </>
         ) : (
-          <h2 className="mx-auto mt-10 text-center text-[#161616] dark:text-[#EDEDED]">
+          <h2 className="mx-auto mt-10 w-[80%] text-center text-[#161616] dark:text-[#EDEDED]">
             You don't have any notifications at the moment.
           </h2>
         )}

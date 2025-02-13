@@ -213,7 +213,7 @@ function HomePage({
           initial={{ x: "0%" }}
           animate={{ x: isSideNavActive ? "0%" : "-100%" }}
           exit={{ x: "-50%" }}
-          transition={{}}
+          transition={{ type: "tween" }}
         >
           <SideNav
             setCategory={setCategory}
@@ -222,6 +222,7 @@ function HomePage({
             deferredPrompt={deferredPrompt}
             isInstalled={isInstalled}
             setIsInstalled={setIsInstalled}
+            setIsSideNavActive={setIsSideNavActive}
           />
         </motion.div>
         <div
@@ -371,6 +372,12 @@ function HomePage({
                 />
               </div>
             </div>
+          )}
+          {window.innerWidth < 1024 && isSideNavActive && (
+            <div
+              onClick={() => setIsSideNavActive(false)}
+              className="w-screen h-screen bg-black/60 absolute left-0 top-0"
+            />
           )}
         </div>
       </div>
