@@ -14,10 +14,12 @@ import {
 import React, { useState, useRef } from "react";
 import axios from "../../utils/axios";
 import { Link } from "react-router-dom";
+import { set } from "lodash";
 
 function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
   const [likeCount, setLikeCount] = useState(postdata.upvoteCount);
   const [dislikeCount, setDisLikeCount] = useState(postdata.downvoteCount);
+  const [commentCount, setCommentCount] = useState(postdata.comments.length);
   const [userVote, setUserVote] = useState(postdata.userVote);
   const [isLoading, setIsLoading] = useState(false); // Prevent multiple clicks
   const [commentInputVisible, setCommentInputVisible] = useState(false);
@@ -177,6 +179,7 @@ function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
         content: commentText,
       });
       setCommentText("");
+      setCommentCount(commentCount + 1);
     } catch (err) {
       console.log("Error while commenting.: ");
     }
@@ -387,7 +390,7 @@ function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
             </div>
             <div
               id="comment"
-              className="group"
+              className="group flex gap-4"
               onClick={(e) => {
                 e.preventDefault(); // Prevent navigation
                 e.stopPropagation(); // Prevent event bubbling to the parent Link
@@ -405,6 +408,7 @@ function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
                   commentInputVisible ? "hidden" : "block group-hover:hidden"
                 }
               />
+              <span>{commentCount > 0 && commentCount}</span>
             </div>
           </div>
           <div className="w-[20%] lg:w-[10%] flex justify-around lg:justify-between pr-6 gap-3">

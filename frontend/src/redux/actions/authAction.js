@@ -1,31 +1,7 @@
 import { loginUser, logoutUser } from "../reducers/authSlice";
 import axios from "../../utils/axios";
-import Cookies from "js-cookie";
-
-const isAuthenticated = async () => {
-  // Get the token from sessionStorage or cookies
-  const token = sessionStorage.getItem("token") || Cookies.get("token");
-
-  if (!token) return false; // No token, so not authenticated
-
-  try {
-    // Send the token to the backend for verification
-    const response = await axios.post(
-      "/auth/verify",
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`, // Pass the token in Authorization header
-        },
-      }
-    );
-
-    return response.status === 200; // Return true if verified
-  } catch (error) {
-    console.error("Token verification failed:", error);
-    return false; // Token invalid or request failed
-  }
-};
+import { loadUser } from "../reducers/userSlice";
+import { fetchUser } from "./userAction";
 
 // Signup function
 const signup = async (email, password) => {
@@ -55,7 +31,16 @@ const login = async (email, password, toRemember, dispatch) => {
     const token = response.data.token; // assuming the token is in response.data.token
     sessionStorage.setItem("token", token); // Store the token in session storage
     // Dispatch logoutUser action to update the Redux state
-    dispatch(loginUser());
+    const userData = {
+      _id: response.data.user._id,
+      profilePictureSrc: response.data.user.profilePictureSrc,
+      username: response.data.user.username,
+      email: response.data.user.email,
+      university: response.data.user.university.universityName,
+      categories: response.data.user.university.universityCategories,
+      createdAt: response.data.user.createdAt,
+    };
+    dispatch(loadUser(userData));
     return { success: true };
   } catch (error) {
     return {
@@ -76,10 +61,9 @@ const logout = async (dispatch, navigate) => {
 
   // Remove the token from sessionStorage or cookies
   sessionStorage.removeItem("token");
-  Cookies.remove("token");
 
   // Dispatch logoutUser action to update the Redux state
-  dispatch(logoutUser());
+  dispatch(loadUser(null));
   navigate("/auth");
 };
 
@@ -92,7 +76,16 @@ const verifyOtp = async (email, otp, dispatch) => {
     });
     const token = response.data.token; // assuming the token is in response.data.token
     sessionStorage.setItem("token", token); // Store the token in session storage
-    dispatch(loginUser());
+    const userData = {
+      _id: response.data.user._id,
+      profilePictureSrc: response.data.user.profilePictureSrc,
+      username: response.data.user.username,
+      email: response.data.user.email,
+      university: response.data.user.university.universityName,
+      categories: response.data.user.university.universityCategories,
+      createdAt: response.data.user.createdAt,
+    };
+    dispatch(loadUser(userData));
     return { success: true };
   } catch (error) {
     return {
@@ -135,28 +128,4 @@ const resetPassword = async (email, newPassword) => {
   }
 };
 
-// To send the JWT in the headers when making a protected request
-const getProfile = async () => {
-  const token = document.cookie.split("=")[1]; // Extract token from cookie
-
-  try {
-    const response = await axios.get("/profile", {
-      headers: {
-        Authorization: `Bearer ${token}`, // Send the token as a Bearer token in the Authorization header
-      },
-    });
-  } catch (error) {
-    console.error("Failed to get profile:", error.response.data);
-  }
-};
-
-export {
-  isAuthenticated,
-  signup,
-  login,
-  logout,
-  verifyOtp,
-  forgotPassword,
-  resetPassword,
-  getProfile,
-};
+export { signup, login, logout, verifyOtp, forgotPassword, resetPassword };

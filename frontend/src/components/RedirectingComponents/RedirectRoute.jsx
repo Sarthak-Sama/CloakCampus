@@ -1,23 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import { isAuthenticated } from "../../redux/actions/authAction";
 
 function RedirectRoute({ children }) {
-  const [authStatus, setAuthStatus] = useState(null);
+  const { user, loading } = useSelector((state) => state.user);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const isAuth = await isAuthenticated();
-      setAuthStatus(isAuth);
-    };
-    checkAuth();
-  }, []);
-
-  if (authStatus === null) {
-    return <div>Loading...</div>; // Show loading state while verifying
+  if (loading) {
+    return <div>Loading...</div>;
   }
-
-  return authStatus ? <Navigate to="/" /> : children;
+  return user ? <Navigate to="/" /> : children;
 }
 
 export default RedirectRoute;

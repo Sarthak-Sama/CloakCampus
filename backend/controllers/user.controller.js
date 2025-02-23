@@ -218,8 +218,7 @@ module.exports.verifyOtp = async (req, res, next) => {
   // Set the token in a cookie
   res.cookie("token", token, {
     httpOnly: true, // Prevents JavaScript access
-    // secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-    secure: false,
+    secure: process.env.NODE_ENV === "production", // Use secure cookies in production
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     sameSite: "Lax", // Helps prevent CSRF
   });
@@ -231,11 +230,14 @@ module.exports.verifyOtp = async (req, res, next) => {
       _id: user._id,
       username: user.username,
       email: user.email,
+      profilePictureSrc: user.profilePictureSrc,
+      university: user.university,
     },
     token,
   });
 };
 
+// Endpoint to login via cookie
 module.exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -259,7 +261,6 @@ module.exports.login = async (req, res, next) => {
 
     if (userData) {
       // User found in cache
-      console.log("User found in cache");
       user = JSON.parse(userData);
       // Verify password
       const isValid = await bcrypt.compare(password, user.password);
@@ -268,7 +269,6 @@ module.exports.login = async (req, res, next) => {
       }
     } else {
       // Not in cache, check database
-      console.log("User not found in cache");
       user = await userModel.findOne({ email }).populate("university");
       if (!user) {
         return res.status(401).json({ message: "User not found" });
@@ -325,10 +325,10 @@ module.exports.login = async (req, res, next) => {
     const { toRemember } = req.body;
     if (toRemember) {
       res.cookie("token", token, {
-        httpOnly: true,
-        secure: false,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: "None",
+        httpOnly: true, // Prevents JavaScript access
+        secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: "Lax", // Helps prevent CSRF
       });
     }
 
@@ -339,6 +339,7 @@ module.exports.login = async (req, res, next) => {
         username: user.username,
         email: user.email,
         profilePictureSrc: user.profilePictureSrc,
+        university: user.university,
       },
       token,
     });
@@ -373,21 +374,25 @@ module.exports.logout = async (req, res, next) => {
 module.exports.getProfile = async (req, res, next) => {
   try {
     // Get user ID from the authenticated request
-    console.log("req.user", req.user);
     const userId = req.user._id;
 
     // Try to get user data from Redis cache
     const cachedUser = await redisClient.get(`user:${userId}`);
 
     if (cachedUser) {
+      const user = JSON.parse(cachedUser);
+      delete user.password; // Remove password field
       return res.status(200).json({
         message: "Profile data (from cache)",
-        user: JSON.parse(cachedUser),
+        user,
       });
     }
 
     // If somehow not in cache (fallback), fetch from database
-    const userData = await userModel.findById(userId).populate("university");
+    const userData = await userModel
+      .findById(userId)
+      .populate("university")
+      .select("-password");
 
     if (!userData) {
       return res.status(404).json({ message: "User not found" });

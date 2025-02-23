@@ -16,12 +16,17 @@ import { setTheme } from "./redux/reducers/themeSlice";
 import { createPost } from "./redux/actions/postAction";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import PasswordResetPage from "./pages/PasswordResetPage";
+import { fetchUser } from "./redux/actions/userAction";
 
 function App() {
   const [isUploadingPost, setIsUploadingPost] = useState(false);
   const dispatch = useDispatch();
   dispatch(setTheme());
   const { theme } = useSelector((state) => state.theme);
+
+  useEffect(() => {
+    dispatch(fetchUser());
+  }, [dispatch]);
 
   const handleUpload = async (formData) => {
     setIsUploadingPost(true);
@@ -38,10 +43,8 @@ function App() {
   useEffect(() => {
     // Listen for beforeinstallprompt event and store the event
     const beforeInstallHandler = (e) => {
-      console.log("beforeinstallprompt event captured");
       e.preventDefault();
       setDeferredPrompt(e);
-      console.log("beforeinstallprompt event captured");
     };
 
     window.addEventListener("beforeinstallprompt", beforeInstallHandler);

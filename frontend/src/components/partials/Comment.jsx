@@ -103,9 +103,15 @@ function Comment({ comment, setComments, updateNestedComments }) {
     >
       <div className="flex items-start gap-3">
         {/* Avatar */}
-        <div className="avatar w-10 h-10 bg-gray-300 overflow-hidden rounded-full flex-shrink-0">
+        <div
+          style={{
+            backgroundImage: `url("/media/profileIcon.jpg")`,
+          }}
+          className="avatar w-10 h-10 bg-gray-300 bg-cover bg-center overflow-hidden rounded-full flex-shrink-0"
+        >
+          {/* Optionally, you can add an img element inside the div for fallback */}
           <img
-            src={comment.authorPfp || "/media/profileIcon.jpg"}
+            src={comment.authorPfp}
             className="w-full h-full object-cover object-top"
           />
         </div>

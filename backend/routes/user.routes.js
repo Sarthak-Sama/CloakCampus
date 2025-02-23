@@ -9,7 +9,6 @@ router.post("/login", userController.login);
 router.post("/logout", userController.logout);
 
 router.use(authMiddleware.isAuthenticated);
-
 router.get("/profile", userController.getProfile);
 
 // Routes for password reset functionality

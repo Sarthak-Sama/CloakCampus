@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
-import { fetchUser } from "../redux/actions/userAction"; // Import fetchUser action creator
 import SearchBar from "./partials/SearchBar";
 import {
   RiArrowDownSLine,
@@ -20,13 +19,8 @@ function TopNav({
   numberOfNewNotifications,
   toggleSideNav,
 }) {
-  const dispatch = useDispatch();
   const [hoveredOverUser, setHoveredOverUser] = useState(false);
   const isMediumScreen = window.innerWidth < 1024;
-
-  useEffect(() => {
-    dispatch(fetchUser());
-  }, [dispatch]);
 
   const { user } = useSelector((state) => state.user);
   return (
@@ -64,13 +58,15 @@ function TopNav({
             >
               <div
                 style={{
-                  backgroundImage: `url(${user.profilePictureSrc})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "top",
-                  backgroundRepeat: "no-repeat",
+                  backgroundImage: `url("/media/profileIcon.jpg")`,
                 }}
-                className="bg-yellow-300 w-10 h-10 rounded-full transition-all duration-[0.3s] ease-in-out"
-              ></div>
+                className="w-10 h-10 rounded-full bg-cover bg-center overflow-hidden"
+              >
+                <img
+                  src={user.profilePictureSrc}
+                  className="w-10 h-10 rounded-full object-cover object-top"
+                />
+              </div>
               <div id="profile-name" className="flex items-center gap-1">
                 <div className="text-[1.1rem] hidden sm:block">
                   {user ? user.username : "Guest"}

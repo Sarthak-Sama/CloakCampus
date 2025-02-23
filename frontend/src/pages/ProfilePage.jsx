@@ -29,7 +29,6 @@ function ProfilePage() {
   const { theme } = useSelector((state) => state.theme);
 
   useEffect(() => {
-    dispatch(fetchUser());
     dispatch(fetchPosts());
   }, [dispatch]);
 
@@ -109,18 +108,23 @@ function ProfilePage() {
     setSelectedPostId(null); // Reset selected post
   };
 
+  const handleBackNavigation = () => {
+    const previousURL = document.referrer;
+    const isInternal = previousURL.includes(window.location.origin);
+
+    if (location.state?.fromForgotPassword || !isInternal) {
+      navigate("/", { replace: true });
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
     <>
       {user ? (
         <div className="h-screen overflow-y-scroll w-screen md:flex block relative dark:text-white">
           <RiArrowLeftLine
-            onClick={() => {
-              if (location.state?.fromForgotPassword) {
-                navigate("/", { replace: true });
-              } else {
-                navigate(-1);
-              }
-            }}
+            onClick={handleBackNavigation}
             size={40}
             className="absolute left-0 top-0 mt-5 ml-5 opacity-50 hover:opacity-100"
           />

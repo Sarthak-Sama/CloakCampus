@@ -54,7 +54,6 @@ function PostPage() {
   };
 
   const fetchComments = async () => {
-    console.log("Fetching comments...");
     if (isLoadingComments || !hasMoreComments) return;
     setIsLoadingComments(true);
     try {
@@ -81,9 +80,7 @@ function PostPage() {
   };
   useEffect(() => {
     fetchPost();
-    console.log(localPost);
     fetchComments();
-    console.log(comments);
   }, [id, navigate]);
 
   useEffect(() => {
@@ -291,17 +288,13 @@ function PostPage() {
   useEffect(() => {
     if (isRendered) {
       const fragment = window.location.hash; // Use window.location.hash for reliability
-      console.log(fragment);
 
       if (fragment) {
         const container = containerRef.current; // Ensure this points to the correct container
         const element = document.querySelector(fragment);
-        console.log(container);
-        console.log(element);
 
         if (element && container) {
           const offsetTop = element.offsetTop - container.offsetTop;
-          console.log(offsetTop);
           container.scrollTo({
             top: 500,
             behavior: "smooth",
@@ -310,8 +303,6 @@ function PostPage() {
           console.error("Element or container not found");
         }
       }
-    } else {
-      console.log("Component not yet rendered");
     }
   }, [isRendered]); // Only depend on isRendered
 
@@ -360,8 +351,6 @@ function PostPage() {
       }
     }
   };
-
-  console.log(comments);
 
   return (
     <>
