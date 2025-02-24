@@ -39,6 +39,8 @@ const login = async (email, password, toRemember, dispatch) => {
       university: response.data.user.university.universityName,
       categories: response.data.user.university.universityCategories,
       createdAt: response.data.user.createdAt,
+      isAdmin: response.data.user.isAdmin,
+      isBlacklisted: response.data.user.isBlacklisted,
     };
     dispatch(loadUser(userData));
     return { success: true };
@@ -84,6 +86,8 @@ const verifyOtp = async (email, otp, dispatch) => {
       university: response.data.user.university.universityName,
       categories: response.data.user.university.universityCategories,
       createdAt: response.data.user.createdAt,
+      isAdmin: response.data.user.isAdmin,
+      isBlacklisted: response.data.user.isBlacklisted,
     };
     dispatch(loadUser(userData));
     return { success: true };

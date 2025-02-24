@@ -21,6 +21,8 @@ export const fetchUser = () => async (dispatch) => {
       university: response.data.user.university.universityName,
       categories: response.data.user.university.universityCategories,
       createdAt: response.data.user.createdAt,
+      isAdmin: response.data.user.isAdmin,
+      isBlacklisted: response.data.user.isBlacklisted,
     };
 
     dispatch(loadUser(userData));

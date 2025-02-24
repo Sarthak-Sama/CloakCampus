@@ -17,6 +17,7 @@ import { createPost } from "./redux/actions/postAction";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import PasswordResetPage from "./pages/PasswordResetPage";
 import { fetchUser } from "./redux/actions/userAction";
+import AdminPage from "./pages/AdminPage";
 
 function App() {
   const [isUploadingPost, setIsUploadingPost] = useState(false);
@@ -143,6 +144,14 @@ function App() {
             <Route path="verify-otp" element={<OtpVerification />} />
           </Route>
           <Route path="/loading" element={<LoadingPage />} />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <AdminPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </div>
     </SkeletonTheme>

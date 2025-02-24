@@ -232,6 +232,8 @@ module.exports.verifyOtp = async (req, res, next) => {
       email: user.email,
       profilePictureSrc: user.profilePictureSrc,
       university: user.university,
+      isAdmin: user.isAdmin,
+      isBlacklisted: user.isBlacklisted,
     },
     token,
   });
@@ -340,6 +342,8 @@ module.exports.login = async (req, res, next) => {
         email: user.email,
         profilePictureSrc: user.profilePictureSrc,
         university: user.university,
+        isAdmin: user.isAdmin,
+        isBlacklisted: user.isBlacklisted,
       },
       token,
     });

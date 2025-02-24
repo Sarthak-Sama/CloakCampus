@@ -7,8 +7,6 @@ const cloudinary = require("../config/cloudinary.config");
 const reportModel = require("../models/report.model");
 const domainModel = require("../models/domain.model");
 const fs = require("fs");
-const path = require("path");
-const isHarmfullContent = require("../config/contentModeration.config");
 
 const createNotification = async (
   userId,
@@ -120,9 +118,13 @@ module.exports.deletePost = async (req, res, next) => {
     // Delete all votes associated with the post
     await voteModel.deleteMany({ postId: req.params.postId });
 
+    // Delete all the reports
+    await reportModel.deleteMany({ post: req.params.postId });
+
     // Respond with success message
     res.status(200).json({
-      message: "Post, associated comments, and votes deleted successfully",
+      message:
+        "Post, associated comments, votes and reports deleted successfully",
     });
   } catch (error) {
     console.error("Error deleting post:", error);
