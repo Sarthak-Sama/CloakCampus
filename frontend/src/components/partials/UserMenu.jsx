@@ -24,13 +24,13 @@ function UserMenu() {
           <RiUserLine color="#161616" /> Your Profile
         </Link>
         <hr className="border-zinc-400 border-[.7px] my-3" />
-        <Link
+        {/* <Link
           to={"/university"}
           className="flex gap-4 hover:-translate-y-1 transition-all duration-[.3s] ease-in-out"
         >
           <RiSchoolLine color="#161616" /> Your University
         </Link>
-        <hr className="border-zinc-400 border-[.7px] my-3" />
+        <hr className="border-zinc-400 border-[.7px] my-3" /> */}
         <Link
           onClick={handleLogout}
           className="flex gap-4 hover:-translate-y-1 transition-all duration-[.3s] ease-in-out text-[#161616]"

@@ -119,14 +119,6 @@ function App() {
             }
           />
 
-          <Route
-            path="/university"
-            element={
-              <PrivateRoute>
-                <UniversityPage />
-              </PrivateRoute>
-            }
-          />
           <Route path="/forgot-password" element={<ForgotPasswordPage />}>
             <Route path="verify-otp" element={<OtpVerification />} />
           </Route>

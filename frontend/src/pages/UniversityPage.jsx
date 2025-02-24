@@ -31,12 +31,18 @@ function UniversityPage() {
           never stops, and the Wi-Fi occasionally does!
         </p>
       </div>
-      <div className="w-full">
-        <div className="bg-zinc-700 w-[50%] px-[2rem] py-[3rem] rounded-xl mx-auto">
-          <h2 className="text-2xl">Total users in :</h2>
+      <div className="w-full h-[80%] flex justify-center">
+        <div className="border-r-2 border-black w-[50%] h-full flex flex-col items-center">
+          <h3 className="text-center text-[3vw] font-[900]">
+            Total Users from JNU
+          </h3>
+          <h4 className="text-[10vw] font-[900] mt-10">10</h4>
         </div>
-        <div className="bg-zinc-700 w-[50%] px-[2rem] py-[3rem] rounded-xl mx-auto mt-10">
-          <h2 className="text-2xl">:</h2>
+        <div className="w-[50%] h-full flex flex-col items-center">
+          <h3 className="text-center text-[3vw] font-[900]">
+            Total Posts from JNU
+          </h3>
+          <h4 className="text-[10vw] font-[900] mt-10">10</h4>
         </div>
       </div>
     </div>
