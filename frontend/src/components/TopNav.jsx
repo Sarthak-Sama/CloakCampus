@@ -23,7 +23,6 @@ function TopNav({
   const isMediumScreen = window.innerWidth < 1024;
 
   const { user } = useSelector((state) => state.user);
-  console.log(user);
   return (
     <div
       className={`h-[12vh] ${
