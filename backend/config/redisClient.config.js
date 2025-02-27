@@ -27,6 +27,8 @@ const loadAllowedDomainsToCache = async () => {
   }
 };
 const loadRandomUsernamesToCache = async () => {
+  console.log("Fetching new usernames to cache");
+
   const tempKey = "randomUsernamesNew";
 
   try {
@@ -52,18 +54,20 @@ const loadRandomUsernamesToCache = async () => {
   }
 };
 const loadRandomPfpsToCache = async () => {
-  const tempKey = "randomPfpsNew";
+  console.log("Fetching new pfps to cache");
 
+  const tempKey = "randomPfpsNew";
+  let response;
   try {
     // Fill temporary set
     for (let i = 0; i < 2; i++) {
       try {
         if (i < 1) {
-          const response = await axios.get(
+          response = await axios.get(
             `https://api.nekosapi.com/v4/images/random?rating=safe&limit=100`
           );
         } else {
-          const response = await axios.get(
+          response = await axios.get(
             `https://api.nekosapi.com/v4/images/random?rating=suggestive&limit=50`
           );
         }
