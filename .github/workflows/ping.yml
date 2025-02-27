@@ -1,0 +1,13 @@
+name: Ping CloakCampus Backend
+
+# This workflow runs on a schedule
+on:
+  schedule:
+    - cron: '*/14 * * * *'  # This cron expression means every 14 minutes
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the backend endpoint
+        run: curl -s https://anonymousforumapp.onrender.com > /dev/null
