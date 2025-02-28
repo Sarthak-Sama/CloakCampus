@@ -14,7 +14,6 @@ import {
 import React, { useState, useRef } from "react";
 import axios from "../../utils/axios";
 import { Link } from "react-router-dom";
-import { set } from "lodash";
 
 function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
   const [likeCount, setLikeCount] = useState(postdata.upvoteCount);

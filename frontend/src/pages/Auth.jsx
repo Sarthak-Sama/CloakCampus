@@ -313,7 +313,7 @@ function Auth() {
                 `}</style>
               </div>
             ) : (
-              "Log in"
+              "Login"
             )}
           </button>
         </form>
@@ -326,7 +326,7 @@ function Auth() {
       {/* ------Signup Form----- */}
       <motion.div
         id="signup-form"
-        className={`relative z-9 w-[80] lg:w-[33%] mx-[10vw] mt-[-15vh] sm:my-[8vh] lg:my-[20vh] text-center`}
+        className={`relative z-10 lg:w-[33%] mx-[10vw] mb-[5vh] -mt-[8vh] sm:my-[12vh] lg:my-[25vh] text-center`}
         initial={
           isLargeScreen ? { x: "0%", opacity: 0 } : { y: "0%", opacity: 0 }
         }
@@ -443,7 +443,7 @@ function Auth() {
               </span>
             </label>
           </div>
-          <button className="w-full  bg-[#EA516F] text-white rounded hover:bg-[#EA516F] transition duration-300">
+          <button className="w-full py-2 bg-[#EA516F] text-white rounded hover:bg-[#EA516F] transition duration-300">
             {isLoading ? (
               <div className="flex items-center justify-center scale-[0.5]">
                 <svg
