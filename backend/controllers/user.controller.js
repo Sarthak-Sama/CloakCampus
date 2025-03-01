@@ -102,8 +102,7 @@ module.exports.signup = async (req, res, next) => {
     }
 
     // Extract domain from email
-    const emailDomain = email.substring(email.lastIndexOf("@"));
-
+    const emailDomain = email.substring(email.lastIndexOf("@")).slice(1);
     // Validate email domain against the database
     const isValidDomain = await domainModel.findOne({ domain: emailDomain });
     if (!isValidDomain) {
@@ -146,28 +145,24 @@ module.exports.signup = async (req, res, next) => {
     let username = (await fetchRandomUsername()) || defaultUsername;
 
     // Fetch profile image
-    const defaultProfileImage =
-      "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg";
-    let profilePictureSrc = defaultProfileImage;
-    try {
-      const imageID = Math.floor(Math.random() * 10000);
-      const response = await axios.get(
-        `https://api.nekosapi.com/v3/images/${imageID}`,
-        { timeout: 5000 }
-      );
-      if (response.status === 200) {
-        profilePictureSrc = response.data.image_url || defaultProfileImage;
-      }
-    } catch (error) {
-      console.error("Failed to fetch profile image:", error.message);
-    }
+    //Fetching a Random Profile Picture
+    let attempts = 0;
+    const maxAttempts = 5;
+    let newPfp;
+    let pfpExists;
+    do {
+      newPfp = await fetchRandomPfps();
+      attempts++;
+      // Check if pfp already exists
+      pfpExists = await userModel.findOne({ profilePictureSrc: newPfp });
+    } while (!!pfpExists || attempts < maxAttempts);
 
     // Create a new user record
     await userModel.create({
       email,
       password: hashedPassword,
       username,
-      profilePictureSrc,
+      profilePictureSrc: newPfp,
       university: isValidDomain,
       otp, // Store the OTP temporarily
     });
@@ -191,7 +186,7 @@ module.exports.signup = async (req, res, next) => {
 module.exports.verifyOtp = async (req, res, next) => {
   const { email, otp } = req.body;
 
-  const user = await userModel.findOne({ email });
+  const user = await userModel.findOne({ email }).populate("university");
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }

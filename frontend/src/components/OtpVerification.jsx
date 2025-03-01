@@ -129,7 +129,7 @@ const OTPVerification = ({ isPasswordResetFlow = false }) => {
   };
 
   return (
-    <div className="h-screen w-screen bg-[rgb(0,0,0,0.4)] absolute flex items-center justify-center">
+    <div className="h-screen w-screen bg-[rgb(0,0,0,0.4)] absolute z-[9999] flex items-center justify-center">
       <div className="scale-[80%] flex flex-col items-center sm:scale-100 w-full max-w-sm mx-auto p-6 bg-white shadow-lg rounded-lg">
         <h2 className="text-2xl font-semibold text-center mb-6">
           {isPasswordResetFlow

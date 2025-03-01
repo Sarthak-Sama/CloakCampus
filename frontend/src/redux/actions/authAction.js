@@ -89,6 +89,7 @@ const verifyOtp = async (email, otp, dispatch) => {
       isAdmin: response.data.user.isAdmin,
       isBlacklisted: response.data.user.isBlacklisted,
     };
+    console.log(userData);
     dispatch(loadUser(userData));
     return { success: true };
   } catch (error) {
