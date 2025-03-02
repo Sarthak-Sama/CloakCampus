@@ -5,8 +5,9 @@ import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import TermsModal from "../components/TermsAndConditions";
 import { signup, login } from "../redux/actions/authAction";
 import { useDispatch } from "react-redux";
+import InstallPWAButton from "../components/partials/InstallPWAButton";
 
-function Auth() {
+function Auth({ deferredPrompt, isInstalled, setIsInstalled }) {
   const [isLogin, setIsLogin] = useState(true);
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
   const [isMediumScreen, setIsMediumScreen] = useState(
@@ -321,6 +322,13 @@ function Auth() {
         {loginErrorMessage && (
           <div className="text-red-500 text-sm mt-2">{loginErrorMessage}</div>
         )}
+        <div className="flex flex-col items-center justify-center">
+          <InstallPWAButton
+            deferredPrompt={deferredPrompt}
+            isInstalled={isInstalled}
+            setIsInstalled={setIsInstalled}
+          />
+        </div>
       </motion.div>
 
       {/* ------Signup Form----- */}
@@ -536,6 +544,13 @@ function Auth() {
             </div>
           )}
         </form>
+        <div className="flex flex-col items-center justify-center">
+          <InstallPWAButton
+            deferredPrompt={deferredPrompt}
+            isInstalled={isInstalled}
+            setIsInstalled={setIsInstalled}
+          />
+        </div>
       </motion.div>
 
       {/* -------Slider------ */}

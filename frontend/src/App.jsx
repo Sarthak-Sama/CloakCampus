@@ -129,7 +129,11 @@ function App() {
             path="/auth"
             element={
               <RedirectRoute>
-                <Auth />
+                <Auth
+                  deferredPrompt={deferredPrompt}
+                  isInstalled={isInstalled}
+                  setIsInstalled={setIsInstalled}
+                />
               </RedirectRoute>
             }
           >

@@ -320,11 +320,11 @@ function Post({ postdata, setIsLinkCopiedNotificationVisible, setPopupText }) {
             </div>
           )}
           <div id="content" className="w-full mt-5 lg:mt-0">
-            <div className="flex items-center justify-between gap-5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
               <h1 className="text-[1.5rem] leading-[1.5rem] lg:text-[1.7rem] lg:leading-[2rem]">
                 {postdata.title}
               </h1>
-              <h3 className="text-xs text-zinc-500">{timeAgo}</h3>
+              <h3 className="-mt-3 sm:mt-0 text-xs text-zinc-500">{timeAgo}</h3>
             </div>
 
             <h3 className="text-xs text-zinc-600 dark:text-zinc-400 my-2">
