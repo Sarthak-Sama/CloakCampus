@@ -157,7 +157,7 @@ function Auth() {
       {/* -------- Login Form----- */}
       <motion.div
         id="login-form"
-        className={`relative z-10 lg:w-[33%] mx-[10vw] my-[8vh] sm:my-[12vh] lg:my-[25vh] text-center`}
+        className={`relative z-15 lg:w-[33%] mx-[10vw] my-[8vh] sm:my-[12vh] lg:my-[25vh] text-center`}
         initial={
           isLargeScreen ? { x: "0%", opacity: 1 } : { y: "100%", opacity: 1 }
         }
