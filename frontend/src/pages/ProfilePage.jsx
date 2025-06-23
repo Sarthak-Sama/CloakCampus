@@ -172,7 +172,7 @@ function ProfilePage() {
                   <h3 className="text-zinc-500 text-sm">University</h3>
                   <h3 className="text-lg">{user.university}</h3>
                 </div>
-                <RiArrowRightSLine className="group-hover:translate-x-2 transition-all duration-[0.3] ease-out" />
+                <RiArrowRightSLine className="group-hover:translate-x-2 transition-all duration-300 ease-out" />
               </Link>
               <Link
                 to={"/forgot-password"}
@@ -185,7 +185,7 @@ function ProfilePage() {
                   <h3 className="text-zinc-500 text-sm">Password</h3>
                   <h3 className="text-lg">*******</h3>
                 </div>
-                <RiArrowRightSLine className="group-hover:translate-x-2 transition-all duration-[0.3] ease-out" />
+                <RiArrowRightSLine className="group-hover:translate-x-2 transition-all duration-300 ease-out" />
               </Link>
               <div className="w-full flex items-center justify-between p-3 rounded-lg group">
                 <div className="p-2 bg-[#161616] text-[#EDEDED] dark:text-[#161616] dark:bg-zinc-500 rounded-[0.3rem]">
